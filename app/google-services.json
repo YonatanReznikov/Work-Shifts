@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "206996986112",
+    "project_id": "work-shifts-b29e6",
+    "storage_bucket": "work-shifts-b29e6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:206996986112:android:1fd690fc156e4b13b4bbe5",
+        "android_client_info": {
+          "package_name": "com.example.work_shifts"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAu6CP0TYZMJ1SJQyQmgK_7c4qCn1mGse8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
