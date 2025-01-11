@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+             xmlns:app="http://schemas.android.com/apk/res-auto"
+             android:id="@+id/nav_graph"
+    app:startDestination="@id/loginFrag">
+    <fragment
+        android:id="@+id/loginFrag"
+        android:name="com.example.work_shifts.Fragments.LoginFrag"
+        android:label="LoginFrag" >
+        <action
+            android:id="@+id/action_loginFrag_to_registerFrag"
+            app:destination="@id/registerFrag" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerFrag"
+        android:name="com.example.work_shifts.Fragments.RegisterFrag"
+        android:label="RegisterFrag" />
+</navigation>
