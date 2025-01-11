@@ -13,12 +13,30 @@
         <action
             android:id="@+id/action_loginFrag_to_registerFrag"
             app:destination="@id/registerFrag" />
+        <action
+            android:id="@+id/action_loginFrag_to_resetPassFrag"
+            app:destination="@id/resetPassFrag" />
     </fragment>
 
     <fragment
         android:id="@+id/registerFrag"
         android:name="com.example.work_shifts.Fragments.RegisterFrag"
         android:label="Register"
-        tools:layout="@layout/register_frag"/>
+        tools:layout="@layout/register_frag">
+        <action
+            android:id="@+id/action_registerFrag_to_loginFrag"
+            app:destination="@id/loginFrag" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/resetPassFrag"
+        android:name="com.example.work_shifts.Fragments.ResetPassFrag"
+        android:label="Reset Password"
+        tools:layout="@layout/forgotpass_frag" >
+        <action
+            android:id="@+id/action_resetPassFrag_to_loginFrag"
+            app:destination="@id/loginFrag" />
+    </fragment>
+
 
 </navigation>

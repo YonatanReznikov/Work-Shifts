@@ -101,11 +101,18 @@ public class RegisterFrag extends Fragment {
     }
 
     private void validateWorkId(String workId, String email, String password, String phone, View view, EditText emailInput) {
+        String companyName = getCompanyNameByWorkId(workId);
+
+        if (companyName == null) {
+            Toast.makeText(getActivity(), "Invalid Work ID", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         databaseReference.child("workIDs").child(workId).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.exists()) {
-                    registerUser(email, workId, password, phone, view, emailInput);
+                    registerUser(email, workId, companyName, password, phone, view, emailInput);
                 } else {
                     Toast.makeText(getActivity(), "Invalid Work ID", Toast.LENGTH_LONG).show();
                 }
@@ -118,8 +125,26 @@ public class RegisterFrag extends Fragment {
         });
     }
 
+    private String getCompanyNameByWorkId(String workId) {
+        switch (workId) {
+            case "101":
+                return "Samsung";
+            case "102":
+                return "Apple";
+            case "103":
+                return "Google";
+            case "104":
+                return "Microsoft";
+            case "105":
+                return "Nvidia";
+            default:
+                return null;
+        }
+    }
+
     private void registerUser(String email,
                               String workId,
+                              String companyName,
                               String password,
                               String phone,
                               View view,
@@ -131,8 +156,19 @@ public class RegisterFrag extends Fragment {
                         Map<String, String> userDetails = new HashMap<>();
                         userDetails.put("email", email);
                         userDetails.put("phone", phone);
-                        Toast.makeText(getActivity(), "Registration successful!", Toast.LENGTH_LONG).show();
-                        Navigation.findNavController(view).navigate(R.id.loginFrag);
+                        Map<String, Object> companyDetails = new HashMap<>();
+                        companyDetails.put("companyName", companyName);
+
+                        DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users");
+                        usersRef.push().setValue(userDetails)
+                                .addOnCompleteListener(dbTask -> {
+                                    if (dbTask.isSuccessful()) {
+                                        Toast.makeText(getActivity(), "Registration successful!", Toast.LENGTH_LONG).show();
+                                        Navigation.findNavController(view).navigate(R.id.loginFrag);
+                                    } else {
+                                        Toast.makeText(getActivity(), "Error storing user data: " + dbTask.getException().getMessage(), Toast.LENGTH_LONG).show();
+                                    }
+                                });
                     } else {
                         if (task.getException() instanceof FirebaseAuthUserCollisionException) {
                             emailInput.setError("Email is already in use");
