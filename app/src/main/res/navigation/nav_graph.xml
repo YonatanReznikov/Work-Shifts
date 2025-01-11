@@ -13,28 +13,12 @@
         <action
             android:id="@+id/action_loginFrag_to_registerFrag"
             app:destination="@id/registerFrag" />
-        <action
-            android:id="@+id/action_loginFrag_to_homePageFrag"
-            app:destination="@id/homePageFrag"
-            app:popUpTo="@id/loginFrag"
-            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
         android:id="@+id/registerFrag"
         android:name="com.example.work_shifts.Fragments.RegisterFrag"
         android:label="Register"
-        tools:layout="@layout/register_frag">
-        <action
-            android:id="@+id/action_registerFrag_to_homePageFrag"
-            app:destination="@id/homePageFrag"
-            app:popUpTo="@id/loginFrag"
-            app:popUpToInclusive="true" />
-    </fragment>
+        tools:layout="@layout/register_frag"/>
 
-    <fragment
-        android:id="@+id/homePageFrag"
-        android:name="com.example.work_shifts.Fragments.HomePageFragment"
-        android:label="Home"
-        tools:layout="@layout/home_page" />
 </navigation>
