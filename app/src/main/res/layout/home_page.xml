@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -10,10 +9,10 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="20dp"
         android:layout_marginTop="20dp"
-        android:gravity="center">
+        android:layout_marginBottom="20dp"
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <ImageView
             android:layout_width="48dp"
@@ -28,11 +27,11 @@
         <ImageView
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/arrow_left"
             android:clickable="true"
             android:focusable="true"
             android:onClick="previousMonthAction"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:src="@drawable/arrow_left" />
 
         <TextView
             android:id="@+id/monthYearTV"
@@ -47,20 +46,54 @@
         <ImageView
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/arrow_right"
             android:clickable="true"
             android:focusable="true"
             android:onClick="nextMonthAction"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:src="@drawable/arrow_right" />
 
         <ImageView
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/plus"
             android:clickable="true"
             android:focusable="true"
             android:onClick="plusAction"
-            android:padding="8dp" />
+            android:padding="8dp"
+            android:src="@drawable/plus" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/mySchedualButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="#BED5EF"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="My Schedule"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/schedualButton"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="#BED5EF"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="Schedule"
+            android:textColor="#000000"
+            android:textSize="16sp" />
     </LinearLayout>
 
     <LinearLayout
@@ -82,7 +115,7 @@
             android:layout_weight="1"
             android:text="MON"
             android:textAlignment="center"
-            android:textSize="16sp"/>
+            android:textSize="16sp" />
 
         <TextView
             android:layout_width="0dp"
@@ -129,13 +162,13 @@
         android:id="@+id/calendarRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"/>
+        android:layout_weight="1" />
 
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp" />
 
     <LinearLayout
         android:id="@+id/bottomNavigation"
@@ -161,6 +194,20 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/SchedualButtonHome"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackground"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:padding="12dp"
+            android:text="Schedule"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+
+        <TextView
             android:id="@+id/PersonalInfoButton"
             android:layout_width="0dp"
             android:layout_height="48dp"
@@ -171,20 +218,6 @@
             android:gravity="center"
             android:padding="12dp"
             android:text="Personal Info"
-            android:textColor="#000000"
-            android:textSize="16sp" />
-
-        <TextView
-            android:id="@+id/SchedualButton"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:background="?attr/selectableItemBackground"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:padding="12dp"
-            android:text="Schedule"
             android:textColor="#000000"
             android:textSize="16sp" />
     </LinearLayout>
