@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -23,6 +22,7 @@
             android:id="@+id/action_homePageFragment_to_addShiftFrag"
             app:destination="@id/addShiftFrag" />
     </fragment>
+
     <fragment
         android:id="@+id/paySlipFrag"
         android:name="com.example.work_shifts.Fragments.paySlipFrag"
@@ -32,15 +32,17 @@
             android:id="@+id/action_paySlipFrag_to_showFrag"
             app:destination="@id/showFrag" />
     </fragment>
+
     <fragment
         android:id="@+id/showFrag"
         android:name="com.example.work_shifts.Fragments.showFrag"
         tools:layout="@layout/show"
         android:label="showFrag" />
+
     <fragment
         android:id="@+id/personalInfoFrag"
         android:name="com.example.work_shifts.Fragments.personalInfoFrag"
-        tools:layout="@layout/personal_info"
+        tools:layout="@layout/personal_info_client"
         android:label="personalInfoFrag" >
         <action
             android:id="@+id/action_personalInfoFrag_to_updateInfoFrag"
@@ -49,16 +51,19 @@
             android:id="@+id/action_personalInfoFrag_to_reportFrag"
             app:destination="@id/reportFrag" />
     </fragment>
+
     <fragment
         android:id="@+id/updateInfoFrag"
         android:name="com.example.work_shifts.Fragments.updateInfoFrag"
         tools:layout="@layout/update_info"
         android:label="updateInfoFrag" />
+
     <fragment
         android:id="@+id/reportFrag"
         android:name="com.example.work_shifts.Fragments.reportFrag"
-        tools:layout="@layout/report"
+        tools:layout="@layout/add_request"
         android:label="reportFrag" />
+
     <fragment
         android:id="@+id/myShiftFrag"
         android:name="com.example.work_shifts.Fragments.myShiftFrag"
@@ -68,16 +73,17 @@
             android:id="@+id/action_myShiftFrag_to_deleteShiftFrag"
             app:destination="@id/deleteShiftFrag" />
     </fragment>
+
     <fragment
         android:id="@+id/addShiftFrag"
         android:name="com.example.work_shifts.Fragments.addShiftFrag"
         tools:layout="@layout/add_shift"
         android:label="addShiftFrag" />
+
     <fragment
         android:id="@+id/deleteShiftFrag"
         android:name="com.example.work_shifts.Fragments.deleteShiftFrag"
         tools:layout="@layout/delete_shift"
         android:label="deleteShiftFrag" />
-
 
 </navigation>
