@@ -1,4 +1,4 @@
-package com.example.work_shifts.Fragments;
+package com.example.work_shifts.Fragments.Auth;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -156,6 +156,7 @@ public class RegisterFrag extends Fragment {
                         Map<String, String> userDetails = new HashMap<>();
                         userDetails.put("email", email);
                         userDetails.put("phone", phone);
+                        userDetails.put("isAdmin", String.valueOf(false));
                         Map<String, Object> companyDetails = new HashMap<>();
                         companyDetails.put("companyName", companyName);
 

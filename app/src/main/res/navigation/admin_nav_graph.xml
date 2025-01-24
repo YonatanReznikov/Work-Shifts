@@ -1,14 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main_nav_graph"
-    app:startDestination="@id/homePageFragment">
-
+    android:id="@+id/admin_nav_graph"
+    app:startDestination="@id/adminHomePageFrag">
     <fragment
-        android:id="@+id/homePageFragment"
-        android:name="com.example.work_shifts.Fragments.Worker.HomePageFragment"
-        tools:layout="@layout/home_page"
-        android:label="HomePageFragment" >
+        android:id="@+id/adminHomePageFrag"
+        android:name="com.example.work_shifts.Fragments.Admin.AdminHomePageFrag"
+        android:label="AdminHomePageFrag"
+        tools:layout="@layout/admin_home_page">
         <action
             android:id="@+id/action_homePageFragment_to_paySlipFrag"
             app:destination="@id/paySlipFrag" />

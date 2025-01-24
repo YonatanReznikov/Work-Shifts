@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/loginFrag"
-        android:name="com.example.work_shifts.Fragments.LoginFrag"
+        android:name="com.example.work_shifts.Fragments.Auth.LoginFrag"
         android:label="Login"
         tools:layout="@layout/login_frag">
         <action
@@ -20,13 +20,13 @@
 
     <fragment
         android:id="@+id/registerFrag"
-        android:name="com.example.work_shifts.Fragments.RegisterFrag"
+        android:name="com.example.work_shifts.Fragments.Auth.RegisterFrag"
         android:label="Register"
         tools:layout="@layout/register_frag"/>
 
     <fragment
         android:id="@+id/resetPassFrag"
-        android:name="com.example.work_shifts.Fragments.ResetPassFrag"
+        android:name="com.example.work_shifts.Fragments.Auth.ResetPassFrag"
         android:label="Reset Password"
         tools:layout="@layout/forgotpass_frag" />
 

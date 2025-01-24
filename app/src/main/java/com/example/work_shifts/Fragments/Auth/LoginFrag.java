@@ -1,4 +1,4 @@
-package com.example.work_shifts.Fragments;
+package com.example.work_shifts.Fragments.Auth;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -13,12 +13,17 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.example.work_shifts.Activities.AdminMainActivity;
 import com.example.work_shifts.Activities.MainActivity;
 import com.example.work_shifts.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 public class LoginFrag extends Fragment {
 
@@ -93,10 +98,35 @@ public class LoginFrag extends Fragment {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         if (task.isSuccessful()) {
-                            Toast.makeText(getActivity(), "Login successful!", Toast.LENGTH_LONG).show();
-                            Intent intent = new Intent(getActivity(), MainActivity.class);
-                            startActivity(intent);
-                            requireActivity().finish();
+                            // Get the current user's unique ID
+                            String userId = mAuth.getCurrentUser().getUid();
+
+                            // Reference to Firebase Realtime Database
+                            FirebaseDatabase database = FirebaseDatabase.getInstance();
+                            DatabaseReference usersRef = database.getReference("users").child(userId);
+
+                            usersRef.get().addOnCompleteListener(userTask -> {
+                                if (userTask.isSuccessful() && userTask.getResult().exists()) {
+                                    // Retrieve user details
+                                    DataSnapshot userSnapshot = userTask.getResult();
+                                    String isAdminStr = userSnapshot.child("isAdmin").getValue(String.class);
+
+                                    if ("true".equalsIgnoreCase(isAdminStr)) {
+                                        Toast.makeText(getActivity(), "Welcome, Admin!", Toast.LENGTH_LONG).show();
+                                        // Redirect to admin-specific activity
+                                        Intent intent = new Intent(getActivity(), AdminMainActivity.class);
+                                        startActivity(intent);
+                                    } else {
+                                        Toast.makeText(getActivity(), "Login successful!", Toast.LENGTH_LONG).show();
+                                        // Redirect to regular user activity
+                                        Intent intent = new Intent(getActivity(), MainActivity.class);
+                                        startActivity(intent);
+                                    }
+                                    requireActivity().finish();
+                                } else {
+                                    Toast.makeText(getActivity(), "User data not found.", Toast.LENGTH_LONG).show();
+                                }
+                            });
                         } else {
                             Toast.makeText(getActivity(), "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }

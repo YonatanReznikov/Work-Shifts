@@ -1,4 +1,4 @@
-package com.example.work_shifts.Fragments;
+package com.example.work_shifts.Fragments.Auth;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
