@@ -22,8 +22,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 public class LoginFrag extends Fragment {
 
@@ -51,7 +53,7 @@ public class LoginFrag extends Fragment {
         emailInput = view.findViewById(R.id.emailInput);
         passwordInput = view.findViewById(R.id.passwordInput);
         TextView resetButton = view.findViewById(R.id.forgot);
-        Button loginButton = view.findViewById(R.id.SigninButton);
+        Button loginButton = view.findViewById(R.id.SignInButton);
         Button registerButton = view.findViewById(R.id.RegisterButton);
 
         // Set button listeners
@@ -103,30 +105,52 @@ public class LoginFrag extends Fragment {
 
                             // Reference to Firebase Realtime Database
                             FirebaseDatabase database = FirebaseDatabase.getInstance();
-                            DatabaseReference usersRef = database.getReference("users").child(userId);
+                            DatabaseReference workIdsRef = database.getReference("workIDs");
 
-                            usersRef.get().addOnCompleteListener(userTask -> {
-                                if (userTask.isSuccessful() && userTask.getResult().exists()) {
-                                    // Retrieve user details
-                                    DataSnapshot userSnapshot = userTask.getResult();
-                                    String isAdminStr = userSnapshot.child("isAdmin").getValue(String.class);
+                            // Search across all workIDs to find the user
+                            workIdsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                                @Override
+                                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                    boolean userFound = false;
 
-                                    if ("true".equalsIgnoreCase(isAdminStr)) {
-                                        Toast.makeText(getActivity(), "Welcome, Admin!", Toast.LENGTH_LONG).show();
-                                        // Redirect to admin-specific activity
-                                        Intent intent = new Intent(getActivity(), AdminMainActivity.class);
-                                        startActivity(intent);
-                                    } else {
-                                        Toast.makeText(getActivity(), "Login successful!", Toast.LENGTH_LONG).show();
-                                        // Redirect to regular user activity
-                                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                                        startActivity(intent);
+                                    for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
+                                        DataSnapshot usersSnapshot = workIdSnapshot.child("users");
+
+                                        for (DataSnapshot userSnapshot : usersSnapshot.getChildren()) {
+                                            String userEmail = userSnapshot.child("email").getValue(String.class);
+                                            if (email.equals(userEmail)) {
+                                                userFound = true;
+                                                String isAdminStr = userSnapshot.child("isAdmin").getValue(String.class);
+
+                                                if ("true".equalsIgnoreCase(isAdminStr)) {
+                                                    Toast.makeText(getActivity(), "Welcome, Admin!", Toast.LENGTH_LONG).show();
+                                                    // Redirect to admin-specific activity
+                                                    Intent intent = new Intent(getActivity(), AdminMainActivity.class);
+                                                    startActivity(intent);
+                                                } else {
+                                                    Toast.makeText(getActivity(), "Login successful!", Toast.LENGTH_LONG).show();
+                                                    // Redirect to regular user activity
+                                                    Intent intent = new Intent(getActivity(), MainActivity.class);
+                                                    startActivity(intent);
+                                                }
+                                                requireActivity().finish();
+                                                break;
+                                            }
+                                        }
+                                        if (userFound) break;
                                     }
-                                    requireActivity().finish();
-                                } else {
-                                    Toast.makeText(getActivity(), "User data not found.", Toast.LENGTH_LONG).show();
+
+                                    if (!userFound) {
+                                        Toast.makeText(getActivity(), "User data not found.", Toast.LENGTH_LONG).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onCancelled(@NonNull DatabaseError error) {
+                                    Toast.makeText(getActivity(), "Database error: " + error.getMessage(), Toast.LENGTH_LONG).show();
                                 }
                             });
+
                         } else {
                             Toast.makeText(getActivity(), "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
@@ -134,4 +158,3 @@ public class LoginFrag extends Fragment {
                 });
     }
 }
-

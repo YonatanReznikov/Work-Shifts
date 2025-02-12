@@ -20,6 +20,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+
     <EditText
         android:id="@+id/workID"
         android:layout_width="0dp"
@@ -27,29 +38,32 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
+        android:background="@drawable/rounded_input"
         android:hint="Enter Work ID:"
-        android:textColorHint="@color/black"
         android:inputType="number"
         android:padding="12dp"
+        android:textColorHint="@color/black"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/backgroundImage"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/backgroundImage" />
+
     <EditText
         android:id="@+id/email"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="30dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
+        android:background="@drawable/rounded_input"
         android:hint="Enter Email:"
-        android:textColorHint="@color/black"
         android:inputType="textEmailAddress"
         android:padding="12dp"
+        android:textColorHint="@color/black"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/workID"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/workID" />
 
     <EditText
         android:id="@+id/pass1"
@@ -58,14 +72,16 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
+        android:background="@drawable/rounded_input"
         android:hint="Enter Password:"
-        android:textColorHint="@color/black"
         android:inputType="textPassword"
         android:padding="12dp"
+        android:textColorHint="@color/black"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/email"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/email" />
+
     <EditText
         android:id="@+id/pass2"
         android:layout_width="0dp"
@@ -73,14 +89,16 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
+        android:background="@drawable/rounded_input"
         android:hint="Enter Password again:"
-        android:textColorHint="@color/black"
         android:inputType="textPassword"
         android:padding="12dp"
+        android:textColorHint="@color/black"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/pass1"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/pass1" />
+
     <EditText
         android:id="@+id/phone"
         android:layout_width="0dp"
@@ -88,25 +106,27 @@
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
+        android:background="@drawable/rounded_input"
         android:hint="Enter Phone:"
-        android:textColorHint="@color/black"
-        android:inputType="number"
+        android:inputType="phone"
         android:padding="12dp"
+        android:textColorHint="@color/black"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/pass2"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/pass2" />
 
     <Button
         android:id="@+id/RegisterButton"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginEnd="16dp"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="20dp"
         android:text="Register"
+        android:padding="8dp"
         android:textColor="@android:color/white"
-        android:textSize="20sp"
+        android:textSize="24sp"
         app:backgroundTint="#2ECC71"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

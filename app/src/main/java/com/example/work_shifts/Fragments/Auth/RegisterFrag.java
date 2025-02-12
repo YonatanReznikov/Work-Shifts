@@ -1,11 +1,13 @@
 package com.example.work_shifts.Fragments.Auth;
 
 import android.os.Bundle;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -28,8 +30,7 @@ public class RegisterFrag extends Fragment {
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
 
-    public RegisterFrag() {
-    }
+    public RegisterFrag() {}
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -39,8 +40,7 @@ public class RegisterFrag extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.register_frag, container, false);
         Button registerBtn = view.findViewById(R.id.RegisterButton);
         registerBtn.setOnClickListener(v -> register(view));
@@ -48,7 +48,11 @@ public class RegisterFrag extends Fragment {
     }
 
     private boolean isValidEmail(String email) {
-        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches();
+        return Patterns.EMAIL_ADDRESS.matcher(email).matches();
+    }
+
+    private boolean isValidPhone(String phone) {
+        return phone.matches("\\d{10}");  // Ensures exactly 10 digits
     }
 
     private boolean isValidPassword(String password) {
@@ -71,6 +75,7 @@ public class RegisterFrag extends Fragment {
         String rePassword = rePasswordInput.getText().toString().trim();
         String phone = phoneInput.getText().toString().trim();
 
+        // Email validation
         if (email.isEmpty()) {
             emailInput.setError("Email is required");
             return;
@@ -79,6 +84,7 @@ public class RegisterFrag extends Fragment {
             return;
         }
 
+        // Password validation
         if (!isValidPassword(password)) {
             passwordInput.setError("Password must be 8+ chars, with upper, lower, and digit");
             return;
@@ -89,15 +95,37 @@ public class RegisterFrag extends Fragment {
             return;
         }
 
+        // Phone validation
         if (phone.isEmpty()) {
             phoneInput.setError("Phone number is required");
             return;
-        } else if (phone.length() != 10 || !phone.matches("\\d+")) {
-            phoneInput.setError("Phone number is not valid");
+        } else if (!isValidPhone(phone)) {
+            phoneInput.setError("Phone number must be exactly 10 digits");
             return;
         }
 
-        validateWorkId(workId, email, password, phone, view, emailInput);
+        // Check if the phone number is already registered
+        checkPhoneUniqueness(workId, phone, email, password, view, emailInput, phoneInput);
+    }
+
+    private void checkPhoneUniqueness(String workId, String phone, String email, String password, View view, EditText emailInput, EditText phoneInput) {
+        DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users");
+
+        usersRef.orderByChild("phone").equalTo(phone).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                if (snapshot.exists()) {
+                    phoneInput.setError("Phone number is already registered!");
+                } else {
+                    validateWorkId(workId, email, password, phone, view, emailInput);
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+                Toast.makeText(getActivity(), "Database error: " + error.getMessage(), Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void validateWorkId(String workId, String email, String password, String phone, View view, EditText emailInput) {
@@ -108,13 +136,23 @@ public class RegisterFrag extends Fragment {
             return;
         }
 
-        databaseReference.child("workIDs").child(workId).addListenerForSingleValueEvent(new ValueEventListener() {
+        DatabaseReference workIdRef = databaseReference.child("workIDs").child(workId);
+
+        workIdRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    registerUser(email, workId, companyName, password, phone, view, emailInput);
+                if (!snapshot.exists()) {
+                    Map<String, Object> workIdDetails = new HashMap<>();
+                    workIdDetails.put("companyName", companyName);
+                    workIdRef.setValue(workIdDetails).addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            registerUser(email, workId, companyName, password, phone, view, emailInput);
+                        } else {
+                            Toast.makeText(getActivity(), "Failed to create Work ID: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
                 } else {
-                    Toast.makeText(getActivity(), "Invalid Work ID", Toast.LENGTH_LONG).show();
+                    registerUser(email, workId, companyName, password, phone, view, emailInput);
                 }
             }
 
@@ -142,45 +180,34 @@ public class RegisterFrag extends Fragment {
         }
     }
 
-    private void registerUser(String email,
-                              String workId,
-                              String companyName,
-                              String password,
-                              String phone,
-                              View view,
-                              EditText emailInput) {
-        mAuth.createUserWithEmailAndPassword(email, password)
-                .addOnCompleteListener(requireActivity(), task -> {
-                    if (task.isSuccessful()) {
-                        String userId = mAuth.getCurrentUser().getUid();
-                        Map<String, String> userDetails = new HashMap<>();
-                        userDetails.put("email", email);
-                        userDetails.put("phone", phone);
-                        userDetails.put("isAdmin", String.valueOf(false));
-                        Map<String, Object> companyDetails = new HashMap<>();
-                        companyDetails.put("companyName", companyName);
+    private void registerUser(String email, String workId, String companyName, String password, String phone, View view, EditText emailInput) {
+        ProgressBar progressBar = view.findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.VISIBLE);
 
-                        DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users");
-                        usersRef.push().setValue(userDetails)
-                                .addOnCompleteListener(dbTask -> {
-                                    if (dbTask.isSuccessful()) {
-                                        Toast.makeText(getActivity(), "Registration successful!", Toast.LENGTH_LONG).show();
-                                        Navigation.findNavController(view).navigate(R.id.loginFrag);
-                                    } else {
-                                        Toast.makeText(getActivity(), "Error storing user data: " + dbTask.getException().getMessage(), Toast.LENGTH_LONG).show();
-                                    }
-                                });
+        mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), task -> {
+            progressBar.setVisibility(View.GONE);
+            if (task.isSuccessful()) {
+                Map<String, String> userDetails = new HashMap<>();
+                userDetails.put("email", email);
+                userDetails.put("phone", phone);
+                userDetails.put("isAdmin", String.valueOf(false));
+
+                DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users").push();
+                usersRef.setValue(userDetails).addOnCompleteListener(dbTask -> {
+                    if (dbTask.isSuccessful()) {
+                        Toast.makeText(getActivity(), "Registration successful!", Toast.LENGTH_LONG).show();
+                        Navigation.findNavController(view).navigate(R.id.loginFrag);
                     } else {
-                        if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                            emailInput.setError("Email is already in use");
-                        } else {
-                            Toast.makeText(getActivity(),
-                                    "Error: " + (task.getException() != null
-                                            ? task.getException().getMessage()
-                                            : "Unknown error"),
-                                    Toast.LENGTH_LONG).show();
-                        }
+                        Toast.makeText(getActivity(), "Error storing user data: " + dbTask.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
+            } else {
+                if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                    emailInput.setError("Email is already in use");
+                } else {
+                    Toast.makeText(getActivity(), "Error: " + (task.getException() != null ? task.getException().getMessage() : "Unknown error"), Toast.LENGTH_LONG).show();
+                }
+            }
+        });
     }
 }
