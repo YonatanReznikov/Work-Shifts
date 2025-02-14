@@ -3,31 +3,35 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
-
+    android:padding="16dp"
+    android:gravity="center_horizontal">
 
     <ImageView
         android:id="@+id/backgroundImage"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="232dp"
         android:scaleType="centerCrop"
         android:src="@drawable/shift"
         android:layout_marginTop="100dp"/>
+
     <EditText
         android:id="@+id/emailInput"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:hint="Enter your email"
         android:layout_marginTop="50dp"
-        android:inputType="textEmailAddress" />
+        android:inputType="textEmailAddress"
+        android:padding="12dp"
+        android:background="@drawable/rounded_input" />
 
     <Button
         android:id="@+id/resetPasswordButton"
-        android:layout_width="wrap_content"
-        android:layout_gravity="center"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="50dp"
         android:text="Reset Password"
-        android:backgroundTint="#2196F3"/>
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/blue"
+        android:padding="12dp"/>
 
 </LinearLayout>

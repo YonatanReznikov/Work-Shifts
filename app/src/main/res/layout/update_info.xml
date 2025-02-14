@@ -1,75 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="16dp">
 
     <ImageView
         android:id="@+id/logo"
         android:layout_width="match_parent"
         android:layout_height="232dp"
         android:scaleType="centerCrop"
-        app:srcCompat="@drawable/shift"
+        android:src="@drawable/shift"
         android:layout_marginTop="100dp" />
-
 
     <EditText
         android:id="@+id/emailUpdate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="30dp"
-        android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_input"
         android:hint="Update email"
         android:inputType="textEmailAddress"
         android:padding="12dp"
         android:textSize="18sp" />
 
-
     <EditText
-        android:id="@+id/PhoneUpdate"
+        android:id="@+id/phoneUpdate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="20dp"
-        android:layout_marginEnd="16dp"
-        android:inputType="phone"
         android:background="@drawable/rounded_input"
         android:hint="Update Phone Number"
+        android:inputType="phone"
         android:padding="12dp"
         android:textSize="18sp" />
-
 
     <Button
         android:id="@+id/confirm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="40dp"
-        android:layout_marginEnd="16dp"
         android:text="Confirm"
         android:textColor="@android:color/white"
         android:textSize="24sp"
         android:padding="8dp"
-        app:backgroundTint="@color/green"/>
-
-
-
-        />
-
-
-
-    <Button
-
-        android:textColor="@android:color/white"
-        android:textSize="24sp"
-        android:padding="8dp"
-        app:backgroundTint="#2ECC71"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/passwordInput" />
-
+        android:backgroundTint="@color/green"/>
 </LinearLayout>
