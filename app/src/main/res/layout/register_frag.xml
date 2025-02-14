@@ -6,6 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:gravity="center_horizontal"
     tools:context=".Activities.MainActivity">
 
     <ImageView
@@ -20,8 +21,9 @@
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone" />
-
+        android:layout_marginTop="20dp"
+        android:visibility="gone"
+        android:layout_gravity="center_horizontal" />
 
     <EditText
         android:id="@+id/workID"
@@ -31,7 +33,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_input"
-        android:hint="Enter Work ID:"
+        android:hint="Work ID"
         android:inputType="number"
         android:padding="12dp"
         android:textColorHint="@color/black"
@@ -45,7 +47,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_input"
-        android:hint="Enter Email:"
+        android:hint="Email"
         android:inputType="textEmailAddress"
         android:padding="12dp"
         android:textColorHint="@color/black"
@@ -59,7 +61,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_input"
-        android:hint="Enter Password:"
+        android:hint="Password"
         android:inputType="textPassword"
         android:padding="12dp"
         android:textColorHint="@color/black"
@@ -73,7 +75,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_input"
-        android:hint="Enter Password again:"
+        android:hint="Confirm Password"
         android:inputType="textPassword"
         android:padding="12dp"
         android:textColorHint="@color/black"
@@ -87,7 +89,7 @@
         android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
         android:background="@drawable/rounded_input"
-        android:hint="Enter Phone:"
+        android:hint="Phone"
         android:inputType="phone"
         android:padding="12dp"
         android:textColorHint="@color/black"
@@ -99,7 +101,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="18dp"
-        android:layout_marginEnd="20dp"
+        android:layout_marginEnd="16dp"
         android:padding="8dp"
         android:text="Register"
         android:backgroundTint="@color/green"
