@@ -1,39 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     tools:context=".Activities.MainActivity">
 
     <ImageView
         android:id="@+id/backgroundImage"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="232dp"
         android:layout_marginTop="40dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/shift"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:src="@drawable/shift" />
 
     <ProgressBar
         android:id="@+id/progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:visibility="gone" />
 
 
     <EditText
         android:id="@+id/workID"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
@@ -43,14 +35,11 @@
         android:inputType="number"
         android:padding="12dp"
         android:textColorHint="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/backgroundImage" />
+        android:textSize="18sp" />
 
     <EditText
         android:id="@+id/email"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
@@ -60,14 +49,11 @@
         android:inputType="textEmailAddress"
         android:padding="12dp"
         android:textColorHint="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/workID" />
+        android:textSize="18sp" />
 
     <EditText
         android:id="@+id/pass1"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
@@ -77,14 +63,11 @@
         android:inputType="textPassword"
         android:padding="12dp"
         android:textColorHint="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/email" />
+        android:textSize="18sp" />
 
     <EditText
         android:id="@+id/pass2"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
@@ -94,14 +77,11 @@
         android:inputType="textPassword"
         android:padding="12dp"
         android:textColorHint="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/pass1" />
+        android:textSize="18sp" />
 
     <EditText
         android:id="@+id/phone"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="25dp"
@@ -111,26 +91,19 @@
         android:inputType="phone"
         android:padding="12dp"
         android:textColorHint="@color/black"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/pass2" />
+        android:textSize="18sp" />
 
     <Button
         android:id="@+id/RegisterButton"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="18dp"
         android:layout_marginEnd="20dp"
-        android:text="Register"
         android:padding="8dp"
+        android:text="Register"
+        android:backgroundTint="@color/green"
         android:textColor="@android:color/white"
-        android:textSize="24sp"
-        app:backgroundTint="#2ECC71"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/phone" />
+        android:textSize="24sp" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
