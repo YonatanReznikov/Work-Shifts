@@ -5,7 +5,17 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Centered Toggle Group -->
+    <ImageButton
+        android:id="@+id/removeShift"
+        android:layout_width="50dp"
+        android:layout_height="50dp"
+        android:src="@android:drawable/ic_delete"
+        android:background="@android:color/transparent"
+        android:scaleType="center"
+        android:layout_alignParentTop="false"
+        android:layout_alignParentEnd="false"
+        android:contentDescription="delete shift"/>
+
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/toggleGroup"
         android:layout_width="wrap_content"
@@ -35,7 +45,6 @@
             android:text="Schedule" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
-    <!-- Add Shift Button at Top-Right -->
     <ImageButton
         android:id="@+id/addShift"
         android:layout_width="50dp"
@@ -44,29 +53,28 @@
         android:background="@android:color/transparent"
         android:scaleType="center"
         android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true" />
+        android:layout_alignParentEnd="true"
+        android:contentDescription="Add a new shift"/>
 
-    <!-- Schedule Section -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_below="@id/toggleGroup"
         android:layout_above="@id/bottomNavigation"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="16dp"
+        android:contentDescription="Scrollable schedule for shifts" >
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="8dp">
 
-            <!-- Time Column -->
             <LinearLayout
                 android:id="@+id/timeColumn"
                 android:layout_width="50dp"
                 android:layout_height="match_parent"
                 android:orientation="vertical"/>
 
-            <!-- Shifts Container -->
             <LinearLayout
                 android:id="@+id/shiftsContainer"
                 android:layout_width="match_parent"
@@ -76,7 +84,6 @@
         </RelativeLayout>
     </ScrollView>
 
-    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -105,7 +112,7 @@
             android:id="@+id/btnPersonalInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="#FDD835"
+            android:backgroundTint="#D97706"
             android:layout_weight="1"
             android:text="Personal Info" />
     </LinearLayout>

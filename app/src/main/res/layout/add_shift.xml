@@ -1,6 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <!-- Month Selector -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <ImageButton
+            android:id="@+id/prevMonth"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_previous"
+            android:contentDescription="Previous Month" />
+
+        <TextView
+            android:id="@+id/monthTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="January"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:padding="16dp"/>
+
+        <ImageButton
+            android:id="@+id/nextMonth"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_media_next"
+            android:contentDescription="Next Month" />
+    </LinearLayout>
+
+    <!-- Horizontal Date Scroll -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:layout_marginTop="8dp">
+
+        <LinearLayout
+            android:id="@+id/daysContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"/>
+    </HorizontalScrollView>
+
+    <!-- Shift Time Selection -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Starting: "
+            android:textSize="18sp"/>
+
+        <Spinner
+            android:id="@+id/startTimeSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:layout_marginStart="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text=" Until: "
+            android:textSize="18sp"
+            android:layout_marginStart="16dp"/>
+
+        <Spinner
+            android:id="@+id/endTimeSpinner"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:padding="8dp"
+            android:layout_marginStart="8dp"/>
+    </LinearLayout>
+
+    <!-- Total Shifts Display -->
+    <TextView
+        android:id="@+id/totalShiftsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total: 5 shifts"
+        android:textSize="18sp"
+        android:layout_marginTop="8dp"/>
+
+    <!-- Notes Section -->
+    <EditText
+        android:id="@+id/notesEditText"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:hint="Notes:"
+        android:background="@android:color/darker_gray"
+        android:padding="8dp"
+        android:textSize="16sp"
+        android:layout_marginTop="8dp"/>
+
+    <!-- Buttons: Add Shift & Submit -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="8dp">
+
+        <Button
+            android:id="@+id/addShiftButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Add Shift"
+            android:textSize="16sp"
+            android:backgroundTint="@color/green"
+            android:textColor="@android:color/white"
+            android:layout_marginEnd="8dp"/>
+
+        <Button
+            android:id="@+id/submitShiftButton"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Submit"
+            android:textSize="16sp"
+            android:backgroundTint="#000080"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+
+</LinearLayout>
