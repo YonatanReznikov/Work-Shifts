@@ -152,7 +152,7 @@ public class LoginFrag extends Fragment {
                             });
 
                         } else {
-                            Toast.makeText(getActivity(), "Login failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                            Toast.makeText(getActivity(), "Login failed: Email or Password are incorrect", Toast.LENGTH_LONG).show();
                         }
                     }
                 });
