@@ -7,7 +7,15 @@
     android:padding="16dp"
     android:gravity="center_horizontal">
 
-    <!-- Month Selector -->
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="232dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/shift"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="30dp"/>
+
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -44,7 +52,6 @@
             android:contentDescription="Next Month" />
     </LinearLayout>
 
-    <!-- Horizontal Date Scroll -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -58,7 +65,6 @@
             android:orientation="horizontal"/>
     </HorizontalScrollView>
 
-    <!-- Shift Time Selection -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -95,7 +101,6 @@
             android:layout_marginStart="8dp"/>
     </LinearLayout>
 
-    <!-- Total Shifts Display -->
     <TextView
         android:id="@+id/totalShiftsText"
         android:layout_width="wrap_content"
@@ -104,7 +109,6 @@
         android:textSize="18sp"
         android:layout_marginTop="8dp"/>
 
-    <!-- Notes Section -->
     <EditText
         android:id="@+id/notesEditText"
         android:layout_width="match_parent"
@@ -115,7 +119,6 @@
         android:textSize="16sp"
         android:layout_marginTop="8dp"/>
 
-    <!-- Buttons: Add Shift & Submit -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
