@@ -1,6 +1,131 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:gravity="center_horizontal"
+    android:background="@android:color/white">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <ImageView
+        android:id="@+id/backgroundImage"
+        android:layout_width="match_parent"
+        android:layout_height="232dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/shift"
+        android:layout_marginTop="10dp"/>
+
+    <TextView
+        android:id="@+id/userGreeting"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Hey,"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Company:"
+            android:textSize="16sp"/>
+        <EditText
+            android:id="@+id/CompanyInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:background="@android:color/darker_gray"
+            android:padding="8dp"
+            android:textSize="16sp"
+            android:text=""
+            android:focusable="false"
+            android:inputType="none"
+            android:hint="Company"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Email:"
+            android:textSize="16sp"/>
+        <EditText
+            android:id="@+id/emailField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:background="@android:color/darker_gray"
+            android:padding="8dp"
+            android:textSize="16sp"
+            android:text=""
+            android:focusable="false"
+            android:inputType="none"
+            android:hint="Email"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Phone:"
+            android:textSize="16sp"/>
+        <EditText
+            android:id="@+id/phoneField"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:background="@android:color/darker_gray"
+            android:padding="8dp"
+            android:textSize="16sp"
+            android:text=""
+            android:focusable="false"
+            android:inputType="none"
+            android:hint="Phone"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Total Hours:"
+            android:textSize="16sp"/>
+        <EditText
+            android:id="@+id/totalHoursInput"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="48dp"
+            android:background="@android:color/darker_gray"
+            android:padding="8dp"
+            android:textSize="16sp"
+            android:text=""
+            android:focusable="false"
+            android:inputType="none"
+            android:hint="Total Hours"/>
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/updateInfoButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Update Info"
+        android:textSize="18sp"
+        android:backgroundTint="@color/blue"
+        android:textColor="@android:color/white"
+        android:padding="6dp"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp" />
+
+    <Button
+        android:id="@+id/reviewRequestsButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Review Requests"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:backgroundTint="#D32F2F"
+        android:textColor="@android:color/white"
+        android:layout_marginTop="10dp"/>
+</LinearLayout>

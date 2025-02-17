@@ -5,64 +5,134 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <ImageButton
-        android:id="@+id/removeShift"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@android:drawable/ic_delete"
-        android:background="@android:color/transparent"
-        android:scaleType="center"
-        android:layout_alignParentTop="false"
-        android:layout_alignParentEnd="false"
-        android:contentDescription="delete shift"/>
-
-    <com.google.android.material.button.MaterialButtonToggleGroup
-        android:id="@+id/toggleGroup"
-        android:layout_width="wrap_content"
+    <!-- Top Bar with Toggle and Action Buttons -->
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:selectionRequired="true"
-        app:singleSelection="true"
-        android:layout_centerHorizontal="true"
-        android:layout_alignParentTop="true">
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/myShifts"
-            android:layout_width="wrap_content"
+        <ImageButton
+            android:id="@+id/removeShift"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:contentDescription="delete shift"/>
+
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/toggleGroup"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/green"
-            android:textColor="@color/black"
-            android:checkable="true"
-            android:text="My Shifts"
-            android:checked="true"/>
+            android:layout_weight="1"
+            app:selectionRequired="true"
+            app:singleSelection="true"
+            android:gravity="center">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/schedule"
-            android:layout_width="wrap_content"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/myShifts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/green"
+                android:textColor="@color/black"
+                android:checkable="true"
+                android:text="My Shifts"
+                android:checked="true"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/schedule"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:backgroundTint="@color/blue"
+                android:textColor="@color/black"
+                android:checkable="true"
+                android:text="Schedule"/>
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <ImageButton
+            android:id="@+id/addShift"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_menu_add"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:contentDescription="Add a new shift"/>
+    </LinearLayout>
+
+    <!-- Daily Calendar Section -->
+    <LinearLayout
+        android:id="@+id/dailyCalendar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/topBar"
+        android:orientation="vertical"
+        android:layout_marginTop="16dp"
+        android:background="@android:color/white"
+        android:elevation="2dp"
+        android:padding="8dp">
+
+        <!-- Date Navigation -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/blue"
-            android:textColor="@color/black"
-            android:checkable="true"
-            android:text="Schedule" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingVertical="8dp">
 
-    <ImageButton
-        android:id="@+id/addShift"
-        android:layout_width="50dp"
-        android:layout_height="50dp"
-        android:src="@android:drawable/ic_menu_add"
-        android:background="@android:color/transparent"
-        android:scaleType="center"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentEnd="true"
-        android:contentDescription="Add a new shift"/>
+            <ImageButton
+                android:id="@+id/prevDate"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/ic_media_previous"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Previous day"/>
 
+            <TextView
+                android:id="@+id/currentDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="February 17, 2024"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center"/>
+
+            <ImageButton
+                android:id="@+id/nextDate"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@android:drawable/ic_media_next"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Next day"/>
+        </LinearLayout>
+
+        <!-- Time Slots -->
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/timeSlotsContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"
+                android:orientation="horizontal">
+                <!-- Time slots will be added programmatically -->
+            </LinearLayout>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <!-- Main Schedule ScrollView -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_below="@id/toggleGroup"
+        android:layout_below="@id/dailyCalendar"
         android:layout_above="@id/bottomNavigation"
         android:layout_marginTop="16dp"
-        android:contentDescription="Scrollable schedule for shifts" >
+        android:background="@android:color/white"
+        android:elevation="2dp">
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -71,9 +141,10 @@
 
             <LinearLayout
                 android:id="@+id/timeColumn"
-                android:layout_width="50dp"
+                android:layout_width="60dp"
                 android:layout_height="match_parent"
-                android:orientation="vertical"/>
+                android:orientation="vertical"
+                android:background="@android:color/white"/>
 
             <LinearLayout
                 android:id="@+id/shiftsContainer"
@@ -84,37 +155,50 @@
         </RelativeLayout>
     </ScrollView>
 
+    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:padding="8dp"
+        android:elevation="4dp"
+        android:background="@android:color/white">
 
         <Button
             android:id="@+id/btnPaySlip"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="#1E293B"
             android:layout_weight="1"
-            android:text="Pay Slip" />
+            android:layout_marginHorizontal="4dp"
+            android:backgroundTint="#1E293B"
+            android:textColor="@android:color/white"
+            android:text="Pay Slip"
+            android:elevation="2dp"/>
 
         <Button
             android:id="@+id/btnSchedule"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="#0F766E"
             android:layout_weight="1"
-            android:text="Schedule" />
+            android:layout_marginHorizontal="4dp"
+            android:backgroundTint="#0F766E"
+            android:textColor="@android:color/white"
+            android:text="Schedule"
+            android:elevation="2dp"/>
 
         <Button
             android:id="@+id/btnPersonalInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:backgroundTint="#D97706"
             android:layout_weight="1"
-            android:text="Personal Info" />
+            android:layout_marginHorizontal="4dp"
+            android:backgroundTint="#D97706"
+            android:textColor="@android:color/white"
+            android:text="Personal Info"
+            android:elevation="2dp"/>
     </LinearLayout>
 
 </RelativeLayout>
