@@ -5,7 +5,6 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Top Bar with Toggle and Action Buttons -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -61,7 +60,6 @@
             android:contentDescription="Add a new shift"/>
     </LinearLayout>
 
-    <!-- Daily Calendar Section -->
     <LinearLayout
         android:id="@+id/dailyCalendar"
         android:layout_width="match_parent"
@@ -73,7 +71,6 @@
         android:elevation="2dp"
         android:padding="8dp">
 
-        <!-- Date Navigation -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -108,7 +105,6 @@
                 android:contentDescription="Next day"/>
         </LinearLayout>
 
-        <!-- Time Slots -->
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -119,12 +115,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="100dp"
                 android:orientation="horizontal">
-                <!-- Time slots will be added programmatically -->
             </LinearLayout>
         </HorizontalScrollView>
     </LinearLayout>
 
-    <!-- Main Schedule ScrollView -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -155,7 +149,6 @@
         </RelativeLayout>
     </ScrollView>
 
-    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

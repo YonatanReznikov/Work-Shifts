@@ -53,7 +53,6 @@
             android:contentDescription="Next Month" />
     </LinearLayout>
 
-    <!-- Horizontal Date Scroll -->
     <HorizontalScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -129,7 +128,6 @@
             android:layout_marginStart="8dp"/>
     </LinearLayout>
 
-    <!-- Upload Documents Button -->
     <TextView
         android:id="@+id/uploadDocuments"
         android:layout_width="wrap_content"
