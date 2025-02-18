@@ -28,23 +28,25 @@ public class HomePageFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.home_page, container, false);
+        return inflater.inflate(R.layout.home_page, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
 
         NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
 
-        // Find buttons
         infoBtn = view.findViewById(R.id.btnPersonalInfo);
         paySlipBtn = view.findViewById(R.id.btnPaySlip);
         myShiftBtn = view.findViewById(R.id.myShifts);
         addShiftBtn = view.findViewById(R.id.addShift);
         removeShiftBtn = view.findViewById(R.id.removeShift);
 
-        // Set click listeners
         infoBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_personalInfoFrag));
         paySlipBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_paySlipFrag));
         myShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_myShiftFrag));
         addShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_addShiftFrag));
         removeShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_deleteShiftFrag));
-        return view;
     }
 }

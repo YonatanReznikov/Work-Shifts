@@ -59,18 +59,7 @@
             android:padding="8dp"
             android:contentDescription="Add a new shift"/>
     </LinearLayout>
-
-    <!-- Add Navigation Host Fragment here -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/nav_host_fragment"
-        android:name="androidx.navigation.fragment.NavHostFragment"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_below="@id/topBar"
-        android:layout_above="@id/bottomNavigation"
-        app:defaultNavHost="true"
-        app:navGraph="@navigation/main_nav_graph"/>
-
+    
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
