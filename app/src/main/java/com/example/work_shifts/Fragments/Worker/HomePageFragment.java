@@ -22,6 +22,8 @@ public class HomePageFragment extends Fragment {
     private Button paySlipBtn;
     private Button myShiftBtn;
     private ImageButton addShiftBtn;
+    private ImageButton removeShiftBtn;
+
 
     @Nullable
     @Override
@@ -29,18 +31,17 @@ public class HomePageFragment extends Fragment {
         View view = inflater.inflate(R.layout.home_page, container, false);
 
         infoBtn = view.findViewById(R.id.btnPersonalInfo);
-        scheduleBtn = view.findViewById(R.id.btnSchedule);
         paySlipBtn = view.findViewById(R.id.btnPaySlip);
         myShiftBtn = view.findViewById(R.id.myShifts);
         addShiftBtn = view.findViewById(R.id.addShift);
-
+        removeShiftBtn= view.findViewById(R.id.removeShift);
         NavController navController = Navigation.findNavController(requireActivity(), R.id.main_nav_graph);
 
         infoBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_personalInfoFrag));
         paySlipBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_paySlipFrag));
         myShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_myShiftFrag));
         addShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_addShiftFrag));
-
+        removeShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_deleteShiftFrag));
         return view;
     }
 }

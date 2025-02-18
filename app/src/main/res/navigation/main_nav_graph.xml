@@ -21,6 +21,9 @@
         <action
             android:id="@+id/action_homePageFragment_to_addShiftFrag"
             app:destination="@id/addShiftFrag" />
+        <action
+            android:id="@+id/action_homePageFragment_to_deleteShiftFrag"
+            app:destination="@id/deleteShiftFrag" />
     </fragment>
 
     <fragment
