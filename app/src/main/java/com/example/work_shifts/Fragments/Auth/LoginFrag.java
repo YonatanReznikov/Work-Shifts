@@ -79,7 +79,7 @@ public class LoginFrag extends Fragment {
 
     // Login method
     private void login() {
-        String email = emailInput.getText().toString().trim();
+        String email = emailInput.getText().toString().trim().toLowerCase();
         String password = passwordInput.getText().toString().trim();
 
         // Validate email

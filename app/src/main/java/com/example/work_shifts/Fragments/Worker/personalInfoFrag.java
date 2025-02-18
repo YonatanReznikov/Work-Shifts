@@ -1,7 +1,6 @@
 package com.example.work_shifts.Fragments.Worker;
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -49,11 +48,6 @@ public class personalInfoFrag extends Fragment {
         FirebaseUser user = mAuth.getCurrentUser();
 
         if (user != null) {
-            String userId = user.getUid();
-
-            databaseReference = FirebaseDatabase.getInstance().getReference()
-                    .child("users").child(userId);
-
             fetchUserData();
         } else {
             Toast.makeText(getContext(), "No logged-in user found", Toast.LENGTH_SHORT).show();
@@ -63,35 +57,55 @@ public class personalInfoFrag extends Fragment {
     }
 
     private void fetchUserData() {
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+
+        final String userEmail = user.getEmail();
+        if (userEmail == null) return;
+
+        final String lowerCaseEmail = userEmail.toLowerCase();
+
+        DatabaseReference workIDsRef = FirebaseDatabase.getInstance().getReference("workIDs");
+        workIDsRef.keepSynced(true);
+
+        workIDsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                if (snapshot.exists()) {
-                    String companyName = snapshot.child("companyName").getValue(String.class);
-                    String email = snapshot.child("email").getValue(String.class);
-                    String phone = snapshot.child("phone").getValue(String.class);
+            public void onDataChange(@NonNull DataSnapshot workIdsSnapshot) {
+                if (!workIdsSnapshot.exists()) return;
 
-                    Log.d("FirebaseData", "Company: " + companyName);
-                    Log.d("FirebaseData", "Email: " + email);
-                    Log.d("FirebaseData", "Phone: " + phone);
+                for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
+                    String workId = workIdEntry.getKey();
+                    DatabaseReference usersRef = workIDsRef.child(workId).child("users");
 
-                    // ✅ Ensure views are not null before setting text
-                    if (companyInput != null) companyInput.setText(companyName);
-                    if (emailField != null) emailField.setText(email);
-                    if (phoneField != null) phoneField.setText(phone);
-                    if (userGreeting != null)
-                        userGreeting.setText("Hey, " + (email != null ? email.split("@")[0] : "User") + "!");
-                } else {
-                    Log.e("FirebaseData", "No data found for this user.");
+                    usersRef.orderByChild("email").equalTo(lowerCaseEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (!snapshot.exists()) return;
+
+                            for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                String email = userSnapshot.child("email").getValue(String.class);
+                                String phone = userSnapshot.child("phone").getValue(String.class);
+                                String companyName = workIdsSnapshot.child(workId).child("companyName").getValue(String.class);
+
+                                if (emailField != null) emailField.setText(email);
+                                if (phoneField != null) phoneField.setText(phone != null ? phone : "");
+                                if (companyInput != null) companyInput.setText(companyName != null ? companyName : "");
+                                if (userGreeting != null) {
+                                    userGreeting.setText("Hey, " + email.split("@")[0] + "!");
+                                }
+                                return;
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {}
+                    });
                 }
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("FirebaseError", "Error fetching data: " + error.getMessage());
-            }
+            public void onCancelled(@NonNull DatabaseError error) {}
         });
-
     }
 
     private void disableEditText(EditText editText) {
