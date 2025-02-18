@@ -17,13 +17,8 @@ import com.example.work_shifts.R;
 
 public class HomePageFragment extends Fragment {
 
-    private Button infoBtn;
-    private Button scheduleBtn;
-    private Button paySlipBtn;
-    private Button myShiftBtn;
-    private ImageButton addShiftBtn;
-    private ImageButton removeShiftBtn;
-
+    private Button infoBtn, paySlipBtn, myShiftBtn;
+    private ImageButton addShiftBtn, removeShiftBtn;
 
     @Nullable
     @Override
@@ -35,7 +30,7 @@ public class HomePageFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
+        NavController navController = Navigation.findNavController(view);
 
         infoBtn = view.findViewById(R.id.btnPersonalInfo);
         paySlipBtn = view.findViewById(R.id.btnPaySlip);

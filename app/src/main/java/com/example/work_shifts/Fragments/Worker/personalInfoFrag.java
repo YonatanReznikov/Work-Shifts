@@ -40,7 +40,6 @@ public class personalInfoFrag extends Fragment {
         phoneField = view.findViewById(R.id.phoneField);
         totalHoursInput = view.findViewById(R.id.totalHoursInput);
 
-        // Disable input fields
         disableEditText(companyInput);
         disableEditText(emailField);
         disableEditText(phoneField);
@@ -51,7 +50,6 @@ public class personalInfoFrag extends Fragment {
 
         if (user != null) {
             String userId = user.getUid();
-            userIdText.setText("User ID: " + userId);
 
             databaseReference = FirebaseDatabase.getInstance().getReference()
                     .child("users").child(userId);
@@ -77,10 +75,12 @@ public class personalInfoFrag extends Fragment {
                     Log.d("FirebaseData", "Email: " + email);
                     Log.d("FirebaseData", "Phone: " + phone);
 
-                    companyInput.setText(companyName);
-                    emailField.setText(email);
-                    phoneField.setText(phone);
-                    userGreeting.setText("Hey, " + (email != null ? email.split("@")[0] : "User") + "!");
+                    // ✅ Ensure views are not null before setting text
+                    if (companyInput != null) companyInput.setText(companyName);
+                    if (emailField != null) emailField.setText(email);
+                    if (phoneField != null) phoneField.setText(phone);
+                    if (userGreeting != null)
+                        userGreeting.setText("Hey, " + (email != null ? email.split("@")[0] : "User") + "!");
                 } else {
                     Log.e("FirebaseData", "No data found for this user.");
                 }
