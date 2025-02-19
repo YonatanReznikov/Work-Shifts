@@ -191,6 +191,7 @@ public class RegisterFrag extends Fragment {
                 Map<String, String> userDetails = new HashMap<>();
                 userDetails.put("email", lowerEmail);
                 userDetails.put("phone", phone);
+                userDetails.put("totalHours", "0");
                 userDetails.put("isAdmin", String.valueOf(false));
 
                 DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users").push();

@@ -39,7 +39,7 @@ public class HomePageFragment extends Fragment {
         removeShiftBtn = view.findViewById(R.id.removeShift);
 
         infoBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_personalInfoFrag));
-        paySlipBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_paySlipFrag));
+        paySlipBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_showFrag));
         myShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_myShiftFrag));
         addShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_addShiftFrag));
         removeShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_deleteShiftFrag));

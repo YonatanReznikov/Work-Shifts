@@ -10,9 +10,6 @@
         tools:layout="@layout/home_page"
         android:label="HomePageFragment" >
         <action
-            android:id="@+id/action_homePageFragment_to_paySlipFrag"
-            app:destination="@id/paySlipFrag" />
-        <action
             android:id="@+id/action_homePageFragment_to_personalInfoFrag"
             app:destination="@id/personalInfoFrag" />
         <action
@@ -24,15 +21,8 @@
         <action
             android:id="@+id/action_homePageFragment_to_deleteShiftFrag"
             app:destination="@id/deleteShiftFrag" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/paySlipFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.paySlipFrag"
-        tools:layout="@layout/pay_slip"
-        android:label="paySlipFrag" >
         <action
-            android:id="@+id/action_paySlipFrag_to_showFrag"
+            android:id="@+id/action_homePageFragment_to_showFrag"
             app:destination="@id/showFrag" />
     </fragment>
 
@@ -63,7 +53,7 @@
 
     <fragment
         android:id="@+id/reportFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.reportFrag"
+        android:name="com.example.work_shifts.Fragments.Worker.ReportFragment"
         tools:layout="@layout/add_request"
         android:label="reportFrag" />
 

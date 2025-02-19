@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -11,6 +12,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.Navigation;
+
 import com.example.work_shifts.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -23,9 +26,8 @@ import com.google.firebase.database.ValueEventListener;
 public class personalInfoFrag extends Fragment {
 
     private EditText companyInput, emailField, phoneField, totalHoursInput;
-    private TextView userGreeting, userIdText;
-    private ImageView backgroundImage;
-    private DatabaseReference databaseReference;
+    private TextView userGreeting;
+    private Button updateInfoButton, reportShiftButton;
     private FirebaseAuth mAuth;
 
     @Nullable
@@ -38,6 +40,8 @@ public class personalInfoFrag extends Fragment {
         emailField = view.findViewById(R.id.emailField);
         phoneField = view.findViewById(R.id.phoneField);
         totalHoursInput = view.findViewById(R.id.totalHoursInput);
+        updateInfoButton = view.findViewById(R.id.updateInfoButton);
+        reportShiftButton = view.findViewById(R.id.reportShiftButton);
 
         disableEditText(companyInput);
         disableEditText(emailField);
@@ -52,7 +56,9 @@ public class personalInfoFrag extends Fragment {
         } else {
             Toast.makeText(getContext(), "No logged-in user found", Toast.LENGTH_SHORT).show();
         }
+        updateInfoButton.setOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.action_personalInfoFrag_to_updateInfoFrag));
 
+        reportShiftButton.setOnClickListener(v -> Navigation.findNavController(view).navigate(R.id.action_personalInfoFrag_to_reportFrag));
         return view;
     }
 
@@ -86,6 +92,7 @@ public class personalInfoFrag extends Fragment {
                                 String email = userSnapshot.child("email").getValue(String.class);
                                 String phone = userSnapshot.child("phone").getValue(String.class);
                                 String companyName = workIdsSnapshot.child(workId).child("companyName").getValue(String.class);
+                                String hours = userSnapshot.child("totalHours").getValue(String.class);
 
                                 if (emailField != null) emailField.setText(email);
                                 if (phoneField != null) phoneField.setText(phone != null ? phone : "");
@@ -93,6 +100,7 @@ public class personalInfoFrag extends Fragment {
                                 if (userGreeting != null) {
                                     userGreeting.setText("Hey, " + email.split("@")[0] + "!");
                                 }
+                                if (totalHoursInput != null) totalHoursInput.setText(hours);
                                 return;
                             }
                         }

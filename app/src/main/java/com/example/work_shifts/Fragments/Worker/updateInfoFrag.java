@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -27,6 +28,7 @@ public class updateInfoFrag extends Fragment {
 
     private EditText emailUpdate, phoneUpdate;
     private Button confirmButton;
+    private ProgressBar progressBar;
 
     private FirebaseAuth auth;
     private DatabaseReference databaseReference;
@@ -42,13 +44,17 @@ public class updateInfoFrag extends Fragment {
         emailUpdate = view.findViewById(R.id.emailUpdate);
         phoneUpdate = view.findViewById(R.id.phoneUpdate);
         confirmButton = view.findViewById(R.id.confirm);
+        progressBar = new ProgressBar(getActivity());
+        progressBar.setVisibility(View.GONE);
 
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
 
         confirmButton.setOnClickListener(v -> {
             if (user != null) {
-                findUserWorkID(() -> updateUserInfo()); // Ensures update runs after Firebase finds the user
+                confirmButton.setEnabled(false);
+                progressBar.setVisibility(View.VISIBLE);
+                findUserWorkID(this::updateUserInfo);
             } else {
                 Toast.makeText(getActivity(), "User is not logged in", Toast.LENGTH_SHORT).show();
             }
@@ -57,7 +63,6 @@ public class updateInfoFrag extends Fragment {
         return view;
     }
 
-    // Step 1: Search for the user in all work IDs before updating
     private void findUserWorkID(Runnable onComplete) {
         DatabaseReference workRef = FirebaseDatabase.getInstance().getReference("workIDs");
 
@@ -89,20 +94,25 @@ public class updateInfoFrag extends Fragment {
                 if (workId != null && userKey != null) {
                     onComplete.run();
                 } else {
+                    confirmButton.setEnabled(true);
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(getActivity(), "User not found", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
+                confirmButton.setEnabled(true);
+                progressBar.setVisibility(View.GONE);
                 Log.e("FirebaseError", "Error fetching work ID", error.toException());
             }
         });
     }
 
-    // Step 2: Update user info in Firebase Authentication & Realtime Database
     private void updateUserInfo() {
         if (workId == null || userKey == null) {
+            confirmButton.setEnabled(true);
+            progressBar.setVisibility(View.GONE);
             Toast.makeText(getActivity(), "User not found in database", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -111,6 +121,8 @@ public class updateInfoFrag extends Fragment {
         String newPhone = phoneUpdate.getText().toString().trim();
 
         if (TextUtils.isEmpty(newEmail) && TextUtils.isEmpty(newPhone)) {
+            confirmButton.setEnabled(true);
+            progressBar.setVisibility(View.GONE);
             Toast.makeText(getActivity(), "Please enter at least one field", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -121,12 +133,11 @@ public class updateInfoFrag extends Fragment {
                 .child("users")
                 .child(userKey);
 
-        // Update Email in Firebase Authentication
-        if (!TextUtils.isEmpty(newEmail)) {
-            user.updateEmail(newEmail).addOnCompleteListener(task -> {
+        if (!TextUtils.isEmpty(newEmail) && !newEmail.equals(user.getEmail())) {
+            user.verifyBeforeUpdateEmail(newEmail).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
                     userRef.child("email").setValue(newEmail);
-                    Toast.makeText(getActivity(), "Email updated", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Email updated successfully", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getActivity(), "Failed to update email: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     Log.e("FirebaseError", "Email Update Error", task.getException());
@@ -134,15 +145,17 @@ public class updateInfoFrag extends Fragment {
             });
         }
 
-        // Update Phone Number in Firebase Database
         if (!TextUtils.isEmpty(newPhone)) {
             userRef.child("phone").setValue(newPhone).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Toast.makeText(getActivity(), "Phone number updated", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Phone number updated successfully", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getActivity(), "Failed to update phone number", Toast.LENGTH_SHORT).show();
                 }
             });
         }
+
+        confirmButton.setEnabled(true);
+        progressBar.setVisibility(View.GONE);
     }
 }
