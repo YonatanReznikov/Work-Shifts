@@ -1,30 +1,37 @@
 package com.example.work_shifts.Fragments.Worker;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.fragment.app.FragmentManager;
 import com.example.work_shifts.R;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Locale;
 
 public class ReportFragment extends Fragment {
 
-    private TextView monthTextView;
-    private Button prevMonthButton, nextMonthButton, reportButton;
-    private RecyclerView daysRecyclerView;
+    private static final int PICK_FILE_REQUEST = 1;
+
+    private TextView monthTextView, uploadTextView;
+    private Button prevMonthButton, nextMonthButton, reportButton, uploadButton;
     private Spinner startDateSpinner, endDateSpinner, reportSpinner;
     private Calendar calendar;
-    private DaysAdapter daysAdapter;
+    private Uri selectedFileUri = null;
 
     private static final String[] MONTHS = {
             "January", "February", "March", "April", "May", "June",
@@ -39,11 +46,12 @@ public class ReportFragment extends Fragment {
         monthTextView = view.findViewById(R.id.monthTextView);
         prevMonthButton = view.findViewById(R.id.prevMonthButton);
         nextMonthButton = view.findViewById(R.id.nextMonthButton);
-        daysRecyclerView = view.findViewById(R.id.daysRecyclerView);
         startDateSpinner = view.findViewById(R.id.startDateSpinner);
         endDateSpinner = view.findViewById(R.id.endDateSpinner);
         reportSpinner = view.findViewById(R.id.reportSpinner);
         reportButton = view.findViewById(R.id.reportButton);
+        uploadButton = view.findViewById(R.id.uploadButton);
+        uploadTextView = view.findViewById(R.id.uploadTextView);
 
         calendar = Calendar.getInstance();
         updateMonthDisplay();
@@ -51,37 +59,87 @@ public class ReportFragment extends Fragment {
         prevMonthButton.setOnClickListener(v -> changeMonth(-1));
         nextMonthButton.setOnClickListener(v -> changeMonth(1));
 
-        daysRecyclerView.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
-        daysAdapter = new DaysAdapter(getDaysOfMonth());
-        daysRecyclerView.setAdapter(daysAdapter);
-
         setupSpinners();
+
+        uploadButton.setOnClickListener(v -> openFilePicker());
+        reportButton.setOnClickListener(v -> submitReport());
+        reportButton.setEnabled(false);
 
         return view;
     }
 
     private void updateMonthDisplay() {
         monthTextView.setText(MONTHS[calendar.get(Calendar.MONTH)]);
+        updateDateSpinners();
     }
-
     private void changeMonth(int offset) {
         calendar.add(Calendar.MONTH, offset);
         updateMonthDisplay();
-        daysAdapter.updateDays(getDaysOfMonth());
     }
+    private void updateDateSpinners() {
+        List<String> dateOptions = getDatesForCurrentMonth();
 
-    private List<String> getDaysOfMonth() {
-        List<String> days = new ArrayList<>();
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, dateOptions);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        startDateSpinner.setAdapter(adapter);
+        endDateSpinner.setAdapter(adapter);
+    }
+    private List<String> getDatesForCurrentMonth() {
+        List<String> dateList = new ArrayList<>();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
         int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
-        for (int i = 1; i <= daysInMonth; i++) {
-            days.add(String.valueOf(i));
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("d/M/yy", Locale.US);
+
+        for (int day = 1; day <= daysInMonth; day++) {
+            Calendar date = Calendar.getInstance();
+            date.set(year, month, day);
+            dateList.add(dateFormat.format(date.getTime()));
         }
-        return days;
+        return dateList;
     }
 
     private void setupSpinners() {
-        setupSpinner(startDateSpinner, new String[]{"1/1/25", "2/1/25", "3/1/25"});
-        setupSpinner(endDateSpinner, new String[]{"3/1/25", "4/1/25", "5/1/25"});
-        setupSpinner(reportSpinner, new String[]{"Sick", ",Military", "Other"});
+        updateDateSpinners();
+        setupSpinner(reportSpinner, new String[]{"Sick", "Military", "Other"});
+    }
+
+    private void setupSpinner(Spinner spinner, String[] items) {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, items);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+    }
+
+    private void openFilePicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(Intent.createChooser(intent, "Select a document"), PICK_FILE_REQUEST);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == PICK_FILE_REQUEST && resultCode == Activity.RESULT_OK && data != null) {
+            selectedFileUri = data.getData();
+
+            if (selectedFileUri != null) {
+                uploadTextView.setText("File Selected: " + selectedFileUri.getLastPathSegment());
+                reportButton.setEnabled(true);
+                Toast.makeText(getContext(), "File selected successfully!", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    /** Handles report submission */
+    private void submitReport() {
+        if (selectedFileUri != null) {
+            Toast.makeText(getContext(), "Uploaded Successfully!", Toast.LENGTH_SHORT).show();
+            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+            fragmentManager.popBackStack();
+        }
     }
 }
