@@ -1,10 +1,10 @@
 package com.example.work_shifts.Fragments.Worker;
 
 import android.graphics.Color;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -14,15 +14,12 @@ import com.example.work_shifts.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHolder> {
     private List<Shift> shiftList;
     private String today;
-    private Set<String> displayedDays = new HashSet<>();
 
     public ShiftAdapter(List<Shift> shiftList) {
         this.shiftList = shiftList;
@@ -40,27 +37,21 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
     public void onBindViewHolder(@NonNull ShiftViewHolder holder, int position) {
         Shift shift = shiftList.get(position);
 
-        // **Show the day header only once**
-        if (!displayedDays.contains(shift.getDay())) {
+        // Show the day header only if it's the first occurrence of that day
+        if (position == 0 || !shift.getDay().equals(shiftList.get(position - 1).getDay())) {
             holder.dayTextView.setVisibility(View.VISIBLE);
             holder.dayTextView.setText(shift.getDay());
-            displayedDays.add(shift.getDay());
         } else {
             holder.dayTextView.setVisibility(View.GONE);
         }
 
-        // **Show shift details**
-        if (!shift.getTime().equals("No Shift")) {
-            holder.timeTextView.setText(shift.getTime());
-            holder.workerTextView.setText(shift.getWorkerName());
-        } else {
-            holder.timeTextView.setText("No Shift");
-            holder.workerTextView.setText("");
-        }
+        // Display shift details
+        holder.timeTextView.setText(shift.getTime());
+        holder.workerTextView.setText(shift.getWorkerName());
 
-        // **Highlight today's shifts**
+        // Highlight today's shifts
         if (shift.getDay().equals(today)) {
-            holder.itemView.setBackgroundColor(Color.parseColor("#FFD700"));
+            holder.itemView.setBackgroundColor(Color.parseColor("#FFD700")); // Gold for highlighting
         } else {
             holder.itemView.setBackgroundColor(Color.WHITE);
         }
@@ -73,8 +64,8 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
 
     public void updateShifts(List<Shift> newShifts) {
         this.shiftList = newShifts;
-        displayedDays.clear(); // Reset displayed days to avoid duplicates
         notifyDataSetChanged();
+        Log.d("ShiftAdapter", "Shifts updated. New count: " + shiftList.size());
     }
 
     static class ShiftViewHolder extends RecyclerView.ViewHolder {

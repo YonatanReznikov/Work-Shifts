@@ -15,6 +15,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.work_shifts.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
@@ -29,12 +30,9 @@ import com.google.firebase.database.ValueEventListener;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 public class HomePageFragment extends Fragment {
 
@@ -95,22 +93,14 @@ public class HomePageFragment extends Fragment {
         removeShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_deleteShiftFrag));
 
         toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            Log.d("ShiftDebug", "Button clicked. CheckedId: " + checkedId + ", isChecked: " + isChecked);
-
             if (isChecked) {
                 if (checkedId == R.id.schedule) {
                     showingAllShifts = true;
-                    Log.d("ShiftDebug", "Displaying all shifts: " + allShifts.size());
                     shiftAdapter.updateShifts(allShifts);
                 } else if (checkedId == R.id.myShifts) {
                     showingAllShifts = false;
-                    Log.d("ShiftDebug", "Displaying my shifts. User shifts count: " + userShifts.size());
-
-                    if (userShifts.isEmpty()) {
-                        Log.d("ShiftDebug", "No shifts found for this user.");
-                    } else {
-                        shiftAdapter.updateShifts(userShifts);
-                    }
+                    Log.d("ShiftDebug", "Switching to My Shifts view. User shifts count: " + userShifts.size());
+                    shiftAdapter.updateShifts(userShifts);
                 }
             }
         });
@@ -125,13 +115,15 @@ public class HomePageFragment extends Fragment {
                 allShifts.clear();
                 userShifts.clear();
 
-                if (currentUser == null) return;
-                String userId = currentUser.getUid(); // Get current user's ID
+                if (currentUser == null) {
+                    Log.e("ShiftDebug", "Current user is null!");
+                    return;
+                }
+
+                String userId = currentUser.getUid();
+                Log.d("ShiftDebug", "User ID: " + userId);
 
                 String[] weekdays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
-                Calendar calendar = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("EEEE", Locale.getDefault());
-                String today = sdf.format(calendar.getTime());
 
                 LinkedHashMap<String, List<Shift>> shiftMap = new LinkedHashMap<>();
                 for (String day : weekdays) {
@@ -142,44 +134,48 @@ public class HomePageFragment extends Fragment {
                 for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
                     DataSnapshot shiftsSnapshot = workIdSnapshot.child("shifts");
 
+                    // Loop through each day of the week
                     for (String day : weekdays) {
                         DataSnapshot daySnapshot = shiftsSnapshot.child(day);
 
                         if (daySnapshot.exists() && daySnapshot.hasChildren()) {
                             for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
-                                String fTime = shiftSnapshot.child("fTime").getValue(String.class);
-                                String sTime = shiftSnapshot.child("sTime").getValue(String.class);
-                                String workerId = shiftSnapshot.child("workerId").getValue(String.class);
-                                String workerName = shiftSnapshot.child("workerName").getValue(String.class);
+                                // ✅ Correct way to access data inside `shiftId1`, `shiftId2`, etc.
+                                if (shiftSnapshot.hasChild("fTime") && shiftSnapshot.hasChild("sTime") && shiftSnapshot.hasChild("workerId")) {
+                                    String fTime = shiftSnapshot.child("fTime").getValue(String.class);
+                                    String sTime = shiftSnapshot.child("sTime").getValue(String.class);
+                                    String workerId = shiftSnapshot.child("workerId").getValue(String.class);
+                                    String workerName = shiftSnapshot.child("workerName").getValue(String.class);
 
-                                // Skip invalid shifts
-                                if (fTime == null || fTime.isEmpty() || sTime == null || sTime.isEmpty() || workerId == null) {
-                                    continue;
-                                }
+                                    if (fTime == null || sTime == null || workerId == null) continue;
 
-                                Shift shift = new Shift(day, sTime + " - " + fTime, workerName);
-                                shiftMap.get(day).add(shift);
+                                    Shift shift = new Shift(day, sTime + " - " + fTime, workerName, workerId);
+                                    shiftMap.get(day).add(shift);
 
-                                // If the shift belongs to the logged-in user, add it to `userShifts`
-                                if (workerId.equals(userId)) {
-                                    userShifts.add(shift);
+                                    // ✅ Add shift to `userShifts` if it belongs to the logged-in user
+                                    if (workerId.equals(userId)) {
+                                        userShifts.add(shift);
+                                        Log.d("ShiftDebug", "Added user shift: " + sTime + " - " + fTime + " on " + day);
+                                    }
                                 }
                             }
                         }
                     }
                 }
 
-                // Populate allShifts list
+                // Populate `allShifts` list
                 for (String day : weekdays) {
                     List<Shift> shifts = shiftMap.get(day);
                     if (shifts.isEmpty()) {
-                        allShifts.add(new Shift(day, "No Shift", ""));
+                        allShifts.add(new Shift(day, "No Shift", "", ""));
                     } else {
                         allShifts.addAll(shifts);
                     }
                 }
 
-                // Initially show all shifts
+                Log.d("ShiftDebug", "Total user shifts: " + userShifts.size());
+
+                // ✅ Show all shifts initially
                 shiftAdapter.updateShifts(allShifts);
             }
 
@@ -189,4 +185,5 @@ public class HomePageFragment extends Fragment {
             }
         });
     }
+
 }
