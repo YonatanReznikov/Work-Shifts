@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    android:gravity="center_horizontal">
+    android:gravity="center_horizontal"
+    android:background="@android:color/white">
 
     <ImageView
         android:id="@+id/backgroundImage"
@@ -17,39 +18,37 @@
         android:layout_marginBottom="30dp"/>
 
     <LinearLayout
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center">
 
-        <ImageButton
-            android:id="@+id/prevMonth"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:minHeight="48dp"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_media_previous"
-            android:contentDescription="Previous Month" />
+        <Button
+            android:id="@+id/prevMonthButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="◀"
+            android:textSize="18sp"
+            android:backgroundTint="@color/blue"
+            android:background="@null"/>
 
         <TextView
             android:id="@+id/monthTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="January"
+            android:text=""
             android:textSize="20sp"
             android:textStyle="bold"
-            android:padding="16dp"/>
+            android:paddingHorizontal="12dp"/>
 
-        <ImageButton
-            android:id="@+id/nextMonth"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:minHeight="48dp"
-            android:padding="8dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_media_next"
-            android:contentDescription="Next Month" />
+        <Button
+            android:id="@+id/nextMonthButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="▶"
+            android:textSize="18sp"
+            android:backgroundTint="@color/blue"
+            android:background="@null"/>
     </LinearLayout>
 
     <HorizontalScrollView
