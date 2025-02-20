@@ -183,13 +183,15 @@ public class RegisterFrag extends Fragment {
     private void registerUser(String email, String workId, String companyName, String password, String phone, View view, EditText emailInput) {
         ProgressBar progressBar = view.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
+        String lowerEmail = email.toLowerCase();
 
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), task -> {
             progressBar.setVisibility(View.GONE);
             if (task.isSuccessful()) {
                 Map<String, String> userDetails = new HashMap<>();
-                userDetails.put("email", email);
+                userDetails.put("email", lowerEmail);
                 userDetails.put("phone", phone);
+                userDetails.put("totalHours", "0");
                 userDetails.put("isAdmin", String.valueOf(false));
 
                 DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users").push();

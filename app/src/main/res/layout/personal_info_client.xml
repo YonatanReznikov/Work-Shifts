@@ -48,8 +48,7 @@
             android:textSize="16sp"
             android:text=""
             android:focusable="false"
-            android:inputType="none"
-            android:hint="Company"/>
+            android:inputType="none" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -66,8 +65,7 @@
             android:textSize="16sp"
             android:text=""
             android:focusable="false"
-            android:inputType="none"
-            android:hint="Email"/>
+            android:inputType="none" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -84,8 +82,7 @@
             android:textSize="16sp"
             android:text=""
             android:focusable="false"
-            android:inputType="none"
-            android:hint="Phone"/>
+            android:inputType="none" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -102,8 +99,7 @@
             android:textSize="16sp"
             android:text=""
             android:focusable="false"
-            android:inputType="none"
-            android:hint="Total Hours"/>
+            android:inputType="none" />
 
     </LinearLayout>
 
