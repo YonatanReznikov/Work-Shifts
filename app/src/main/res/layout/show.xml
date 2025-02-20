@@ -11,8 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="232dp"
         android:scaleType="centerCrop"
-        android:src="@drawable/shift"
-        android:layout_marginTop="30dp"/>
+        android:src="@drawable/shift"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -35,6 +34,23 @@
                 android:minHeight="48dp"
                 android:text=""
                 android:hint="Company"
+                android:focusable="false"
+                android:inputType="none"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Name:"
+                android:textSize="16sp"/>
+            <EditText
+                android:id="@+id/nameField"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@android:color/darker_gray"
+                android:padding="8dp"
+                android:textSize="16sp"
+                android:minHeight="48dp"
+                android:text=""
+                android:hint="Name"
                 android:focusable="false"
                 android:inputType="none"/>
             <TextView

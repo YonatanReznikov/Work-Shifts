@@ -23,7 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class showFrag extends Fragment {
 
-    private EditText companyField, emailField, phoneField;
+    private EditText companyField, emailField, phoneField, nameField;
     private TextView totalHoursText, paycheckText, paycheckAfterTaxesText;
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
@@ -34,6 +34,7 @@ public class showFrag extends Fragment {
         View view = inflater.inflate(R.layout.show, container, false);
 
         companyField = view.findViewById(R.id.companyField);
+        nameField = view.findViewById(R.id.nameField);
         emailField = view.findViewById(R.id.emailField);
         phoneField = view.findViewById(R.id.phoneField);
         totalHoursText = view.findViewById(R.id.hours);
@@ -41,6 +42,7 @@ public class showFrag extends Fragment {
         paycheckAfterTaxesText = view.findViewById(R.id.paycheck);
 
         disableEditText(companyField);
+        disableEditText(nameField);
         disableEditText(emailField);
         disableEditText(phoneField);
 
@@ -86,6 +88,7 @@ public class showFrag extends Fragment {
                                 String email = userSnapshot.child("email").getValue(String.class);
                                 String phone = userSnapshot.child("phone").getValue(String.class);
                                 String companyName = workIdsSnapshot.child(workId).child("companyName").getValue(String.class);
+                                String name = userSnapshot.child("name").getValue(String.class);
                                 String totalHoursStr = userSnapshot.child("totalHours").getValue(String.class);
 
                                 int totalHours = Integer.parseInt(totalHoursStr);
@@ -95,6 +98,7 @@ public class showFrag extends Fragment {
                                 if (emailField != null) emailField.setText(email);
                                 if (phoneField != null) phoneField.setText(phone != null ? phone : "");
                                 if (companyField != null) companyField.setText(companyName != null ? companyName : "");
+                                if (nameField != null) nameField.setText(name != null ? name : "");
                                 if (totalHoursText != null) totalHoursText.setText("Total Hours: " + totalHours);
                                 if (paycheckText != null) paycheckText.setText("Paycheck: $" + paycheck);
                                 if (paycheckAfterTaxesText != null) paycheckAfterTaxesText.setText("Paycheck After Taxes: $" + paycheckAfterTaxes);

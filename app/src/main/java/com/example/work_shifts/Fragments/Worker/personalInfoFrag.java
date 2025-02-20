@@ -93,12 +93,12 @@ public class personalInfoFrag extends Fragment {
                                 String phone = userSnapshot.child("phone").getValue(String.class);
                                 String companyName = workIdsSnapshot.child(workId).child("companyName").getValue(String.class);
                                 String hours = userSnapshot.child("totalHours").getValue(String.class);
+                                String name = userSnapshot.child("name").getValue(String.class);
 
                                 if (emailField != null) emailField.setText(email);
                                 if (phoneField != null) phoneField.setText(phone != null ? phone : "");
                                 if (companyInput != null) companyInput.setText(companyName != null ? companyName : "");
-                                if (userGreeting != null) {
-                                    userGreeting.setText("Hey, " + email.split("@")[0] + "!");
+                                if (userGreeting != null && name != null) {userGreeting.setText("Hey, " + name + "!");
                                 }
                                 if (totalHoursInput != null) totalHoursInput.setText(hours);
                                 return;

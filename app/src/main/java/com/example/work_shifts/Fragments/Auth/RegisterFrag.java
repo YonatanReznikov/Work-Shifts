@@ -52,7 +52,7 @@ public class RegisterFrag extends Fragment {
     }
 
     private boolean isValidPhone(String phone) {
-        return phone.matches("\\d{10}");  // Ensures exactly 10 digits
+        return phone.matches("\\d{10}");
     }
 
     private boolean isValidPassword(String password) {
@@ -64,18 +64,19 @@ public class RegisterFrag extends Fragment {
 
     public void register(View view) {
         EditText workIdInput = view.findViewById(R.id.workID);
+        EditText nameInput = view.findViewById(R.id.name);
         EditText emailInput = view.findViewById(R.id.email);
         EditText passwordInput = view.findViewById(R.id.pass1);
         EditText rePasswordInput = view.findViewById(R.id.pass2);
         EditText phoneInput = view.findViewById(R.id.phone);
 
+        String name = nameInput.getText().toString().trim();
         String workId = workIdInput.getText().toString().trim();
         String email = emailInput.getText().toString().trim();
         String password = passwordInput.getText().toString().trim();
         String rePassword = rePasswordInput.getText().toString().trim();
         String phone = phoneInput.getText().toString().trim();
 
-        // Email validation
         if (email.isEmpty()) {
             emailInput.setError("Email is required");
             return;
@@ -84,7 +85,6 @@ public class RegisterFrag extends Fragment {
             return;
         }
 
-        // Password validation
         if (!isValidPassword(password)) {
             passwordInput.setError("Password must be 8+ chars, with upper, lower, and digit");
             return;
@@ -95,7 +95,6 @@ public class RegisterFrag extends Fragment {
             return;
         }
 
-        // Phone validation
         if (phone.isEmpty()) {
             phoneInput.setError("Phone number is required");
             return;
@@ -104,11 +103,10 @@ public class RegisterFrag extends Fragment {
             return;
         }
 
-        // Check if the phone number is already registered
-        checkPhoneUniqueness(workId, phone, email, password, view, emailInput, phoneInput);
+        checkPhoneUniqueness(workId, phone, name, email, password, view, emailInput, phoneInput);
     }
 
-    private void checkPhoneUniqueness(String workId, String phone, String email, String password, View view, EditText emailInput, EditText phoneInput) {
+    private void checkPhoneUniqueness(String workId, String phone, String name, String email, String password, View view, EditText emailInput, EditText phoneInput) {
         DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users");
 
         usersRef.orderByChild("phone").equalTo(phone).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -117,7 +115,7 @@ public class RegisterFrag extends Fragment {
                 if (snapshot.exists()) {
                     phoneInput.setError("Phone number is already registered!");
                 } else {
-                    validateWorkId(workId, email, password, phone, view, emailInput);
+                    validateWorkId(workId, email, name, password, phone, view, emailInput);
                 }
             }
 
@@ -128,7 +126,7 @@ public class RegisterFrag extends Fragment {
         });
     }
 
-    private void validateWorkId(String workId, String email, String password, String phone, View view, EditText emailInput) {
+    private void validateWorkId(String workId, String email, String name, String password, String phone, View view, EditText emailInput) {
         String companyName = getCompanyNameByWorkId(workId);
 
         if (companyName == null) {
@@ -146,13 +144,13 @@ public class RegisterFrag extends Fragment {
                     workIdDetails.put("companyName", companyName);
                     workIdRef.setValue(workIdDetails).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            registerUser(email, workId, companyName, password, phone, view, emailInput);
+                            registerUser(email, workId, name,companyName, password, phone, view, emailInput);
                         } else {
                             Toast.makeText(getActivity(), "Failed to create Work ID: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
                     });
                 } else {
-                    registerUser(email, workId, companyName, password, phone, view, emailInput);
+                    registerUser(email, workId, name, companyName, password, phone, view, emailInput);
                 }
             }
 
@@ -180,7 +178,7 @@ public class RegisterFrag extends Fragment {
         }
     }
 
-    private void registerUser(String email, String workId, String companyName, String password, String phone, View view, EditText emailInput) {
+    private void registerUser(String email, String workId, String name, String companyName, String password, String phone, View view, EditText emailInput) {
         ProgressBar progressBar = view.findViewById(R.id.progressBar);
         progressBar.setVisibility(View.VISIBLE);
         String lowerEmail = email.toLowerCase();
@@ -190,6 +188,7 @@ public class RegisterFrag extends Fragment {
             if (task.isSuccessful()) {
                 Map<String, String> userDetails = new HashMap<>();
                 userDetails.put("email", lowerEmail);
+                userDetails.put("name",name);
                 userDetails.put("phone", phone);
                 userDetails.put("totalHours", "0");
                 userDetails.put("isAdmin", String.valueOf(false));
