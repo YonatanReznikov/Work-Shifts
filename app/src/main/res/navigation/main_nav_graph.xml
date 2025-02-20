@@ -71,7 +71,7 @@
         android:id="@+id/addShiftFrag"
         android:name="com.example.work_shifts.Fragments.Worker.addShiftFrag"
         tools:layout="@layout/add_shift"
-        android:label="addShiftFrag" />
+        android:label="AddShiftFragment" />
 
     <fragment
         android:id="@+id/deleteShiftFrag"

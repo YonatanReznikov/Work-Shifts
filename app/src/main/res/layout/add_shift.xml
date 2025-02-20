@@ -132,16 +132,6 @@
             android:text="Add Shift"
             android:textSize="16sp"
             android:backgroundTint="@color/green"
-            android:textColor="@android:color/white"
-            android:layout_marginEnd="8dp"/>
-
-        <Button
-            android:id="@+id/submitShiftButton"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:text="Submit"
-            android:textSize="16sp"
-            android:backgroundTint="#000080"
             android:textColor="@android:color/white"/>
     </LinearLayout>
 

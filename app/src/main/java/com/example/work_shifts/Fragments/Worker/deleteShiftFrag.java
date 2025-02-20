@@ -5,7 +5,9 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,8 +17,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.work_shifts.R;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -30,6 +35,7 @@ public class deleteShiftFrag extends Fragment {
     private ScrollView dailyCalendar;
     private Calendar calendar;
     private DatabaseReference databaseReference;
+    private LinearLayout myShiftsContainer;
 
     @Nullable
     @Override
@@ -41,15 +47,16 @@ public class deleteShiftFrag extends Fragment {
         nextDate = view.findViewById(R.id.nextDate);
         deleteButton = view.findViewById(R.id.deleteButton);
         dailyCalendar = view.findViewById(R.id.dailyCalendar);
+        myShiftsContainer = view.findViewById(R.id.myShiftsContainer);
 
         calendar = Calendar.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("shifts");
+
         updateDateDisplay();
 
         prevDate.setOnClickListener(v -> changeDate(-1));
         nextDate.setOnClickListener(v -> changeDate(1));
-        deleteButton.setOnClickListener(v -> deleteShift());
-
-        databaseReference = FirebaseDatabase.getInstance().getReference("shifts");
+        deleteButton.setOnClickListener(v -> deleteSelectedShifts());
 
         return view;
     }
@@ -57,6 +64,7 @@ public class deleteShiftFrag extends Fragment {
     private void updateDateDisplay() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
         currentDate.setText(dateFormat.format(calendar.getTime()));
+        loadShifts();
     }
 
     private void changeDate(int offset) {
@@ -64,15 +72,48 @@ public class deleteShiftFrag extends Fragment {
         updateDateDisplay();
     }
 
-    private void deleteShift() {
-        String date = new SimpleDateFormat("d_M_yyyy", Locale.US).format(calendar.getTime());
-        databaseReference.child(date).removeValue()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(getContext(), "Shift deleted successfully!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(getContext(), "Failed to delete shift", Toast.LENGTH_SHORT).show();
-                    }
-                });
+    private void loadShifts() {
+        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.getTime());
+        databaseReference.child(date).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                myShiftsContainer.removeAllViews();
+                for (DataSnapshot shiftSnapshot : snapshot.getChildren()) {
+                    String shiftId = shiftSnapshot.getKey();
+                    String startTime = shiftSnapshot.child("startTime").getValue(String.class);
+                    String endTime = shiftSnapshot.child("endTime").getValue(String.class);
+                    String notes = shiftSnapshot.child("notes").getValue(String.class);
+
+                    CheckBox checkBox = new CheckBox(getContext());
+                    checkBox.setText(String.format(Locale.US, "Shift: %s - %s\nNotes: %s", startTime, endTime, notes));
+                    checkBox.setTag(shiftId);
+                    myShiftsContainer.addView(checkBox);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Failed to load shifts", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void deleteSelectedShifts() {
+        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.getTime());
+        for (int i = 0; i < myShiftsContainer.getChildCount(); i++) {
+            CheckBox checkBox = (CheckBox) myShiftsContainer.getChildAt(i);
+            if (checkBox.isChecked()) {
+                String shiftId = (String) checkBox.getTag();
+                databaseReference.child(date).child(shiftId).removeValue()
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Toast.makeText(getContext(), "Shift deleted successfully", Toast.LENGTH_SHORT).show();
+                                loadShifts();
+                            } else {
+                                Toast.makeText(getContext(), "Failed to delete shift", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+            }
+        }
     }
 }

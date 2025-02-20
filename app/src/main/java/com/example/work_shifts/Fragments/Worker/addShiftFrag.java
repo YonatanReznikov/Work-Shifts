@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,19 +20,21 @@ import com.example.work_shifts.R;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-class AddShiftFragment extends Fragment {
+public class addShiftFrag extends Fragment {
 
     private TextView monthTextView;
     private Calendar calendar;
     private Spinner startTimeSpinner, endTimeSpinner;
-    private Button addShiftButton, submitShiftButton;
+    private Button addShiftButton;
     private EditText notesEditText;
     private DatabaseReference databaseReference;
+    private LinearLayout daysContainer;
 
     private static final String[] MONTHS = {
             "January", "February", "March", "April", "May", "June",
@@ -50,18 +53,14 @@ class AddShiftFragment extends Fragment {
         endTimeSpinner = view.findViewById(R.id.endTimeSpinner);
         notesEditText = view.findViewById(R.id.notesEditText);
         addShiftButton = view.findViewById(R.id.addShiftButton);
-        submitShiftButton = view.findViewById(R.id.submitShiftButton);
+        daysContainer = view.findViewById(R.id.daysContainer);
 
         calendar = Calendar.getInstance();
         updateMonthTextView();
 
         prevMonthButton.setOnClickListener(v -> changeMonth(-1));
         nextMonthButton.setOnClickListener(v -> changeMonth(1));
-        addShiftButton.setOnClickListener(v -> {
-            addShiftToDatabase();
-        });
-        submitShiftButton.setOnClickListener(v -> {
-        });
+        addShiftButton.setOnClickListener(v -> addShiftToDatabase());
 
         setupSpinners();
 
@@ -71,12 +70,35 @@ class AddShiftFragment extends Fragment {
     }
 
     private void updateMonthTextView() {
-        monthTextView.setText(MONTHS[calendar.get(Calendar.MONTH)]);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.US);
+        monthTextView.setText(dateFormat.format(calendar.getTime()));
+        updateDaysContainer();
     }
 
     private void changeMonth(int offset) {
         calendar.add(Calendar.MONTH, offset);
         updateMonthTextView();
+    }
+
+    private void updateDaysContainer() {
+        daysContainer.removeAllViews();
+
+        Calendar tempCalendar = (Calendar) calendar.clone();
+        tempCalendar.set(Calendar.DAY_OF_MONTH, 1);
+        int daysInMonth = tempCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+
+        for (int day = 1; day <= daysInMonth; day++) {
+            final int selectedDay = day; // make the day effectively final
+            Button dayButton = new Button(getContext());
+            dayButton.setText(String.valueOf(day));
+            dayButton.setOnClickListener(v -> onDaySelected(selectedDay));
+            daysContainer.addView(dayButton);
+        }
+    }
+
+    private void onDaySelected(int day) {
+        calendar.set(Calendar.DAY_OF_MONTH, day);
+        Toast.makeText(getContext(), "Selected day: " + day, Toast.LENGTH_SHORT).show();
     }
 
     private void setupSpinners() {
@@ -102,9 +124,15 @@ class AddShiftFragment extends Fragment {
         String startTime = startTimeSpinner.getSelectedItem().toString();
         String endTime = endTimeSpinner.getSelectedItem().toString();
         String notes = notesEditText.getText().toString();
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        String date = dateFormat.format(calendar.getTime());
+        SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
+        String timestamp = timestampFormat.format(Calendar.getInstance().getTime());
 
-        Shift shift = new Shift(startTime, endTime, notes);
-        databaseReference.push().setValue(shift)
+        Shift shift = new Shift(startTime, endTime, notes, date, timestamp);
+        DatabaseReference dateRef = databaseReference.child(date).push();
+
+        dateRef.setValue(shift)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(requireContext(), "Shift added successfully", Toast.LENGTH_SHORT).show();
@@ -118,14 +146,17 @@ class AddShiftFragment extends Fragment {
         public String startTime;
         public String endTime;
         public String notes;
+        public String date;
+        public String timestamp;
 
-        public Shift() {
-        }
+        public Shift() {}
 
-        public Shift(String startTime, String endTime, String notes) {
+        public Shift(String startTime, String endTime, String notes, String date, String timestamp) {
             this.startTime = startTime;
             this.endTime = endTime;
             this.notes = notes;
+            this.date = date;
+            this.timestamp = timestamp;
         }
     }
 }
