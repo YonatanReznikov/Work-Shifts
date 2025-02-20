@@ -68,25 +68,19 @@ public class HomePageFragment extends Fragment {
         removeShiftBtn = view.findViewById(R.id.removeShift);
         toggleGroup = view.findViewById(R.id.toggleGroup);
 
-        // Initialize RecyclerView
         shiftRecyclerView = view.findViewById(R.id.shiftRecyclerView);
         shiftRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        // Firebase setup
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        // Set adapter
         shiftAdapter = new ShiftAdapter(new ArrayList<>());
         shiftRecyclerView.setAdapter(shiftAdapter);
 
-        // Load shifts from Firebase
         loadShifts();
 
-        // Set default selection to "Schedule"
         scheduleBtn.setChecked(true);
         showingAllShifts = true;
 
-        // Button click listeners
         infoBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_personalInfoFrag));
         paySlipBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_showFrag));
         addShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_addShiftFrag));
@@ -130,17 +124,14 @@ public class HomePageFragment extends Fragment {
                     shiftMap.put(day, new ArrayList<>());
                 }
 
-                // Loop through each work ID (e.g., 101)
                 for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
                     DataSnapshot shiftsSnapshot = workIdSnapshot.child("shifts");
 
-                    // Loop through each day of the week
                     for (String day : weekdays) {
                         DataSnapshot daySnapshot = shiftsSnapshot.child(day);
 
                         if (daySnapshot.exists() && daySnapshot.hasChildren()) {
                             for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
-                                // ✅ Correct way to access data inside `shiftId1`, `shiftId2`, etc.
                                 if (shiftSnapshot.hasChild("fTime") && shiftSnapshot.hasChild("sTime") && shiftSnapshot.hasChild("workerId")) {
                                     String fTime = shiftSnapshot.child("fTime").getValue(String.class);
                                     String sTime = shiftSnapshot.child("sTime").getValue(String.class);
@@ -152,7 +143,6 @@ public class HomePageFragment extends Fragment {
                                     Shift shift = new Shift(day, sTime + " - " + fTime, workerName, workerId);
                                     shiftMap.get(day).add(shift);
 
-                                    // ✅ Add shift to `userShifts` if it belongs to the logged-in user
                                     if (workerId.equals(userId)) {
                                         userShifts.add(shift);
                                         Log.d("ShiftDebug", "Added user shift: " + sTime + " - " + fTime + " on " + day);
@@ -163,7 +153,6 @@ public class HomePageFragment extends Fragment {
                     }
                 }
 
-                // Populate `allShifts` list
                 for (String day : weekdays) {
                     List<Shift> shifts = shiftMap.get(day);
                     if (shifts.isEmpty()) {
@@ -175,7 +164,6 @@ public class HomePageFragment extends Fragment {
 
                 Log.d("ShiftDebug", "Total user shifts: " + userShifts.size());
 
-                // ✅ Show all shifts initially
                 shiftAdapter.updateShifts(allShifts);
             }
 
