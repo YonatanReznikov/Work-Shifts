@@ -17,6 +17,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.work_shifts.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,13 +31,16 @@ import java.util.Locale;
 
 public class deleteShiftFrag extends Fragment {
 
-    private TextView currentDate;
+    private TextView currentDate, currentDay;
     private ImageButton prevDate, nextDate;
     private Button deleteButton;
     private ScrollView dailyCalendar;
     private Calendar calendar;
     private DatabaseReference databaseReference;
     private LinearLayout myShiftsContainer;
+    private FirebaseAuth mAuth;
+    private String userId;
+    private String workId;
 
     @Nullable
     @Override
@@ -43,6 +48,7 @@ public class deleteShiftFrag extends Fragment {
         View view = inflater.inflate(R.layout.delete_shift, container, false);
 
         currentDate = view.findViewById(R.id.currentDate);
+        currentDay = view.findViewById(R.id.currentDay);
         prevDate = view.findViewById(R.id.prevDate);
         nextDate = view.findViewById(R.id.nextDate);
         deleteButton = view.findViewById(R.id.deleteButton);
@@ -50,8 +56,10 @@ public class deleteShiftFrag extends Fragment {
         myShiftsContainer = view.findViewById(R.id.myShiftsContainer);
 
         calendar = Calendar.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("shifts");
+        mAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
 
+        fetchUserData();
         updateDateDisplay();
 
         prevDate.setOnClickListener(v -> changeDate(-1));
@@ -61,9 +69,57 @@ public class deleteShiftFrag extends Fragment {
         return view;
     }
 
+    private void fetchUserData() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+
+        final String userEmail = user.getEmail();
+        if (userEmail == null) return;
+
+        final String lowerCaseEmail = userEmail.toLowerCase();
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot workIdsSnapshot) {
+                if (!workIdsSnapshot.exists()) return;
+
+                for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
+                    String currentWorkId = workIdEntry.getKey();
+                    DatabaseReference usersRef = databaseReference.child(currentWorkId).child("users");
+
+                    usersRef.orderByChild("email").equalTo(lowerCaseEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (!snapshot.exists()) return;
+
+                            for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                userId = userSnapshot.getKey();
+                                workId = currentWorkId;
+                                loadShifts();
+                                return;
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(getContext(), "Failed to retrieve user info", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Failed to retrieve work IDs", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
     private void updateDateDisplay() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
+        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
         currentDate.setText(dateFormat.format(calendar.getTime()));
+        currentDay.setText(dayFormat.format(calendar.getTime()));
         loadShifts();
     }
 
@@ -73,19 +129,20 @@ public class deleteShiftFrag extends Fragment {
     }
 
     private void loadShifts() {
-        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.getTime());
-        databaseReference.child(date).addListenerForSingleValueEvent(new ValueEventListener() {
+        if (userId == null || workId == null) return;
+
+        String dayOfWeek = new SimpleDateFormat("EEEE", Locale.US).format(calendar.getTime());
+        databaseReference.child(workId).child("shifts").child(dayOfWeek).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 myShiftsContainer.removeAllViews();
                 for (DataSnapshot shiftSnapshot : snapshot.getChildren()) {
                     String shiftId = shiftSnapshot.getKey();
-                    String startTime = shiftSnapshot.child("startTime").getValue(String.class);
-                    String endTime = shiftSnapshot.child("endTime").getValue(String.class);
-                    String notes = shiftSnapshot.child("notes").getValue(String.class);
+                    String startTime = shiftSnapshot.child("sTime").getValue(String.class);
+                    String endTime = shiftSnapshot.child("fTime").getValue(String.class);
 
                     CheckBox checkBox = new CheckBox(getContext());
-                    checkBox.setText(String.format(Locale.US, "Shift: %s - %s\nNotes: %s", startTime, endTime, notes));
+                    checkBox.setText(String.format(Locale.US, "Shift: %s - %s", startTime, endTime));
                     checkBox.setTag(shiftId);
                     myShiftsContainer.addView(checkBox);
                 }
@@ -99,12 +156,14 @@ public class deleteShiftFrag extends Fragment {
     }
 
     private void deleteSelectedShifts() {
-        String date = new SimpleDateFormat("yyyy-MM-dd", Locale.US).format(calendar.getTime());
+        if (userId == null || workId == null) return;
+
+        String dayOfWeek = new SimpleDateFormat("EEEE", Locale.US).format(calendar.getTime());
         for (int i = 0; i < myShiftsContainer.getChildCount(); i++) {
             CheckBox checkBox = (CheckBox) myShiftsContainer.getChildAt(i);
             if (checkBox.isChecked()) {
                 String shiftId = (String) checkBox.getTag();
-                databaseReference.child(date).child(shiftId).removeValue()
+                databaseReference.child(workId).child("shifts").child(dayOfWeek).child(shiftId).removeValue()
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 Toast.makeText(getContext(), "Shift deleted successfully", Toast.LENGTH_SHORT).show();

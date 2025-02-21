@@ -17,8 +17,13 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.work_shifts.R;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -29,24 +34,33 @@ import java.util.Locale;
 public class addShiftFrag extends Fragment {
 
     private TextView monthTextView;
+    private TextView selectedDateTextView;
     private Calendar calendar;
     private Spinner startTimeSpinner, endTimeSpinner;
     private Button addShiftButton;
     private EditText notesEditText;
     private DatabaseReference databaseReference;
     private LinearLayout daysContainer;
-
-    private static final String[] MONTHS = {
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-    };
+    private FirebaseAuth mAuth;
+    private String userId;
+    private String userName;
+    private String workId;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.add_shift, container, false);
 
+        // Initialize views
         monthTextView = view.findViewById(R.id.monthTextView);
+        selectedDateTextView = new TextView(getContext());
+        selectedDateTextView.setId(View.generateViewId());
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        layoutParams.setMargins(0, 16, 0, 16);
+        selectedDateTextView.setLayoutParams(layoutParams);
+        ((LinearLayout) view.findViewById(R.id.daysContainer)).addView(selectedDateTextView);
+
         Button prevMonthButton = view.findViewById(R.id.prevMonthButton);
         Button nextMonthButton = view.findViewById(R.id.nextMonthButton);
         startTimeSpinner = view.findViewById(R.id.startTimeSpinner);
@@ -64,9 +78,58 @@ public class addShiftFrag extends Fragment {
 
         setupSpinners();
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("shifts");
+        mAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
+
+        fetchUserData();
 
         return view;
+    }
+
+    private void fetchUserData() {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+
+        final String userEmail = user.getEmail();
+        if (userEmail == null) return;
+
+        final String lowerCaseEmail = userEmail.toLowerCase();
+
+        databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot workIdsSnapshot) {
+                if (!workIdsSnapshot.exists()) return;
+
+                for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
+                    String currentWorkId = workIdEntry.getKey();
+                    DatabaseReference usersRef = databaseReference.child(currentWorkId).child("users");
+
+                    usersRef.orderByChild("email").equalTo(lowerCaseEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapshot) {
+                            if (!snapshot.exists()) return;
+
+                            for (DataSnapshot userSnapshot : snapshot.getChildren()) {
+                                userId = userSnapshot.getKey();
+                                userName = userSnapshot.child("name").getValue(String.class);
+                                workId = currentWorkId;
+                                return;
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError error) {
+                            Toast.makeText(getContext(), "Failed to retrieve user info", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Toast.makeText(getContext(), "Failed to retrieve work IDs", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void updateMonthTextView() {
@@ -82,15 +145,20 @@ public class addShiftFrag extends Fragment {
 
     private void updateDaysContainer() {
         daysContainer.removeAllViews();
+        daysContainer.addView(selectedDateTextView);
 
         Calendar tempCalendar = (Calendar) calendar.clone();
         tempCalendar.set(Calendar.DAY_OF_MONTH, 1);
         int daysInMonth = tempCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         for (int day = 1; day <= daysInMonth; day++) {
-            final int selectedDay = day; // make the day effectively final
+            final int selectedDay = day;
             Button dayButton = new Button(getContext());
-            dayButton.setText(String.valueOf(day));
+            SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
+            tempCalendar.set(Calendar.DAY_OF_MONTH, day);
+            String dayName = dayFormat.format(tempCalendar.getTime());
+
+            dayButton.setText(String.format(Locale.US, "%d\n%s", day, dayName));
             dayButton.setOnClickListener(v -> onDaySelected(selectedDay));
             daysContainer.addView(dayButton);
         }
@@ -98,6 +166,9 @@ public class addShiftFrag extends Fragment {
 
     private void onDaySelected(int day) {
         calendar.set(Calendar.DAY_OF_MONTH, day);
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
+        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
+        selectedDateTextView.setText(String.format(Locale.US, "%s (%s)", dateFormat.format(calendar.getTime()), dayFormat.format(calendar.getTime())));
         Toast.makeText(getContext(), "Selected day: " + day, Toast.LENGTH_SHORT).show();
     }
 
@@ -121,21 +192,40 @@ public class addShiftFrag extends Fragment {
     }
 
     private void addShiftToDatabase() {
+        if (userId == null || userName == null || workId == null) {
+            Toast.makeText(requireContext(), "User data not loaded yet", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (selectedDateTextView.getText().toString().isEmpty()) {
+            Toast.makeText(requireContext(), "Please select a date first", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         String startTime = startTimeSpinner.getSelectedItem().toString();
         String endTime = endTimeSpinner.getSelectedItem().toString();
         String notes = notesEditText.getText().toString();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        String date = dateFormat.format(calendar.getTime());
-        SimpleDateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US);
-        String timestamp = timestampFormat.format(Calendar.getInstance().getTime());
 
-        Shift shift = new Shift(startTime, endTime, notes, date, timestamp);
-        DatabaseReference dateRef = databaseReference.child(date).push();
+        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
+        String dayOfWeek = dayFormat.format(calendar.getTime());
 
-        dateRef.setValue(shift)
+        Shift shift = new Shift();
+        shift.sTime = startTime;
+        shift.fTime = endTime;
+        shift.workerId = userId;
+        shift.workerName = userName;
+
+        DatabaseReference shiftRef = databaseReference
+                .child(workId)
+                .child("shifts")
+                .child(dayOfWeek)
+                .push();
+
+        shiftRef.setValue(shift)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         Toast.makeText(requireContext(), "Shift added successfully", Toast.LENGTH_SHORT).show();
+                        notesEditText.setText("");
                     } else {
                         Toast.makeText(requireContext(), "Failed to add shift", Toast.LENGTH_SHORT).show();
                     }
@@ -143,20 +233,11 @@ public class addShiftFrag extends Fragment {
     }
 
     public static class Shift {
-        public String startTime;
-        public String endTime;
-        public String notes;
-        public String date;
-        public String timestamp;
+        public String sTime;
+        public String fTime;
+        public String workerId;
+        public String workerName;
 
         public Shift() {}
-
-        public Shift(String startTime, String endTime, String notes, String date, String timestamp) {
-            this.startTime = startTime;
-            this.endTime = endTime;
-            this.notes = notes;
-            this.date = date;
-            this.timestamp = timestamp;
-        }
     }
 }
