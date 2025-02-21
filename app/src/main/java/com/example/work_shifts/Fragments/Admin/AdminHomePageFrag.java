@@ -138,7 +138,7 @@ public class AdminHomePageFrag extends Fragment {
 
                                     if (fTime == null || sTime == null || workerId == null) continue;
 
-                                    Shift shift = new Shift(day, sTime + " - " + fTime, workerName, workerId);
+                                    Shift shift = new Shift(day, sTime, fTime, workerName, workerId);
                                     shiftMap.get(day).add(shift);
 
                                     if (workerId.equals(userId)) {
@@ -154,7 +154,7 @@ public class AdminHomePageFrag extends Fragment {
                 for (String day : weekdays) {
                     List<Shift> shifts = shiftMap.get(day);
                     if (shifts.isEmpty()) {
-                        allShifts.add(new Shift(day, "No Shift", "", ""));
+                        allShifts.add(new Shift(day, "No Shift", "", "", ""));
                     } else {
                         allShifts.addAll(shifts);
                     }
