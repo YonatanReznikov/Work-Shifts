@@ -1,5 +1,6 @@
 package com.example.work_shifts.Fragments.Worker;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
@@ -8,7 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -18,15 +19,18 @@ import com.example.work_shifts.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
 public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHolder> {
     private List<Shift> shiftList;
     private final String today;
+    private final boolean isMyShifts; // ✅ Determines if "My Shifts" is active
 
-    public ShiftAdapter(List<Shift> shiftList) {
+    public ShiftAdapter(List<Shift> shiftList, boolean isMyShifts) {
         this.shiftList = shiftList;
+        this.isMyShifts = isMyShifts;
         this.today = getTodayName();
     }
 
@@ -41,7 +45,7 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
     public void onBindViewHolder(@NonNull ShiftViewHolder holder, int position) {
         Shift shift = shiftList.get(position);
 
-        // Show day header only if it's the first occurrence
+        // Show day header only if it's the first occurrence of the day
         if (position == 0 || !shift.getDay().equals(shiftList.get(position - 1).getDay())) {
             holder.dayTextView.setVisibility(View.VISIBLE);
             holder.dayTextView.setText(shift.getDay());
@@ -60,8 +64,16 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
             holder.itemView.setBackgroundColor(Color.WHITE); // Reset default color
         }
 
-        // Add Shift to Google Calendar
-        holder.addToCalendarBtn.setOnClickListener(v -> addShiftToCalendar(v, shift));
+        // Show "Add to Calendar" button only if in "My Shifts" mode
+        if (isMyShifts) {
+            holder.addToCalendarBtn.setVisibility(View.VISIBLE);
+            holder.addToCalendarBtn.setOnClickListener(v -> {
+                Log.d("ShiftAdapter", "🗓️ Adding Shift to Calendar: " + shift.getStartTime() + " - " + shift.getEndTime());
+                addShiftToCalendar(v.getContext(), shift);
+            });
+        } else {
+            holder.addToCalendarBtn.setVisibility(View.GONE);
+        }
     }
 
     @Override
@@ -77,7 +89,7 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
 
     static class ShiftViewHolder extends RecyclerView.ViewHolder {
         TextView dayTextView, timeTextView, workerTextView;
-        Button addToCalendarBtn;
+        ImageButton addToCalendarBtn;
 
         public ShiftViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -94,28 +106,50 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         return sdf.format(calendar.getTime());
     }
 
-    private void addShiftToCalendar(View view, Shift shift) {
-        Intent intent = new Intent(Intent.ACTION_INSERT);
-        intent.setData(Uri.parse("content://com.android.calendar/events"));
-        intent.putExtra(CalendarContract.Events.TITLE, "Work Shift");
-        intent.putExtra(CalendarContract.Events.DESCRIPTION, "Shift: " + shift.getStartTime() + " - " + shift.getEndTime());
-        intent.putExtra(CalendarContract.Events.EVENT_LOCATION, "Workplace");
+    private void addShiftToCalendar(Context context, Shift shift) {
+        try {
+            // Convert shift day to actual date
+            Calendar startCal = Calendar.getInstance();
+            startCal.setTime(getDateForDay(shift.getDay())); // Convert day name to a real date
+            startCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getStartTime().split(":")[0]));
+            startCal.set(Calendar.MINUTE, 0);
 
-        Calendar startCal = Calendar.getInstance();
-        startCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getStartTime().split(":")[0]));
-        startCal.set(Calendar.MINUTE, 0);
+            Calendar endCal = (Calendar) startCal.clone();
+            endCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getEndTime().split(":")[0]));
+            endCal.set(Calendar.MINUTE, 0);
 
-        Calendar endCal = Calendar.getInstance();
-        endCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getEndTime().split(":")[0]));
-        endCal.set(Calendar.MINUTE, 0);
+            // Format timestamps for Google Calendar URL
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.getDefault());
+            String startTime = sdf.format(startCal.getTime());
+            String endTime = sdf.format(endCal.getTime());
 
-        intent.putExtra(CalendarContract.EXTRA_EVENT_BEGIN_TIME, startCal.getTimeInMillis());
-        intent.putExtra(CalendarContract.EXTRA_EVENT_END_TIME, endCal.getTimeInMillis());
+            // Construct Google Calendar event URL
+            String calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE" +
+                    "&text=Work%20Shift" +
+                    "&details=Shift%3A%20" + shift.getStartTime() + "%20-%20" + shift.getEndTime() +
+                    "&location=Workplace" +
+                    "&dates=" + startTime + "/" + endTime;
 
-        if (intent.resolveActivity(view.getContext().getPackageManager()) != null) {
-            view.getContext().startActivity(intent);
-        } else {
-            Log.e("ShiftAdapter", "No Calendar app found!");
+            // Open the Google Calendar event creation page in a browser
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(calendarUrl));
+            context.startActivity(intent);
+
+            Log.d("ShiftAdapter", "✅ Opened Google Calendar in browser.");
+        } catch (Exception e) {
+            Log.e("ShiftAdapter", "❌ Error opening Google Calendar", e);
         }
+    }
+
+    private Date getDateForDay(String dayName) {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE", Locale.getDefault());
+
+        for (int i = 0; i < 7; i++) {
+            if (sdf.format(calendar.getTime()).equalsIgnoreCase(dayName)) {
+                return calendar.getTime();
+            }
+            calendar.add(Calendar.DAY_OF_YEAR, 1);
+        }
+        return calendar.getTime();
     }
 }

@@ -74,11 +74,11 @@ public class HomePageFragment extends Fragment {
 
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        shiftAdapter = new ShiftAdapter(new ArrayList<>());
+        shiftAdapter = new ShiftAdapter(new ArrayList<>(), false);
         shiftRecyclerView.setAdapter(shiftAdapter);
 
-        checkAndMoveNextWeekToThisWeek(); // Move shifts if needed
-        loadShifts(); // Load shifts for this week
+        checkAndMoveNextWeekToThisWeek();
+        loadShifts();
 
         scheduleBtn.setChecked(true);
 
@@ -90,12 +90,13 @@ public class HomePageFragment extends Fragment {
         toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 if (checkedId == R.id.schedule) {
-                    shiftAdapter.updateShifts(allShifts);
+                    shiftAdapter = new ShiftAdapter(allShifts, false); // 👈 Hides "Add to Calendar"
                     Log.d("ShiftDebug", "📅 Displaying Schedule (All Workers)");
                 } else if (checkedId == R.id.myShifts) {
-                    shiftAdapter.updateShifts(userShifts);
+                    shiftAdapter = new ShiftAdapter(userShifts, true); // 👈 Shows "Add to Calendar"
                     Log.d("ShiftDebug", "👤 Displaying My Shifts: " + userShifts.size());
                 }
+                shiftRecyclerView.setAdapter(shiftAdapter);
             }
         });
     }

@@ -67,7 +67,7 @@ public class AdminHomePageFrag extends Fragment {
 
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        shiftAdapter = new ShiftAdapter(new ArrayList<>());
+        shiftAdapter = new ShiftAdapter(new ArrayList<>(), false);
         shiftRecyclerView.setAdapter(shiftAdapter);
 
         loadShifts();
