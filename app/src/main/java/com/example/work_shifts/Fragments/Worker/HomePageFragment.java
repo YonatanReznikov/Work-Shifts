@@ -44,8 +44,9 @@ public class HomePageFragment extends Fragment {
     private ShiftAdapter shiftAdapter;
     private List<Shift> allShifts = new ArrayList<>();
     private List<Shift> userShifts = new ArrayList<>();
-    private boolean showingAllShifts = true;
     private FirebaseUser currentUser;
+
+    private static final String[] WEEKDAYS = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
     @Nullable
     @Override
@@ -76,10 +77,10 @@ public class HomePageFragment extends Fragment {
         shiftAdapter = new ShiftAdapter(new ArrayList<>());
         shiftRecyclerView.setAdapter(shiftAdapter);
 
-        loadShifts();
+        checkAndMoveNextWeekToThisWeek(); // Move shifts if needed
+        loadShifts(); // Load shifts for this week
 
         scheduleBtn.setChecked(true);
-        showingAllShifts = true;
 
         infoBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_personalInfoFrag));
         paySlipBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_showFrag));
@@ -89,12 +90,11 @@ public class HomePageFragment extends Fragment {
         toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 if (checkedId == R.id.schedule) {
-                    showingAllShifts = true;
                     shiftAdapter.updateShifts(allShifts);
+                    Log.d("ShiftDebug", "📅 Displaying Schedule (All Workers)");
                 } else if (checkedId == R.id.myShifts) {
-                    showingAllShifts = false;
-                    Log.d("ShiftDebug", "Switching to My Shifts view. User shifts count: " + userShifts.size());
                     shiftAdapter.updateShifts(userShifts);
+                    Log.d("ShiftDebug", "👤 Displaying My Shifts: " + userShifts.size());
                 }
             }
         });
@@ -110,42 +110,48 @@ public class HomePageFragment extends Fragment {
                 userShifts.clear();
 
                 if (currentUser == null) {
-                    Log.e("ShiftDebug", "Current user is null!");
+                    Log.e("ShiftDebug", "❌ Current user is null!");
                     return;
                 }
 
-                String userId = currentUser.getUid();
-                Log.d("ShiftDebug", "User ID: " + userId);
+                String currentUserId = currentUser.getUid(); // Firebase Auth UID
+                Log.d("ShiftDebug", "🔍 Authenticated User ID: " + currentUserId);
 
-                String[] weekdays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
+                LinkedHashMap<String, List<Shift>> allWorkerShiftsMap = new LinkedHashMap<>();
+                List<Shift> userShiftsList = new ArrayList<>();
 
-                LinkedHashMap<String, List<Shift>> shiftMap = new LinkedHashMap<>();
-                for (String day : weekdays) {
-                    shiftMap.put(day, new ArrayList<>());
+                for (String day : WEEKDAYS) {
+                    allWorkerShiftsMap.put(day, new ArrayList<>());
                 }
 
                 for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
-                    DataSnapshot shiftsSnapshot = workIdSnapshot.child("shifts");
+                    DataSnapshot shiftsSnapshot = workIdSnapshot.child("shifts").child("thisWeek");
 
-                    for (String day : weekdays) {
-                        DataSnapshot daySnapshot = shiftsSnapshot.child(day);
+                    if (shiftsSnapshot.exists()) {
+                        for (String day : WEEKDAYS) {
+                            DataSnapshot daySnapshot = shiftsSnapshot.child(day);
 
-                        if (daySnapshot.exists() && daySnapshot.hasChildren()) {
-                            for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
-                                if (shiftSnapshot.hasChild("fTime") && shiftSnapshot.hasChild("sTime") && shiftSnapshot.hasChild("workerId")) {
-                                    String fTime = shiftSnapshot.child("fTime").getValue(String.class);
+                            if (daySnapshot.exists()) {
+                                for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
                                     String sTime = shiftSnapshot.child("sTime").getValue(String.class);
+                                    String fTime = shiftSnapshot.child("fTime").getValue(String.class);
                                     String workerId = shiftSnapshot.child("workerId").getValue(String.class);
                                     String workerName = shiftSnapshot.child("workerName").getValue(String.class);
 
-                                    if (fTime == null || sTime == null || workerId == null) continue;
+                                    if (sTime == null || fTime == null || workerId == null) continue;
 
-                                    Shift shift = new Shift(day, sTime + " - " + fTime, workerName, workerId);
-                                    shiftMap.get(day).add(shift);
+                                    Shift shift = new Shift(day, sTime, fTime, workerName, workerId);
+                                    allWorkerShiftsMap.get(day).add(shift);
 
-                                    if (workerId.equals(userId)) {
-                                        userShifts.add(shift);
-                                        Log.d("ShiftDebug", "Added user shift: " + sTime + " - " + fTime + " on " + day);
+                                    // **Log each shift to check workerId**
+                                    Log.d("ShiftDebug", "📌 Found shift: " + day + " " + sTime + " - " + fTime + " | workerId: " + workerId);
+
+                                    // **Fix: Ensure `workerId` matches logged-in user ID**
+                                    if (workerId.equals(currentUserId)) {
+                                        userShiftsList.add(shift);
+                                        Log.d("ShiftDebug", "✅ Shift added to My Shifts: " + day + " " + sTime + " - " + fTime);
+                                    } else {
+                                        Log.w("ShiftDebug", "⚠️ workerId (" + workerId + ") does not match currentUserId (" + currentUserId + ")");
                                     }
                                 }
                             }
@@ -153,25 +159,55 @@ public class HomePageFragment extends Fragment {
                     }
                 }
 
-                for (String day : weekdays) {
-                    List<Shift> shifts = shiftMap.get(day);
-                    if (shifts.isEmpty()) {
-                        allShifts.add(new Shift(day, "No Shift", "", ""));
+                for (String day : WEEKDAYS) {
+                    if (allWorkerShiftsMap.get(day).isEmpty()) {
+                        allShifts.add(new Shift(day, "", "", "No Shifts Yet", ""));
                     } else {
-                        allShifts.addAll(shifts);
+                        allShifts.addAll(allWorkerShiftsMap.get(day));
                     }
                 }
 
-                Log.d("ShiftDebug", "Total user shifts: " + userShifts.size());
+                userShifts.addAll(userShiftsList);
 
                 shiftAdapter.updateShifts(allShifts);
+                Log.d("ShiftDebug", "✅ Total Schedule Shifts: " + allShifts.size());
+                Log.d("ShiftDebug", "✅ Total User Shifts: " + userShifts.size());
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "Failed to read shifts", error.toException());
+                Log.e("Firebase", "❌ Failed to read shifts", error.toException());
             }
         });
     }
+    private void checkAndMoveNextWeekToThisWeek() {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE", Locale.getDefault());
 
+        if (sdf.format(calendar.getTime()).equals("Sunday") && calendar.get(Calendar.HOUR_OF_DAY) == 0 && calendar.get(Calendar.MINUTE) == 1) {
+            DatabaseReference shiftsRef = FirebaseDatabase.getInstance().getReference("workIDs");
+
+            shiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot snapshot) {
+                    for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
+                        DatabaseReference workRef = shiftsRef.child(workIdSnapshot.getKey()).child("shifts");
+
+                        workRef.child("thisWeek").setValue(workIdSnapshot.child("shifts").child("nextWeek").getValue())
+                                .addOnCompleteListener(task -> {
+                                    if (task.isSuccessful()) {
+                                        workRef.child("nextWeek").setValue(null);
+                                        Log.d("ShiftDebug", "Moved nextWeek shifts to thisWeek and cleared nextWeek");
+                                    }
+                                });
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError error) {
+                    Log.e("Firebase", "Failed to move shifts", error.toException());
+                }
+            });
+        }
+    }
 }

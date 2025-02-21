@@ -2,13 +2,18 @@ package com.example.work_shifts.Fragments.Worker;
 
 public class Shift {
     private String day;
-    private String time;
+    private String sTime;
+    private String fTime;
     private String workerName;
     private String workerId;
 
-    public Shift(String day, String time, String workerName, String workerId) {
+    // Required empty constructor for Firebase
+    public Shift() {}
+
+    public Shift(String day, String sTime, String fTime, String workerName, String workerId) {
         this.day = day;
-        this.time = time;
+        this.sTime = sTime;
+        this.fTime = fTime;
         this.workerName = workerName;
         this.workerId = workerId;
     }
@@ -17,8 +22,12 @@ public class Shift {
         return day;
     }
 
-    public String getTime() {
-        return time;
+    public String getStartTime() {
+        return sTime;
+    }
+
+    public String getEndTime() {
+        return fTime;
     }
 
     public String getWorkerName() {
@@ -26,6 +35,7 @@ public class Shift {
     }
 
     public String getWorkerId() {
-        return workerId; // Getter for workerId
+        return workerId;
     }
+
 }

@@ -16,6 +16,7 @@ import androidx.navigation.Navigation;
 import com.example.work_shifts.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -30,7 +31,8 @@ public class RegisterFrag extends Fragment {
     private FirebaseAuth mAuth;
     private DatabaseReference databaseReference;
 
-    public RegisterFrag() {}
+    public RegisterFrag() {
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -144,7 +146,7 @@ public class RegisterFrag extends Fragment {
                     workIdDetails.put("companyName", companyName);
                     workIdRef.setValue(workIdDetails).addOnCompleteListener(task -> {
                         if (task.isSuccessful()) {
-                            registerUser(email, workId, name,companyName, password, phone, view, emailInput);
+                            registerUser(email, workId, name, companyName, password, phone, view, emailInput);
                         } else {
                             Toast.makeText(getActivity(), "Failed to create Work ID: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
@@ -186,14 +188,23 @@ public class RegisterFrag extends Fragment {
         mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(requireActivity(), task -> {
             progressBar.setVisibility(View.GONE);
             if (task.isSuccessful()) {
+                FirebaseUser user = mAuth.getCurrentUser();
+                if (user == null) {
+                    Toast.makeText(getActivity(), "Error: User not found after registration", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                String userId = user.getUid();
+
                 Map<String, String> userDetails = new HashMap<>();
                 userDetails.put("email", lowerEmail);
-                userDetails.put("name",name);
+                userDetails.put("name", name);
                 userDetails.put("phone", phone);
                 userDetails.put("totalHours", "0");
-                userDetails.put("isAdmin", String.valueOf(false));
+                userDetails.put("isAdmin", "false");
 
-                DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users").push();
+                // Store user under their Firebase Auth UID
+                DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users").child(userId);
                 usersRef.setValue(userDetails).addOnCompleteListener(dbTask -> {
                     if (dbTask.isSuccessful()) {
                         Toast.makeText(getActivity(), "Registration successful!", Toast.LENGTH_LONG).show();

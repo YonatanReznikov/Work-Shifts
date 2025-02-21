@@ -1,6 +1,7 @@
 package com.example.work_shifts.Fragments.Worker;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,25 +34,21 @@ import java.util.Locale;
 
 public class addShiftFrag extends Fragment {
 
-    private TextView weekTextView;
-    private TextView selectedDayTextView;
+    private TextView weekTextView, selectedDayTextView;
     private Calendar calendar;
     private Spinner startTimeSpinner, endTimeSpinner;
-    private Button addShiftButton;
-    private EditText notesEditText;
+    private Button addShiftButton, thisWeekButton, nextWeekButton;
     private DatabaseReference databaseReference;
     private LinearLayout daysContainer;
     private FirebaseAuth mAuth;
-    private String userId;
-    private String userName;
-    private String workId;
+    private String userId, userName, workId;
+    private String selectedWeek = "thisWeek";
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.add_shift, container, false);
 
-        // Initialize views
         weekTextView = view.findViewById(R.id.weekTextView);
         selectedDayTextView = new TextView(getContext());
         selectedDayTextView.setId(View.generateViewId());
@@ -61,11 +58,10 @@ public class addShiftFrag extends Fragment {
         selectedDayTextView.setLayoutParams(layoutParams);
         ((LinearLayout) view.findViewById(R.id.daysContainer)).addView(selectedDayTextView);
 
-        Button thisWeekButton = view.findViewById(R.id.thisWeekButton);
-        Button nextWeekButton = view.findViewById(R.id.nextWeekButton);
+        thisWeekButton = view.findViewById(R.id.thisWeekButton);
+        nextWeekButton = view.findViewById(R.id.nextWeekButton);
         startTimeSpinner = view.findViewById(R.id.startTimeSpinner);
         endTimeSpinner = view.findViewById(R.id.endTimeSpinner);
-        notesEditText = view.findViewById(R.id.notesEditText);
         addShiftButton = view.findViewById(R.id.addShiftButton);
         daysContainer = view.findViewById(R.id.daysContainer);
 
@@ -81,57 +77,78 @@ public class addShiftFrag extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
 
-        fetchUserData();
+        fetchUserData(null);
 
         return view;
     }
 
-    private void fetchUserData() {
+    private void fetchUserData(@Nullable Runnable onComplete) {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) return;
+        if (user == null) {
+            Log.e("UserData", "❌ User is not signed in.");
+            return;
+        }
 
-        final String userEmail = user.getEmail();
-        if (userEmail == null) return;
-
-        final String lowerCaseEmail = userEmail.toLowerCase();
+        final String authUserId = user.getUid(); // Firebase Auth UID
+        Log.d("UserData", "🔍 Fetching data for Auth User ID: " + authUserId);
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot workIdsSnapshot) {
-                if (!workIdsSnapshot.exists()) return;
+                if (!workIdsSnapshot.exists()) {
+                    Log.e("UserData", "❌ No workIDs found in Firebase.");
+                    return;
+                }
 
                 for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
                     String currentWorkId = workIdEntry.getKey();
+                    Log.d("UserData", "✅ Checking Work ID: " + currentWorkId);
+
                     DatabaseReference usersRef = databaseReference.child(currentWorkId).child("users");
 
-                    usersRef.orderByChild("email").equalTo(lowerCaseEmail).addListenerForSingleValueEvent(new ValueEventListener() {
+                    usersRef.addListenerForSingleValueEvent(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
-                            if (!snapshot.exists()) return;
-
                             for (DataSnapshot userSnapshot : snapshot.getChildren()) {
-                                userId = userSnapshot.getKey();
-                                userName = userSnapshot.child("name").getValue(String.class);
-                                workId = currentWorkId;
-                                return;
+                                String storedUserId = userSnapshot.getKey();
+                                String storedEmail = userSnapshot.child("email").getValue(String.class);
+
+                                if (storedUserId.equals(authUserId)) {
+                                    userId = storedUserId; // Match Firebase Auth UID with the database user ID
+                                    userName = userSnapshot.child("name").getValue(String.class);
+                                    workId = currentWorkId;
+
+                                    if (userName == null || userName.isEmpty()) {
+                                        userName = "Unknown Worker";
+                                    }
+
+                                    Log.d("UserData", "✅ Database User ID: " + userId);
+                                    Log.d("UserData", "✅ User Name: " + userName);
+                                    Log.d("UserData", "✅ Work ID Found: " + workId);
+
+                                    if (onComplete != null) {
+                                        onComplete.run();
+                                    }
+                                    return;
+                                }
                             }
+
+                            Log.e("UserData", "❌ User ID not found in workID: " + currentWorkId);
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            Toast.makeText(getContext(), "Failed to retrieve user info", Toast.LENGTH_SHORT).show();
+                            Log.e("UserData", "❌ Failed to retrieve user info", error.toException());
                         }
                     });
                 }
             }
-
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Failed to retrieve work IDs", Toast.LENGTH_SHORT).show();
+                Log.e("UserData", "❌ Failed to retrieve work IDs", error.toException());
             }
         });
     }
-
     private void updateDaysContainer() {
         daysContainer.removeAllViews();
         daysContainer.addView(selectedDayTextView);
@@ -147,7 +164,11 @@ public class addShiftFrag extends Fragment {
     }
 
     private void changeWeek(int offset) {
-        calendar.add(Calendar.WEEK_OF_YEAR, offset);
+        if (offset == 0) {
+            selectedWeek = "thisWeek";
+        } else {
+            selectedWeek = "nextWeek";
+        }
         updateDaysContainer();
     }
 
@@ -176,8 +197,25 @@ public class addShiftFrag extends Fragment {
     }
 
     private void addShiftToDatabase() {
-        if (userId == null || userName == null || workId == null) {
-            Toast.makeText(requireContext(), "User data not loaded yet", Toast.LENGTH_SHORT).show();
+        if (workId == null || workId.isEmpty() || userName == null || userName.isEmpty() || userId == null) {
+            Log.w("ShiftDebug", "❌ Missing user data, retrying...");
+            Toast.makeText(requireContext(), "Fetching user data... Please wait.", Toast.LENGTH_SHORT).show();
+
+            // Fetch user data, then retry adding shift
+            fetchUserData(() -> {
+                if (workId != null && !workId.isEmpty() && userId != null) {
+                    addShiftToDatabase();
+                } else {
+                    Log.e("ShiftDebug", "❌ Work ID or User ID still missing after fetching.");
+                }
+            });
+
+            return;
+        }
+
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) {
+            Toast.makeText(requireContext(), "Error: User not signed in", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -186,40 +224,48 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
+        addShiftButton.setEnabled(false);
+
         String startTime = startTimeSpinner.getSelectedItem().toString();
         String endTime = endTimeSpinner.getSelectedItem().toString();
-        String notes = notesEditText.getText().toString();
+
+        if (startTime.compareTo(endTime) >= 0) {
+            Toast.makeText(requireContext(), "End time must be after start time", Toast.LENGTH_SHORT).show();
+            addShiftButton.setEnabled(true);
+            return;
+        }
 
         String dayOfWeek = selectedDayTextView.getText().toString();
 
         Shift shift = new Shift();
         shift.sTime = startTime;
         shift.fTime = endTime;
-        shift.workerId = userId;
+        shift.workerId = userId; // Correctly use the userId from Firebase Realtime Database
         shift.workerName = userName;
+
+        Log.d("ShiftDebug", "✅ Adding Shift: " + startTime + " - " + endTime + " for " + userName + " (UserID: " + userId + ") in Work ID: " + workId);
 
         DatabaseReference shiftRef = databaseReference
                 .child(workId)
                 .child("shifts")
+                .child(selectedWeek)
                 .child(dayOfWeek)
                 .push();
 
-        shiftRef.setValue(shift)
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(requireContext(), "Shift added successfully", Toast.LENGTH_SHORT).show();
-                        notesEditText.setText("");
-                    } else {
-                        Toast.makeText(requireContext(), "Failed to add shift", Toast.LENGTH_SHORT).show();
-                    }
-                });
+        shiftRef.setValue(shift).addOnCompleteListener(task -> {
+            addShiftButton.setEnabled(true);
+            if (task.isSuccessful()) {
+                Toast.makeText(requireContext(), "Shift added successfully!", Toast.LENGTH_SHORT).show();
+                Log.d("ShiftDebug", "✅ Shift successfully added for " + userName);
+            } else {
+                Toast.makeText(requireContext(), "Failed to add shift", Toast.LENGTH_SHORT).show();
+                Log.e("ShiftDebug", "🚨 Shift failed to add.");
+            }
+        });
     }
 
     public static class Shift {
-        public String sTime;
-        public String fTime;
-        public String workerId;
-        public String workerName;
+        public String sTime, fTime, workerId, workerName;
 
         public Shift() {}
     }

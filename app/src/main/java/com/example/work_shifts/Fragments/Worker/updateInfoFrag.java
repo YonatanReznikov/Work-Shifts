@@ -26,7 +26,7 @@ import com.google.firebase.database.ValueEventListener;
 
 public class updateInfoFrag extends Fragment {
 
-    private EditText emailUpdate, phoneUpdate;
+    private EditText emailUpdate, phoneUpdate, nameUpdate;
     private Button confirmButton;
     private ProgressBar progressBar;
 
@@ -42,6 +42,7 @@ public class updateInfoFrag extends Fragment {
         View view = inflater.inflate(R.layout.update_info, container, false);
 
         emailUpdate = view.findViewById(R.id.emailUpdate);
+        nameUpdate = view.findViewById(R.id.nameUpdate);
         phoneUpdate = view.findViewById(R.id.phoneUpdate);
         confirmButton = view.findViewById(R.id.confirm);
         progressBar = new ProgressBar(getActivity());
@@ -119,8 +120,10 @@ public class updateInfoFrag extends Fragment {
 
         String newEmail = emailUpdate.getText().toString().trim();
         String newPhone = phoneUpdate.getText().toString().trim();
+        String newName = nameUpdate.getText().toString().trim();
 
-        if (TextUtils.isEmpty(newEmail) && TextUtils.isEmpty(newPhone)) {
+
+        if (TextUtils.isEmpty(newEmail) && TextUtils.isEmpty(newPhone)&& TextUtils.isEmpty(newName)) {
             confirmButton.setEnabled(true);
             progressBar.setVisibility(View.GONE);
             Toast.makeText(getActivity(), "Please enter at least one field", Toast.LENGTH_SHORT).show();
@@ -144,18 +147,26 @@ public class updateInfoFrag extends Fragment {
                 }
             });
         }
-
-        if (!TextUtils.isEmpty(newPhone)) {
-            userRef.child("phone").setValue(newPhone).addOnCompleteListener(task -> {
+        if (!TextUtils.isEmpty(newName)) {
+            userRef.child("name").setValue(newName).addOnCompleteListener(task -> {
                 if (task.isSuccessful()) {
-                    Toast.makeText(getActivity(), "Phone number updated successfully", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Name updated successfully", Toast.LENGTH_SHORT).show();
                 } else {
-                    Toast.makeText(getActivity(), "Failed to update phone number", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Failed to update the name", Toast.LENGTH_SHORT).show();
                 }
             });
         }
+            if (!TextUtils.isEmpty(newPhone)) {
+                userRef.child("phone").setValue(newPhone).addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Toast.makeText(getActivity(), "Phone number updated successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getActivity(), "Failed to update phone number", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            }
 
-        confirmButton.setEnabled(true);
-        progressBar.setVisibility(View.GONE);
+            confirmButton.setEnabled(true);
+            progressBar.setVisibility(View.GONE);
+        }
     }
-}

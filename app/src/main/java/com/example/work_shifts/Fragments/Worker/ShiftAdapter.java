@@ -46,14 +46,15 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         }
 
         // Display shift details
-        holder.timeTextView.setText(shift.getTime());
+        holder.timeTextView.setText(shift.getStartTime() + " - " + shift.getEndTime()); // Fixed method call
         holder.workerTextView.setText(shift.getWorkerName());
+
+        // Reset background color to default
+        holder.itemView.setBackgroundColor(Color.WHITE);
 
         // Highlight today's shifts
         if (shift.getDay().equals(today)) {
             holder.itemView.setBackgroundColor(Color.parseColor("#FFD700")); // Gold for highlighting
-        } else {
-            holder.itemView.setBackgroundColor(Color.WHITE);
         }
     }
 
