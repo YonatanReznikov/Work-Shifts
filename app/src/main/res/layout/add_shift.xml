@@ -24,28 +24,29 @@
         android:gravity="center">
 
         <Button
-            android:id="@+id/prevMonthButton"
+            android:id="@+id/thisWeekButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="◀"
+            android:text="This Week"
             android:textSize="18sp"
             android:backgroundTint="@color/blue"
             android:background="@null"/>
 
         <TextView
-            android:id="@+id/monthTextView"
-            android:layout_width="wrap_content"
+            android:id="@+id/weekTextView"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text=""
             android:textSize="20sp"
             android:textStyle="bold"
             android:paddingHorizontal="12dp"/>
 
         <Button
-            android:id="@+id/nextMonthButton"
+            android:id="@+id/nextWeekButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="▶"
+            android:text="Next Week"
             android:textSize="18sp"
             android:backgroundTint="@color/blue"
             android:background="@null"/>

@@ -43,41 +43,33 @@
                 android:gravity="center_vertical"
                 android:paddingVertical="8dp">
 
-                <ImageButton
-                    android:id="@+id/prevDate"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@android:drawable/ic_media_previous"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Previous day"/>
+                <Button
+                    android:id="@+id/thisWeekButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="This Week"
+                    android:textSize="18sp"
+                    android:backgroundTint="@color/blue"
+                    android:background="@null"/>
 
                 <TextView
-                    android:id="@+id/currentDate"
+                    android:id="@+id/weekTextView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="February 17, 2024"
+                    android:text=""
                     android:textSize="18sp"
                     android:textStyle="bold"
                     android:gravity="center"/>
 
-                <TextView
-                    android:id="@+id/currentDay"
+                <Button
+                    android:id="@+id/nextWeekButton"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:paddingStart="8dp"
-                    android:text="Saturday"
+                    android:text="Next Week"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:gravity="center"/>
-
-                <ImageButton
-                    android:id="@+id/nextDate"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@android:drawable/ic_media_next"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Next day"/>
+                    android:backgroundTint="@color/blue"
+                    android:background="@null"/>
             </LinearLayout>
 
             <HorizontalScrollView
@@ -86,11 +78,10 @@
                 android:scrollbars="none">
 
                 <LinearLayout
-                    android:id="@+id/timeSlotsContainer"
+                    android:id="@+id/daysContainer"
                     android:layout_width="wrap_content"
-                    android:layout_height="100dp"
-                    android:orientation="horizontal">
-                </LinearLayout>
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"/>
             </HorizontalScrollView>
         </LinearLayout>
     </ScrollView>

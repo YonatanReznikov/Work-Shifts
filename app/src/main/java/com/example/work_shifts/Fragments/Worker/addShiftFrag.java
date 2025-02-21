@@ -25,16 +25,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
 public class addShiftFrag extends Fragment {
 
-    private TextView monthTextView;
-    private TextView selectedDateTextView;
+    private TextView weekTextView;
+    private TextView selectedDayTextView;
     private Calendar calendar;
     private Spinner startTimeSpinner, endTimeSpinner;
     private Button addShiftButton;
@@ -52,17 +52,17 @@ public class addShiftFrag extends Fragment {
         View view = inflater.inflate(R.layout.add_shift, container, false);
 
         // Initialize views
-        monthTextView = view.findViewById(R.id.monthTextView);
-        selectedDateTextView = new TextView(getContext());
-        selectedDateTextView.setId(View.generateViewId());
+        weekTextView = view.findViewById(R.id.weekTextView);
+        selectedDayTextView = new TextView(getContext());
+        selectedDayTextView.setId(View.generateViewId());
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         layoutParams.setMargins(0, 16, 0, 16);
-        selectedDateTextView.setLayoutParams(layoutParams);
-        ((LinearLayout) view.findViewById(R.id.daysContainer)).addView(selectedDateTextView);
+        selectedDayTextView.setLayoutParams(layoutParams);
+        ((LinearLayout) view.findViewById(R.id.daysContainer)).addView(selectedDayTextView);
 
-        Button prevMonthButton = view.findViewById(R.id.prevMonthButton);
-        Button nextMonthButton = view.findViewById(R.id.nextMonthButton);
+        Button thisWeekButton = view.findViewById(R.id.thisWeekButton);
+        Button nextWeekButton = view.findViewById(R.id.nextWeekButton);
         startTimeSpinner = view.findViewById(R.id.startTimeSpinner);
         endTimeSpinner = view.findViewById(R.id.endTimeSpinner);
         notesEditText = view.findViewById(R.id.notesEditText);
@@ -70,10 +70,10 @@ public class addShiftFrag extends Fragment {
         daysContainer = view.findViewById(R.id.daysContainer);
 
         calendar = Calendar.getInstance();
-        updateMonthTextView();
+        updateDaysContainer();
 
-        prevMonthButton.setOnClickListener(v -> changeMonth(-1));
-        nextMonthButton.setOnClickListener(v -> changeMonth(1));
+        thisWeekButton.setOnClickListener(v -> changeWeek(0));
+        nextWeekButton.setOnClickListener(v -> changeWeek(1));
         addShiftButton.setOnClickListener(v -> addShiftToDatabase());
 
         setupSpinners();
@@ -132,44 +132,28 @@ public class addShiftFrag extends Fragment {
         });
     }
 
-    private void updateMonthTextView() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM yyyy", Locale.US);
-        monthTextView.setText(dateFormat.format(calendar.getTime()));
-        updateDaysContainer();
-    }
-
-    private void changeMonth(int offset) {
-        calendar.add(Calendar.MONTH, offset);
-        updateMonthTextView();
-    }
-
     private void updateDaysContainer() {
         daysContainer.removeAllViews();
-        daysContainer.addView(selectedDateTextView);
+        daysContainer.addView(selectedDayTextView);
 
-        Calendar tempCalendar = (Calendar) calendar.clone();
-        tempCalendar.set(Calendar.DAY_OF_MONTH, 1);
-        int daysInMonth = tempCalendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+        List<String> daysOfWeek = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
 
-        for (int day = 1; day <= daysInMonth; day++) {
-            final int selectedDay = day;
+        for (String dayName : daysOfWeek) {
             Button dayButton = new Button(getContext());
-            SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
-            tempCalendar.set(Calendar.DAY_OF_MONTH, day);
-            String dayName = dayFormat.format(tempCalendar.getTime());
-
-            dayButton.setText(String.format(Locale.US, "%d\n%s", day, dayName));
-            dayButton.setOnClickListener(v -> onDaySelected(selectedDay));
+            dayButton.setText(dayName);
+            dayButton.setOnClickListener(v -> onDaySelected(dayName));
             daysContainer.addView(dayButton);
         }
     }
 
-    private void onDaySelected(int day) {
-        calendar.set(Calendar.DAY_OF_MONTH, day);
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
-        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
-        selectedDateTextView.setText(String.format(Locale.US, "%s (%s)", dateFormat.format(calendar.getTime()), dayFormat.format(calendar.getTime())));
-        Toast.makeText(getContext(), "Selected day: " + day, Toast.LENGTH_SHORT).show();
+    private void changeWeek(int offset) {
+        calendar.add(Calendar.WEEK_OF_YEAR, offset);
+        updateDaysContainer();
+    }
+
+    private void onDaySelected(String dayName) {
+        selectedDayTextView.setText(dayName);
+        Toast.makeText(getContext(), "Selected day: " + dayName, Toast.LENGTH_SHORT).show();
     }
 
     private void setupSpinners() {
@@ -197,8 +181,8 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
-        if (selectedDateTextView.getText().toString().isEmpty()) {
-            Toast.makeText(requireContext(), "Please select a date first", Toast.LENGTH_SHORT).show();
+        if (selectedDayTextView.getText().toString().isEmpty()) {
+            Toast.makeText(requireContext(), "Please select a day first", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -206,8 +190,7 @@ public class addShiftFrag extends Fragment {
         String endTime = endTimeSpinner.getSelectedItem().toString();
         String notes = notesEditText.getText().toString();
 
-        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
-        String dayOfWeek = dayFormat.format(calendar.getTime());
+        String dayOfWeek = selectedDayTextView.getText().toString();
 
         Shift shift = new Shift();
         shift.sTime = startTime;

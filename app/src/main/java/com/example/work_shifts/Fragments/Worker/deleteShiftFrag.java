@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
@@ -25,34 +24,35 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 public class deleteShiftFrag extends Fragment {
 
-    private TextView currentDate, currentDay;
-    private ImageButton prevDate, nextDate;
-    private Button deleteButton;
+    private TextView weekTextView;
+    private Button thisWeekButton, nextWeekButton, deleteButton;
     private ScrollView dailyCalendar;
     private Calendar calendar;
     private DatabaseReference databaseReference;
-    private LinearLayout myShiftsContainer;
+    private LinearLayout daysContainer, myShiftsContainer;
     private FirebaseAuth mAuth;
     private String userId;
     private String workId;
+    private String selectedDay;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.delete_shift, container, false);
 
-        currentDate = view.findViewById(R.id.currentDate);
-        currentDay = view.findViewById(R.id.currentDay);
-        prevDate = view.findViewById(R.id.prevDate);
-        nextDate = view.findViewById(R.id.nextDate);
+        weekTextView = view.findViewById(R.id.weekTextView);
+        thisWeekButton = view.findViewById(R.id.thisWeekButton);
+        nextWeekButton = view.findViewById(R.id.nextWeekButton);
         deleteButton = view.findViewById(R.id.deleteButton);
         dailyCalendar = view.findViewById(R.id.dailyCalendar);
+        daysContainer = view.findViewById(R.id.daysContainer);
         myShiftsContainer = view.findViewById(R.id.myShiftsContainer);
 
         calendar = Calendar.getInstance();
@@ -60,10 +60,10 @@ public class deleteShiftFrag extends Fragment {
         databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
 
         fetchUserData();
-        updateDateDisplay();
+        updateDaysContainer();
 
-        prevDate.setOnClickListener(v -> changeDate(-1));
-        nextDate.setOnClickListener(v -> changeDate(1));
+        thisWeekButton.setOnClickListener(v -> changeWeek(0));
+        nextWeekButton.setOnClickListener(v -> changeWeek(1));
         deleteButton.setOnClickListener(v -> deleteSelectedShifts());
 
         return view;
@@ -95,7 +95,6 @@ public class deleteShiftFrag extends Fragment {
                             for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                                 userId = userSnapshot.getKey();
                                 workId = currentWorkId;
-                                loadShifts();
                                 return;
                             }
                         }
@@ -115,24 +114,34 @@ public class deleteShiftFrag extends Fragment {
         });
     }
 
-    private void updateDateDisplay() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.US);
-        SimpleDateFormat dayFormat = new SimpleDateFormat("EEEE", Locale.US);
-        currentDate.setText(dateFormat.format(calendar.getTime()));
-        currentDay.setText(dayFormat.format(calendar.getTime()));
-        loadShifts();
+    private void updateDaysContainer() {
+        daysContainer.removeAllViews();
+
+        List<String> daysOfWeek = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
+
+        for (String dayName : daysOfWeek) {
+            Button dayButton = new Button(getContext());
+            dayButton.setText(dayName);
+            dayButton.setOnClickListener(v -> onDaySelected(dayName));
+            daysContainer.addView(dayButton);
+        }
     }
 
-    private void changeDate(int offset) {
-        calendar.add(Calendar.DAY_OF_MONTH, offset);
-        updateDateDisplay();
+    private void changeWeek(int offset) {
+        calendar.add(Calendar.WEEK_OF_YEAR, offset);
+        updateDaysContainer();
     }
 
-    private void loadShifts() {
+    private void onDaySelected(String dayName) {
+        selectedDay = dayName;
+        Toast.makeText(getContext(), "Selected day: " + dayName, Toast.LENGTH_SHORT).show();
+        loadShifts(dayName);
+    }
+
+    private void loadShifts(String dayName) {
         if (userId == null || workId == null) return;
 
-        String dayOfWeek = new SimpleDateFormat("EEEE", Locale.US).format(calendar.getTime());
-        databaseReference.child(workId).child("shifts").child(dayOfWeek).addListenerForSingleValueEvent(new ValueEventListener() {
+        databaseReference.child(workId).child("shifts").child(dayName).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 myShiftsContainer.removeAllViews();
@@ -156,18 +165,17 @@ public class deleteShiftFrag extends Fragment {
     }
 
     private void deleteSelectedShifts() {
-        if (userId == null || workId == null) return;
+        if (userId == null || workId == null || selectedDay == null) return;
 
-        String dayOfWeek = new SimpleDateFormat("EEEE", Locale.US).format(calendar.getTime());
         for (int i = 0; i < myShiftsContainer.getChildCount(); i++) {
             CheckBox checkBox = (CheckBox) myShiftsContainer.getChildAt(i);
             if (checkBox.isChecked()) {
                 String shiftId = (String) checkBox.getTag();
-                databaseReference.child(workId).child("shifts").child(dayOfWeek).child(shiftId).removeValue()
+                databaseReference.child(workId).child("shifts").child(selectedDay).child(shiftId).removeValue()
                         .addOnCompleteListener(task -> {
                             if (task.isSuccessful()) {
                                 Toast.makeText(getContext(), "Shift deleted successfully", Toast.LENGTH_SHORT).show();
-                                loadShifts();
+                                loadShifts(selectedDay);
                             } else {
                                 Toast.makeText(getContext(), "Failed to delete shift", Toast.LENGTH_SHORT).show();
                             }
