@@ -29,8 +29,7 @@
             android:layout_height="wrap_content"
             android:text="This Week"
             android:textSize="18sp"
-            android:backgroundTint="@color/blue"
-            android:background="@null"/>
+            android:backgroundTint="@color/blue" />
 
         <TextView
             android:id="@+id/weekTextView"
@@ -48,23 +47,27 @@
             android:layout_height="wrap_content"
             android:text="Next Week"
             android:textSize="18sp"
-            android:backgroundTint="@color/blue"
-            android:background="@null"/>
+            android:backgroundTint="@color/blue" />
     </LinearLayout>
-
-    <HorizontalScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:scrollbars="none"
-        android:layout_marginTop="8dp">
+        android:padding="4dp">
 
-        <LinearLayout
-            android:id="@+id/daysContainer"
-            android:layout_width="wrap_content"
+        <HorizontalScrollView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"/>
-    </HorizontalScrollView>
+            android:scrollbars="none"
+            android:layout_marginTop="8dp">
 
+            <LinearLayout
+                android:id="@+id/daysContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"/>
+        </HorizontalScrollView>
+
+    </FrameLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -102,12 +105,13 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/totalShiftsText"
+        android:id="@+id/totalHoursText"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Total:"
+        android:text="Total Hours: 0"
         android:textSize="18sp"
         android:layout_marginTop="8dp"/>
+
 
 
     <LinearLayout

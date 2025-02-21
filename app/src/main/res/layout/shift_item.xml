@@ -4,17 +4,18 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <!-- Day Header (Only Visible Once Per Day) -->
+    <!-- Day Header (Only Shown Once Per Day) -->
     <TextView
         android:id="@+id/shiftDay"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Monday"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:paddingBottom="4dp" />
+        android:paddingBottom="4dp"
+        android:visibility="gone"/> <!-- Initially hidden, shown dynamically -->
 
-    <!-- Container for Multiple Shifts Under the Same Day -->
+    <!-- Shift Item Layout -->
     <LinearLayout
         android:id="@+id/shiftContainer"
         android:layout_width="match_parent"
@@ -28,7 +29,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="08:00 - 17:00"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="@android:color/black"/>
 
         <TextView
             android:id="@+id/shiftWorker"
@@ -36,6 +38,18 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="John Doe"
-            android:textSize="16sp" />
+            android:textSize="16sp"
+            android:textColor="@android:color/black"/>
+
+        <!-- Add to Calendar Button -->
+        <ImageButton
+            android:id="@+id/addToCalendarBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@color/white"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/cal"
+            android:contentDescription="Add to Google Calendar"/>
     </LinearLayout>
 </LinearLayout>

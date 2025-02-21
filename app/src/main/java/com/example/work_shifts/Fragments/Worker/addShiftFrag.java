@@ -1,10 +1,12 @@
 package com.example.work_shifts.Fragments.Worker;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -41,8 +43,11 @@ public class addShiftFrag extends Fragment {
     private DatabaseReference databaseReference;
     private LinearLayout daysContainer;
     private FirebaseAuth mAuth;
+    private Button lastSelectedButton = null;
     private String userId, userName, workId;
     private String selectedWeek = "thisWeek";
+    private TextView totalHoursText;
+
 
     @Nullable
     @Override
@@ -64,6 +69,7 @@ public class addShiftFrag extends Fragment {
         endTimeSpinner = view.findViewById(R.id.endTimeSpinner);
         addShiftButton = view.findViewById(R.id.addShiftButton);
         daysContainer = view.findViewById(R.id.daysContainer);
+        totalHoursText = view.findViewById(R.id.totalHoursText);
 
         calendar = Calendar.getInstance();
         updateDaysContainer();
@@ -102,7 +108,7 @@ public class addShiftFrag extends Fragment {
 
                 for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
                     String currentWorkId = workIdEntry.getKey();
-                    Log.d("UserData", "✅ Checking Work ID: " + currentWorkId);
+                    if (workId != null) break;
 
                     DatabaseReference usersRef = databaseReference.child(currentWorkId).child("users");
 
@@ -158,11 +164,21 @@ public class addShiftFrag extends Fragment {
         for (String dayName : daysOfWeek) {
             Button dayButton = new Button(getContext());
             dayButton.setText(dayName);
-            dayButton.setOnClickListener(v -> onDaySelected(dayName));
+            dayButton.setOnClickListener(v -> onDaySelected(dayName, dayButton));
             daysContainer.addView(dayButton);
         }
     }
+    private void onDaySelected(String dayName, Button selectedButton) {
+        selectedDayTextView.setText(dayName);
+        Toast.makeText(getContext(), "Selected day: " + dayName, Toast.LENGTH_SHORT).show();
 
+        if (lastSelectedButton != null) {
+            lastSelectedButton.setBackgroundColor(Color.LTGRAY);
+        }
+
+        selectedButton.setBackgroundColor(Color.BLUE);
+        lastSelectedButton = selectedButton;
+    }
     private void changeWeek(int offset) {
         if (offset == 0) {
             selectedWeek = "thisWeek";
@@ -184,14 +200,60 @@ public class addShiftFrag extends Fragment {
 
         startTimeSpinner.setAdapter(adapter);
         endTimeSpinner.setAdapter(adapter);
+
+        int defaultStartPosition = timeOptions.indexOf("07:00");
+        int defaultEndPosition = timeOptions.indexOf("14:00");
+
+        if (defaultStartPosition != -1) {
+            startTimeSpinner.setSelection(defaultStartPosition);
+        }
+        if (defaultEndPosition != -1) {
+            endTimeSpinner.setSelection(defaultEndPosition);
+        }
+
+        startTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateTotalHours();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        endTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                updateTotalHours();
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        updateTotalHours();
+    }
+
+    private void updateTotalHours() {
+        String startTime = startTimeSpinner.getSelectedItem().toString();
+        String endTime = endTimeSpinner.getSelectedItem().toString();
+
+        int startHour = Integer.parseInt(startTime.split(":")[0]);
+        int endHour = Integer.parseInt(endTime.split(":")[0]);
+
+        int totalHours = endHour - startHour;
+
+        if (totalHours <= 0) {
+            totalHoursText.setText("Invalid Selection");
+            totalHoursText.setTextColor(Color.RED);
+        } else {
+            totalHoursText.setText(String.format("%d Hours", totalHours));
+            totalHoursText.setTextColor(Color.BLACK);
+        }
     }
 
     private List<String> getTimeOptions() {
         List<String> timeList = new ArrayList<>();
-        for (int hour = 0; hour < 24; hour++) {
-            for (int minute = 0; minute < 60; minute += 30) {
-                timeList.add(String.format(Locale.US, "%02d:%02d", hour, minute));
-            }
+        for (int hour = 7; hour < 22; hour++) {
+            timeList.add(String.format(Locale.US, "%02d:00", hour));
         }
         return timeList;
     }

@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Top Bar with Navigation Buttons -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -18,8 +19,9 @@
             android:src="@android:drawable/ic_delete"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="8dp"
-            android:contentDescription="delete shift"/>
+            android:contentDescription="Delete Shift"/>
 
+        <!-- Toggle Group for My Shifts & Schedule -->
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/toggleGroup"
             android:layout_width="0dp"
@@ -33,20 +35,20 @@
                 android:id="@+id/myShifts"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/green"
-                android:textColor="@color/black"
+                android:text="My Shifts"
                 android:checkable="true"
-                android:text="My Shifts"/>
+                android:textColor="@android:color/white"
+                app:backgroundTint="?attr/colorPrimary"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/schedule"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:backgroundTint="@color/blue"
-                android:textColor="@color/black"
-                android:checkable="true"
                 android:text="Schedule"
-                android:checked="true"/>
+                android:checked="true"
+                android:checkable="true"
+                android:textColor="@android:color/white"
+                app:backgroundTint="?attr/colorAccent"/>
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <ImageButton
@@ -63,10 +65,12 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/shiftRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_below="@id/topBar"
+        android:layout_above="@id/bottomNavigation"
         android:paddingTop="16dp"/>
 
+    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -83,10 +87,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="4dp"
+            android:text="Pay Slip"
             android:backgroundTint="#1E293B"
             android:textColor="@android:color/white"
-            android:text="Pay Slip"
             android:elevation="2dp"/>
 
         <Button
@@ -94,10 +97,9 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="4dp"
+            android:text="Personal Info"
             android:backgroundTint="#D97706"
             android:textColor="@android:color/white"
-            android:text="Personal Info"
             android:elevation="2dp"/>
     </LinearLayout>
 
