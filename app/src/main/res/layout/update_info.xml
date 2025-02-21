@@ -19,7 +19,17 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="30dp"
         android:background="@drawable/rounded_input"
-        android:hint="Update email"
+        android:hint="Update Email"
+        android:inputType="textEmailAddress"
+        android:padding="12dp"
+        android:textSize="18sp" />
+    <EditText
+        android:id="@+id/nameUpdate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:background="@drawable/rounded_input"
+        android:hint="Update Name"
         android:inputType="textEmailAddress"
         android:padding="12dp"
         android:textSize="18sp" />
