@@ -10,27 +10,14 @@
         android:label="AdminHomePageFrag"
         tools:layout="@layout/admin_home_page">
         <action
-            android:id="@+id/action_homePageFragment_to_paySlipFrag"
-            app:destination="@id/paySlipFrag" />
+            android:id="@+id/action_adminHomePageFrag_to_showFrag"
+            app:destination="@id/showFrag" />
         <action
-            android:id="@+id/action_homePageFragment_to_personalInfoFrag"
+            android:id="@+id/action_adminHomePageFrag_to_personalInfoFrag"
             app:destination="@id/personalInfoFrag" />
         <action
-            android:id="@+id/action_homePageFragment_to_myShiftFrag"
-            app:destination="@id/myShiftFrag" />
-        <action
-            android:id="@+id/action_homePageFragment_to_addShiftFrag"
-            app:destination="@id/addShiftFrag" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/paySlipFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.paySlipFrag"
-        tools:layout="@layout/pay_slip"
-        android:label="paySlipFrag" >
-        <action
-            android:id="@+id/action_paySlipFrag_to_showFrag"
-            app:destination="@id/showFrag" />
+            android:id="@+id/action_adminHomePageFrag_to_requestShiftFrag"
+            app:destination="@id/requestShiftFrag" />
     </fragment>
 
     <fragment
@@ -43,7 +30,7 @@
         android:id="@+id/personalInfoFrag"
         android:name="com.example.work_shifts.Fragments.Worker.personalInfoFrag"
         tools:layout="@layout/personal_info_client"
-        android:label="personalInfoFrag" >
+        android:label="personalInfoFrag">
         <action
             android:id="@+id/action_personalInfoFrag_to_updateInfoFrag"
             app:destination="@id/updateInfoFrag" />
@@ -60,30 +47,13 @@
 
     <fragment
         android:id="@+id/reportFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.reportFrag"
+        android:name="com.example.work_shifts.Fragments.Worker.ReportFragment"
         tools:layout="@layout/add_request"
         android:label="reportFrag" />
 
     <fragment
-        android:id="@+id/myShiftFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.myShiftFrag"
-        tools:layout="@layout/my_shift"
-        android:label="myShiftFrag" >
-        <action
-            android:id="@+id/action_myShiftFrag_to_deleteShiftFrag"
-            app:destination="@id/deleteShiftFrag" />
-    </fragment>
-
-    <fragment
-        android:id="@+id/addShiftFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.addShiftFrag"
-        tools:layout="@layout/add_shift"
-        android:label="addShiftFrag" />
-
-    <fragment
-        android:id="@+id/deleteShiftFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.deleteShiftFrag"
-        tools:layout="@layout/delete_shift"
-        android:label="deleteShiftFrag" />
-
+        android:id="@+id/requestShiftFrag"
+        android:name="com.example.work_shifts.Fragments.Worker.requestShiftFrag"
+        android:label="request_shift"
+        tools:layout="@layout/request_shift" />
 </navigation>

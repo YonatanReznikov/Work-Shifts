@@ -3,14 +3,29 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="16dp"
+    android:background="@android:color/white">
 
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center_vertical" />
+        android:gravity="center_vertical"
+        android:paddingVertical="12dp"
+        android:background="@color/primaryColor"
+        android:paddingHorizontal="16dp"
+        android:elevation="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Admin Dashboard"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/white"
+            android:layout_gravity="center_vertical"/>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/dailyCalendar"
@@ -21,7 +36,7 @@
         android:layout_marginTop="16dp"
         android:background="@android:color/white"
         android:elevation="2dp"
-        android:padding="8dp">
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -71,36 +86,19 @@
         </HorizontalScrollView>
     </LinearLayout>
 
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/shiftRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_below="@id/dailyCalendar"
         android:layout_above="@id/bottomNavigation"
         android:layout_marginTop="16dp"
+        android:padding="16dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
         android:background="@android:color/white"
         android:elevation="2dp"
-        android:contentDescription="Scrollable shift details">
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="8dp">
-
-            <LinearLayout
-                android:id="@+id/timeColumn"
-                android:layout_width="60dp"
-                android:layout_height="match_parent"
-                android:orientation="vertical"
-                android:background="@android:color/white" />
-
-            <LinearLayout
-                android:id="@+id/shiftsContainer"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_toEndOf="@id/timeColumn"
-                android:orientation="vertical" />
-        </RelativeLayout>
-    </ScrollView>
+        android:contentDescription="Scrollable shift details" />
 
     <LinearLayout
         android:id="@+id/bottomNavigation"
@@ -109,7 +107,7 @@
         android:orientation="horizontal"
         android:gravity="center"
         android:layout_alignParentBottom="true"
-        android:padding="8dp"
+        android:padding="12dp"
         android:elevation="4dp"
         android:background="@android:color/white">
 
@@ -118,32 +116,35 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="4dp"
+            android:layout_marginHorizontal="8dp"
             android:backgroundTint="#1E293B"
             android:textColor="@android:color/white"
             android:text="Pay Slip"
-            android:elevation="2dp" />
+            android:elevation="2dp"
+            android:paddingVertical="12dp" />
 
         <Button
             android:id="@+id/btnSchedule"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="4dp"
+            android:layout_marginHorizontal="8dp"
             android:backgroundTint="#0F766E"
             android:textColor="@android:color/white"
-            android:text="Schedule"
-            android:elevation="2dp" />
+            android:text="request"
+            android:elevation="2dp"
+            android:paddingVertical="12dp" />
 
         <Button
             android:id="@+id/btnPersonalInfo"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_marginHorizontal="4dp"
+            android:layout_marginHorizontal="8dp"
             android:backgroundTint="#D97706"
             android:textColor="@android:color/white"
             android:text="Personal Info"
-            android:elevation="2dp" />
+            android:elevation="2dp"
+            android:paddingVertical="12dp" />
     </LinearLayout>
 </RelativeLayout>
