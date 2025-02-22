@@ -16,8 +16,8 @@
             android:id="@+id/action_adminHomePageFrag_to_personalInfoFrag"
             app:destination="@id/personalInfoFrag" />
         <action
-            android:id="@+id/action_adminHomePageFrag_to_requestShiftFrag"
-            app:destination="@id/requestShiftFrag" />
+            android:id="@+id/action_adminHomePageFrag_to_requestsFrag2"
+            app:destination="@id/requestsFrag" />
     </fragment>
 
     <fragment
@@ -50,10 +50,10 @@
         android:name="com.example.work_shifts.Fragments.Worker.ReportFragment"
         tools:layout="@layout/add_request"
         android:label="reportFrag" />
-
     <fragment
-        android:id="@+id/requestShiftFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.requestShiftFrag"
-        android:label="request_shift"
-        tools:layout="@layout/request_shift" />
+        android:id="@+id/requestsFrag"
+        android:name="com.example.work_shifts.Fragments.Worker.requestsFrag"
+        android:label="requests"
+        tools:layout="@layout/requests" />
+
 </navigation>
