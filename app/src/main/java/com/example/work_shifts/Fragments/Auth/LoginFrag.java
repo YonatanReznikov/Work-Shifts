@@ -108,6 +108,7 @@ public class LoginFrag extends Fragment {
                                                 if ("true".equalsIgnoreCase(isAdminStr)) {
                                                     Toast.makeText(getActivity(), "Welcome, Admin!", Toast.LENGTH_LONG).show();
                                                     Intent intent = new Intent(getActivity(), AdminMainActivity.class);
+                                                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                                                     startActivity(intent);
                                                 } else {
                                                     Toast.makeText(getActivity(), "Login successful!", Toast.LENGTH_LONG).show();

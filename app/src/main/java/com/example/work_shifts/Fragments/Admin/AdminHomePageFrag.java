@@ -54,7 +54,7 @@ public class AdminHomePageFrag extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        NavController navController = Navigation.findNavController(view);
+        NavController navController = Navigation.findNavController(requireView());
 
         try {
             // Initialize buttons
@@ -62,7 +62,12 @@ public class AdminHomePageFrag extends Fragment {
             paySlipBtn = view.findViewById(R.id.btnPaySlip);
             requestBtn = view.findViewById(R.id.btnSchedule);
             scheduleBtn = view.findViewById(R.id.schedule);
-            myShiftBtn = view.findViewById(R.id.myShifts);
+
+            if (scheduleBtn != null) {
+                scheduleBtn.setChecked(true); // ✅ Prevents crash
+            } else {
+                Log.e("AdminHomePageFrag", "❌ scheduleBtn is NULL!");
+            }            myShiftBtn = view.findViewById(R.id.myShifts);
             toggleGroup = view.findViewById(R.id.toggleGroup);
 
             shiftRecyclerView = view.findViewById(R.id.shiftRecyclerView);
@@ -80,14 +85,13 @@ public class AdminHomePageFrag extends Fragment {
             showingAllShifts = true;
 
             // Navigation buttons
-            infoBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        navController.navigate(R.id.action_adminHomePageFrag_to_personalInfoFrag);
-                    } catch (Exception e) {
-                        Log.e("Navigation", "Error navigating to personal info", e);
-                    }
+            infoBtn.setOnClickListener(v -> {
+                Log.d("AdminHomePageFrag", "📌 Personal Info button clicked!");
+                try {
+                    navController.navigate(R.id.action_adminHomePageFrag_to_personalInfoFrag);
+                    Log.d("AdminHomePageFrag", "✅ Navigation to Personal Info successful!");
+                } catch (Exception e) {
+                    Log.e("AdminHomePageFrag", "❌ Navigation failed!", e);
                 }
             });
 
