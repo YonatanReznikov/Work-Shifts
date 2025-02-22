@@ -34,7 +34,7 @@ import java.util.List;
 
 public class AdminHomePageFrag extends Fragment {
 
-    private Button infoBtn, paySlipBtn;
+    private Button infoBtn, paySlipBtn, requestBtn;
     private MaterialButton scheduleBtn, myShiftBtn;
     private MaterialButtonToggleGroup toggleGroup;
     private RecyclerView shiftRecyclerView;
@@ -56,46 +56,74 @@ public class AdminHomePageFrag extends Fragment {
 
         NavController navController = Navigation.findNavController(view);
 
-        // Initialize buttons
-        infoBtn = view.findViewById(R.id.btnPersonalInfo);
-        paySlipBtn = view.findViewById(R.id.btnPaySlip);
-        scheduleBtn = view.findViewById(R.id.schedule);
-        myShiftBtn = view.findViewById(R.id.myShifts);
-        toggleGroup = view.findViewById(R.id.toggleGroup);
+        try {
+            // Initialize buttons
+            infoBtn = view.findViewById(R.id.btnPersonalInfo);
+            paySlipBtn = view.findViewById(R.id.btnPaySlip);
+            requestBtn = view.findViewById(R.id.btnSchedule);
+            scheduleBtn = view.findViewById(R.id.schedule);
+            myShiftBtn = view.findViewById(R.id.myShifts);
+            toggleGroup = view.findViewById(R.id.toggleGroup);
 
-        shiftRecyclerView = view.findViewById(R.id.shiftRecyclerView);
-        shiftRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+            shiftRecyclerView = view.findViewById(R.id.shiftRecyclerView);
+            shiftRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        shiftAdapter = new ShiftAdapter(new ArrayList<>(), false);
-        shiftRecyclerView.setAdapter(shiftAdapter);
+            shiftAdapter = new ShiftAdapter(new ArrayList<>(), false);
+            shiftRecyclerView.setAdapter(shiftAdapter);
 
-        // Load initial shifts
-        loadShifts("thisWeek");
+            // Load initial shifts
+            loadShifts("thisWeek");
 
-        scheduleBtn.setChecked(true);
-        showingAllShifts = true;
+            scheduleBtn.setChecked(true);
+            showingAllShifts = true;
 
-        // Navigation buttons
-        infoBtn.setOnClickListener(v -> {
-            Log.d("NavigationDebug", "Navigating to Personal Info");
-            navController.navigate(R.id.action_adminHomePageFrag_to_personalInfoFrag);
-        });
+            // Navigation buttons
+            infoBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        navController.navigate(R.id.action_adminHomePageFrag_to_personalInfoFrag);
+                    } catch (Exception e) {
+                        Log.e("Navigation", "Error navigating to personal info", e);
+                    }
+                }
+            });
 
-        paySlipBtn.setOnClickListener(v -> {
-            Log.d("NavigationDebug", "Navigating to Show Fragment");
-            navController.navigate(R.id.action_adminHomePageFrag_to_showFrag);
-        });
+            paySlipBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        navController.navigate(R.id.action_adminHomePageFrag_to_showFrag);
+                    } catch (Exception e) {
+                        Log.e("Navigation", "Error navigating to pay slip", e);
+                    }
+                }
+            });
 
-        // Toggle button behavior
-        toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
-            if (isChecked) {
-                boolean isMyShifts = (checkedId == R.id.myShifts);
-                shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
-                Log.d("ShiftDebug", "👤 Displaying " + (isMyShifts ? "My Shifts" : "Schedule"));
-            }
-        });
+            requestBtn.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        navController.navigate(R.id.action_adminHomePageFrag_to_requestsFrag);
+                    } catch (Exception e) {
+                        Log.e("Navigation", "Error navigating to requests", e);
+                    }
+                }
+            });
+
+            // Toggle button behavior
+            toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+                if (isChecked) {
+                    boolean isMyShifts = (checkedId == R.id.myShifts);
+                    shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
+                    Log.d("ShiftDebug", "👤 Displaying " + (isMyShifts ? "My Shifts" : "Schedule"));
+                }
+            });
+        } catch (Exception e) {
+            Log.e("InitializationError", "Error initializing views", e);
+        }
     }
 
     private void loadShifts(String weekType) {
@@ -162,7 +190,6 @@ public class AdminHomePageFrag extends Fragment {
 
                 Log.d("ShiftDebug", "📊 Total user shifts: " + userShifts.size());
 
-                // ✅ Fix: Pass the second parameter (false for initial schedule view)
                 shiftAdapter.updateShifts(allShifts, false);
             }
 

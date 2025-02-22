@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/admin_nav_graph"
     app:startDestination="@id/adminHomePageFrag">
+
     <fragment
         android:id="@+id/adminHomePageFrag"
         android:name="com.example.work_shifts.Fragments.Admin.AdminHomePageFrag"
@@ -16,7 +17,7 @@
             android:id="@+id/action_adminHomePageFrag_to_personalInfoFrag"
             app:destination="@id/personalInfoFrag" />
         <action
-            android:id="@+id/action_adminHomePageFrag_to_requestsFrag2"
+            android:id="@+id/action_adminHomePageFrag_to_requestsFrag"
             app:destination="@id/requestsFrag" />
     </fragment>
 
@@ -50,10 +51,10 @@
         android:name="com.example.work_shifts.Fragments.Worker.ReportFragment"
         tools:layout="@layout/add_request"
         android:label="reportFrag" />
+
     <fragment
         android:id="@+id/requestsFrag"
         android:name="com.example.work_shifts.Fragments.Worker.requestsFrag"
         android:label="requests"
         tools:layout="@layout/requests" />
-
 </navigation>

@@ -6,6 +6,7 @@
     android:padding="16dp"
     android:background="@android:color/white">
 
+    <!-- Top Bar -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -27,6 +28,7 @@
             android:layout_gravity="center_vertical"/>
     </LinearLayout>
 
+    <!-- Daily Calendar -->
     <LinearLayout
         android:id="@+id/dailyCalendar"
         android:layout_width="match_parent"
@@ -38,6 +40,7 @@
         android:elevation="2dp"
         android:padding="16dp">
 
+        <!-- Date Navigation -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -72,6 +75,7 @@
                 android:contentDescription="Next day" />
         </LinearLayout>
 
+        <!-- Time Slots -->
         <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -85,6 +89,7 @@
         </HorizontalScrollView>
     </LinearLayout>
 
+    <!-- Shifts RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/shiftRecyclerView"
         android:layout_width="match_parent"
@@ -98,6 +103,7 @@
         android:background="@android:color/white"
         android:elevation="2dp" />
 
+    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
