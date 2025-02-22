@@ -60,14 +60,15 @@ public class AdminHomePageFrag extends Fragment {
             // Initialize buttons
             infoBtn = view.findViewById(R.id.btnPersonalInfo);
             paySlipBtn = view.findViewById(R.id.btnPaySlip);
-            requestBtn = view.findViewById(R.id.btnSchedule);
+            requestBtn = view.findViewById(R.id.btnRequests);  // Updated to match the new button ID
             scheduleBtn = view.findViewById(R.id.schedule);
 
             if (scheduleBtn != null) {
                 scheduleBtn.setChecked(true); // ✅ Prevents crash
             } else {
                 Log.e("AdminHomePageFrag", "❌ scheduleBtn is NULL!");
-            }            myShiftBtn = view.findViewById(R.id.myShifts);
+            }
+            myShiftBtn = view.findViewById(R.id.myShifts);
             toggleGroup = view.findViewById(R.id.toggleGroup);
 
             shiftRecyclerView = view.findViewById(R.id.shiftRecyclerView);
@@ -88,32 +89,26 @@ public class AdminHomePageFrag extends Fragment {
             infoBtn.setOnClickListener(v -> {
                 Log.d("AdminHomePageFrag", "📌 Personal Info button clicked!");
                 try {
-                    navController.navigate(R.id.action_adminHomePageFrag_to_personalInfoFrag);
+                    navController.navigate(R.id.action_adminHomePageFragment_to_personalInfoFrag);
                     Log.d("AdminHomePageFrag", "✅ Navigation to Personal Info successful!");
                 } catch (Exception e) {
                     Log.e("AdminHomePageFrag", "❌ Navigation failed!", e);
                 }
             });
 
-            paySlipBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        navController.navigate(R.id.action_adminHomePageFrag_to_showFrag);
-                    } catch (Exception e) {
-                        Log.e("Navigation", "Error navigating to pay slip", e);
-                    }
+            paySlipBtn.setOnClickListener(v -> {
+                try {
+                    navController.navigate(R.id.action_adminHomePageFragment_to_showFrag);
+                } catch (Exception e) {
+                    Log.e("Navigation", "Error navigating to pay slip", e);
                 }
             });
 
-            requestBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        navController.navigate(R.id.action_adminHomePageFrag_to_requestsFrag);
-                    } catch (Exception e) {
-                        Log.e("Navigation", "Error navigating to requests", e);
-                    }
+            requestBtn.setOnClickListener(v -> {
+                try {
+                    navController.navigate(R.id.action_adminHomePageFragment_to_requestsFrag);
+                } catch (Exception e) {
+                    Log.e("Navigation", "Error navigating to requests", e);
                 }
             });
 

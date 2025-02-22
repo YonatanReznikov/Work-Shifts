@@ -1,23 +1,28 @@
-<?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/admin_nav_graph"
-    app:startDestination="@id/adminHomePageFrag">
+    app:startDestination="@id/adminHomePageFragment">
 
     <fragment
-        android:id="@+id/adminHomePageFrag"
+        android:id="@+id/adminHomePageFragment"
         android:name="com.example.work_shifts.Fragments.Admin.AdminHomePageFrag"
-        android:label="AdminHomePageFrag"
-        tools:layout="@layout/admin_home_page">
+        android:label="AdminHomePageFragment"
+        tools:layout="@layout/admin_home_page" >
         <action
-            android:id="@+id/action_adminHomePageFrag_to_showFrag"
-            app:destination="@id/showFrag" />
-        <action
-            android:id="@+id/action_adminHomePageFrag_to_personalInfoFrag"
+            android:id="@+id/action_adminHomePageFragment_to_personalInfoFrag"
             app:destination="@id/personalInfoFrag" />
         <action
-            android:id="@+id/action_adminHomePageFrag_to_requestsFrag"
+            android:id="@+id/action_adminHomePageFragment_to_showFrag"
+            app:destination="@id/showFrag" />
+        <action
+            android:id="@+id/action_adminHomePageFragment_to_addShiftFrag"
+            app:destination="@id/addShiftFrag" />
+        <action
+            android:id="@+id/action_adminHomePageFragment_to_deleteShiftFrag"
+            app:destination="@id/deleteShiftFrag" />
+        <action
+            android:id="@+id/action_adminHomePageFragment_to_requestsFrag"
             app:destination="@id/requestsFrag" />
     </fragment>
 
@@ -51,6 +56,18 @@
         android:name="com.example.work_shifts.Fragments.Worker.ReportFragment"
         tools:layout="@layout/add_request"
         android:label="reportFrag" />
+
+    <fragment
+        android:id="@+id/addShiftFrag"
+        android:name="com.example.work_shifts.Fragments.Worker.addShiftFrag"
+        tools:layout="@layout/add_shift"
+        android:label="AddShiftFragment" />
+
+    <fragment
+        android:id="@+id/deleteShiftFrag"
+        android:name="com.example.work_shifts.Fragments.Worker.deleteShiftFrag"
+        tools:layout="@layout/delete_shift"
+        android:label="deleteShiftFrag" />
 
     <fragment
         android:id="@+id/requestsFrag"
