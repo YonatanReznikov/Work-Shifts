@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -49,7 +48,6 @@ public class addShiftFrag extends Fragment {
     private String selectedWeek = "thisWeek";
     private TextView totalHoursText;
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -82,13 +80,12 @@ public class addShiftFrag extends Fragment {
             Log.e("WeekButtonError", "❌ thisWeekButton or nextWeekButton is null! Check XML layout.");
         }
 
-
         startTimeSpinner = view.findViewById(R.id.startTimeSpinner);
         endTimeSpinner = view.findViewById(R.id.endTimeSpinner);
         addShiftButton = view.findViewById(R.id.addShiftButton);
         daysContainer = view.findViewById(R.id.daysContainer);
         totalHoursText = view.findViewById(R.id.totalHoursText);
-        shiftSpinner  = view.findViewById(R.id.shiftSpinner);
+        shiftSpinner = view.findViewById(R.id.shiftSpinner);
         List<String> shifts = Arrays.asList("Morning Shift 7:00-14:00", "Evening Shift 14:00-21:00", "Custom Shift");
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, shifts);
@@ -119,6 +116,7 @@ public class addShiftFrag extends Fragment {
 
         return view;
     }
+
     private void updateTimeSpinnersBasedOnShift(String selectedShift) {
         if (selectedShift.contains("Morning Shift")) {
             startTimeSpinner.setSelection(getTimeOptions().indexOf("07:00"));
@@ -138,7 +136,6 @@ public class addShiftFrag extends Fragment {
         }
         updateTotalHours();
     }
-
 
     private void fetchUserData(@Nullable Runnable onComplete) {
         FirebaseUser user = mAuth.getCurrentUser();
@@ -201,12 +198,14 @@ public class addShiftFrag extends Fragment {
                     });
                 }
             }
+
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("UserData", "❌ Failed to retrieve work IDs", error.toException());
             }
         });
     }
+
     private void updateDaysContainer() {
         daysContainer.removeAllViews();
 
@@ -231,6 +230,7 @@ public class addShiftFrag extends Fragment {
             daysContainer.addView(dayButton);
         }
     }
+
     private void onDaySelected(Button selectedButton) {
         if (lastSelectedButton != null) {
             lastSelectedButton.setBackgroundColor(Color.LTGRAY);
@@ -242,8 +242,10 @@ public class addShiftFrag extends Fragment {
         selectedButton.setTextColor(Color.WHITE);
         selectedButton.setTextSize(18);
 
+        selectedDayTextView.setText(selectedButton.getText().toString());
         lastSelectedButton = selectedButton;
     }
+
     private void changeWeek(int offset) {
         if (offset == 0) {
             selectedWeek = "thisWeek";
@@ -284,8 +286,10 @@ public class addShiftFrag extends Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 updateTotalHours();
             }
+
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
         endTimeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -293,8 +297,10 @@ public class addShiftFrag extends Fragment {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 updateTotalHours();
             }
+
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
 
         updateTotalHours();
@@ -462,6 +468,7 @@ public class addShiftFrag extends Fragment {
     public static class Shift {
         public String sTime, fTime, workerId, workerName;
 
-        public Shift() {}
+        public Shift() {
+        }
     }
 }

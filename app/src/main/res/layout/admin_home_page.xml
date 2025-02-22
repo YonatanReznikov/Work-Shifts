@@ -28,73 +28,12 @@
             android:layout_gravity="center_vertical"/>
     </LinearLayout>
 
-    <!-- Daily Calendar -->
-    <LinearLayout
-        android:id="@+id/dailyCalendar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/topBar"
-        android:orientation="vertical"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/white"
-        android:elevation="2dp"
-        android:padding="16dp">
-
-        <!-- Date Navigation -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingVertical="8dp">
-
-            <ImageButton
-                android:id="@+id/prevDate"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@android:drawable/ic_media_previous"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Previous day" />
-
-            <TextView
-                android:id="@+id/currentDate"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="February 17, 2024"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:gravity="center" />
-
-            <ImageButton
-                android:id="@+id/nextDate"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@android:drawable/ic_media_next"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Next day" />
-        </LinearLayout>
-
-        <!-- Time Slots -->
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none">
-
-            <LinearLayout
-                android:id="@+id/timeSlotsContainer"
-                android:layout_width="wrap_content"
-                android:layout_height="100dp"
-                android:orientation="horizontal" />
-        </HorizontalScrollView>
-    </LinearLayout>
-
     <!-- Shifts RecyclerView -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/shiftRecyclerView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_below="@id/dailyCalendar"
+        android:layout_below="@id/topBar"
         android:layout_above="@id/bottomNavigation"
         android:layout_marginTop="16dp"
         android:padding="16dp"
@@ -102,11 +41,16 @@
         android:clipChildren="false"
         android:background="@android:color/white"
         android:elevation="2dp" />
+
+    <!-- Schedule Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/schedule"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Schedule" />
+        android:text="Schedule"
+        android:layout_below="@id/shiftRecyclerView"
+        android:layout_marginTop="16dp"
+        android:layout_centerHorizontal="true" />
 
     <!-- Bottom Navigation -->
     <LinearLayout
