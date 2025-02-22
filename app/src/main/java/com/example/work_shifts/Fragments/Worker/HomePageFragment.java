@@ -101,16 +101,18 @@ public class HomePageFragment extends Fragment {
         });
 
 
+        ImageButton addAllToCalendarBtn = view.findViewById(R.id.addAllToCalendar);
+        addAllToCalendarBtn.setVisibility(View.GONE); // Initially hidden
+
         toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
-                if (checkedId == R.id.schedule) {
-                    shiftAdapter.updateShifts(allShifts); // Just update UI, no need to reload
-                    Log.d("ShiftDebug", "📅 Displaying Schedule (All Workers)");
-                } else if (checkedId == R.id.myShifts) {
-                    shiftAdapter.updateShifts(userShifts);
-                    Log.d("ShiftDebug", "👤 Displaying My Shifts: " + userShifts.size());
-                }
-                shiftRecyclerView.post(() -> shiftAdapter.notifyDataSetChanged()); // Ensure UI updates
+                boolean isMyShifts = (checkedId == R.id.myShifts);
+                shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
+
+                // Show "Add All" button only in "My Shifts" mode
+                addAllToCalendarBtn.setVisibility(isMyShifts ? View.VISIBLE : View.GONE);
+
+                Log.d("ShiftDebug", "👤 Displaying " + (isMyShifts ? "My Shifts" : "Schedule"));
             }
         });
     }
@@ -200,7 +202,13 @@ public class HomePageFragment extends Fragment {
                         }
 
                         userShifts = new ArrayList<>(userShiftsList);
-                        shiftAdapter.updateShifts(toggleGroup.getCheckedButtonId() == R.id.schedule ? allShifts : userShifts);
+
+                        // ✅ Ensure toggleGroup is not null before accessing its methods
+                        if (toggleGroup != null) {
+                            boolean isMyShifts = toggleGroup.getCheckedButtonId() == R.id.myShifts;
+                            shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
+                        }
+
                         shiftRecyclerView.post(() -> shiftAdapter.notifyDataSetChanged());
                     }
 

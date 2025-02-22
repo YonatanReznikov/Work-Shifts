@@ -26,8 +26,8 @@ import java.util.Locale;
 
 public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHolder> {
     private List<Shift> shiftList;
+    private boolean isMyShifts;
     private final String today;
-    private final boolean isMyShifts; // ✅ Determines if "My Shifts" is active
 
     public ShiftAdapter(List<Shift> shiftList, boolean isMyShifts) {
         this.shiftList = shiftList;
@@ -46,11 +46,12 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
     public void onBindViewHolder(@NonNull ShiftViewHolder holder, int position) {
         Shift shift = shiftList.get(position);
 
+        // Show day header only when it's a new day
         if (position == 0 || !shift.getDay().equals(shiftList.get(position - 1).getDay())) {
             holder.dayTextView.setVisibility(View.VISIBLE);
             holder.dayTextView.setText(shift.getDay());
 
-            if (shift.getDay().contains(getTodayName())) {
+            if (shift.getDay().contains(today)) {
                 holder.dayTextView.setBackgroundColor(Color.parseColor("#FFD700")); // Gold highlight
                 holder.dayTextView.setTextColor(Color.BLACK);
             } else {
@@ -65,9 +66,6 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         holder.timeTextView.setText(String.format("%s - %s", shift.getStartTime(), shift.getEndTime()));
         holder.workerTextView.setText(shift.getWorkerName());
 
-        // Remove highlighting from worker name or "No Shifts Yet"
-        holder.shiftContainer.setBackgroundColor(Color.WHITE);
-
         // Show "Add to Calendar" button only in "My Shifts" mode
         if (isMyShifts) {
             holder.addToCalendarBtn.setVisibility(View.VISIBLE);
@@ -76,7 +74,7 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
                 addShiftToCalendar(v.getContext(), shift);
             });
         } else {
-            holder.addToCalendarBtn.setVisibility(View.GONE);
+            holder.addToCalendarBtn.setVisibility(View.INVISIBLE);  // Instead of GONE, keep it in layout
         }
     }
 
@@ -85,35 +83,37 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         return shiftList.size();
     }
 
-    public void updateShifts(List<Shift> newShifts) {
+    public void updateShifts(List<Shift> newShifts, boolean isMyShifts) {
         this.shiftList = newShifts;
+        this.isMyShifts = isMyShifts;
         notifyDataSetChanged();
-        Log.d("ShiftAdapter", "Shifts updated. New count: " + shiftList.size());
+        Log.d("ShiftAdapter", "Shifts updated. New count: " + shiftList.size() + ", isMyShifts: " + isMyShifts);
     }
 
     static class ShiftViewHolder extends RecyclerView.ViewHolder {
         TextView dayTextView, timeTextView, workerTextView;
         ImageButton addToCalendarBtn;
         LinearLayout shiftContainer;
+
         public ShiftViewHolder(@NonNull View itemView) {
             super(itemView);
             dayTextView = itemView.findViewById(R.id.shiftDay);
             timeTextView = itemView.findViewById(R.id.shiftTime);
             workerTextView = itemView.findViewById(R.id.shiftWorker);
-            addToCalendarBtn = (ImageButton) itemView.findViewById(R.id.addToCalendarBtn);
+            addToCalendarBtn = itemView.findViewById(R.id.addToCalendarBtn);
             shiftContainer = itemView.findViewById(R.id.shiftContainer);
         }
     }
 
     private String getTodayName() {
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
-        return sdf.format(Calendar.getInstance().getTime()).trim(); // Ensure formatting is identical
+        return sdf.format(Calendar.getInstance().getTime()).trim();
     }
 
     private void addShiftToCalendar(Context context, Shift shift) {
         try {
             Calendar startCal = Calendar.getInstance();
-            startCal.setTime(getDateForDay(shift.getDay())); // Convert day name to a real date
+            startCal.setTime(getDateForDay(shift.getDay()));
             startCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getStartTime().split(":")[0]));
             startCal.set(Calendar.MINUTE, 0);
 
@@ -146,7 +146,7 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
     private Date getDateForDay(String fullDayText) {
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
-            return sdf.parse(fullDayText); // Extract actual date from formatted string
+            return sdf.parse(fullDayText);
         } catch (Exception e) {
             Log.e("ShiftAdapter", "❌ Failed to parse date from: " + fullDayText, e);
             return new Date();

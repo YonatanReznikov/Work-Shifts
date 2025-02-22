@@ -34,8 +34,8 @@ import java.util.List;
 
 public class AdminHomePageFrag extends Fragment {
 
-    private Button infoBtn, paySlipBtn, myShiftBtn;
-    private MaterialButton scheduleBtn;
+    private Button infoBtn, paySlipBtn;
+    private MaterialButton scheduleBtn, myShiftBtn;
     private MaterialButtonToggleGroup toggleGroup;
     private RecyclerView shiftRecyclerView;
     private ShiftAdapter shiftAdapter;
@@ -60,6 +60,7 @@ public class AdminHomePageFrag extends Fragment {
         infoBtn = view.findViewById(R.id.btnPersonalInfo);
         paySlipBtn = view.findViewById(R.id.btnPaySlip);
         scheduleBtn = view.findViewById(R.id.schedule);
+        myShiftBtn = view.findViewById(R.id.myShifts);
         toggleGroup = view.findViewById(R.id.toggleGroup);
 
         shiftRecyclerView = view.findViewById(R.id.shiftRecyclerView);
@@ -70,35 +71,34 @@ public class AdminHomePageFrag extends Fragment {
         shiftAdapter = new ShiftAdapter(new ArrayList<>(), false);
         shiftRecyclerView.setAdapter(shiftAdapter);
 
-        loadShifts();
+        // Load initial shifts
+        loadShifts("thisWeek");
 
         scheduleBtn.setChecked(true);
         showingAllShifts = true;
 
+        // Navigation buttons
         infoBtn.setOnClickListener(v -> {
             Log.d("NavigationDebug", "Navigating to Personal Info");
             navController.navigate(R.id.action_adminHomePageFrag_to_personalInfoFrag);
         });
+
         paySlipBtn.setOnClickListener(v -> {
             Log.d("NavigationDebug", "Navigating to Show Fragment");
             navController.navigate(R.id.action_adminHomePageFrag_to_showFrag);
         });
 
+        // Toggle button behavior
         toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
-                if (checkedId == R.id.schedule) {
-                    showingAllShifts = true;
-                    shiftAdapter.updateShifts(allShifts);
-                } else if (checkedId == R.id.myShifts) {
-                    showingAllShifts = false;
-                    Log.d("ShiftDebug", "Switching to My Shifts view. User shifts count: " + userShifts.size());
-                    shiftAdapter.updateShifts(userShifts);
-                }
+                boolean isMyShifts = (checkedId == R.id.myShifts);
+                shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
+                Log.d("ShiftDebug", "👤 Displaying " + (isMyShifts ? "My Shifts" : "Schedule"));
             }
         });
     }
 
-    private void loadShifts() {
+    private void loadShifts(String weekType) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");
 
         workIdsRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -108,12 +108,12 @@ public class AdminHomePageFrag extends Fragment {
                 userShifts.clear();
 
                 if (currentUser == null) {
-                    Log.e("ShiftDebug", "Current user is null!");
+                    Log.e("ShiftDebug", "❌ Current user is null!");
                     return;
                 }
 
                 String userId = currentUser.getUid();
-                Log.d("ShiftDebug", "User ID: " + userId);
+                Log.d("ShiftDebug", "🔍 User ID: " + userId);
 
                 String[] weekdays = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
@@ -123,7 +123,7 @@ public class AdminHomePageFrag extends Fragment {
                 }
 
                 for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
-                    DataSnapshot shiftsSnapshot = workIdSnapshot.child("shifts");
+                    DataSnapshot shiftsSnapshot = workIdSnapshot.child("shifts").child(weekType);
 
                     for (String day : weekdays) {
                         DataSnapshot daySnapshot = shiftsSnapshot.child(day);
@@ -143,7 +143,7 @@ public class AdminHomePageFrag extends Fragment {
 
                                     if (workerId.equals(userId)) {
                                         userShifts.add(shift);
-                                        Log.d("ShiftDebug", "Added user shift: " + sTime + " - " + fTime + " on " + day);
+                                        Log.d("ShiftDebug", "✅ Added user shift: " + sTime + " - " + fTime + " on " + day);
                                     }
                                 }
                             }
@@ -160,16 +160,16 @@ public class AdminHomePageFrag extends Fragment {
                     }
                 }
 
-                Log.d("ShiftDebug", "Total user shifts: " + userShifts.size());
+                Log.d("ShiftDebug", "📊 Total user shifts: " + userShifts.size());
 
-                shiftAdapter.updateShifts(allShifts);
+                // ✅ Fix: Pass the second parameter (false for initial schedule view)
+                shiftAdapter.updateShifts(allShifts, false);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "Failed to read shifts", error.toException());
+                Log.e("Firebase", "❌ Failed to read shifts", error.toException());
             }
         });
     }
-
 }
