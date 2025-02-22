@@ -286,6 +286,12 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
+        String selectedDayName = selectedDayTextView.getText().toString();
+        if (isPastDay(selectedDayName)) {
+            Toast.makeText(requireContext(), "Cannot add a shift for a past day!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         addShiftButton.setEnabled(false);
 
         String startTime = startTimeSpinner.getSelectedItem().toString();
@@ -297,12 +303,10 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
-        String dayOfWeek = selectedDayTextView.getText().toString();
-
         Shift shift = new Shift();
         shift.sTime = startTime;
         shift.fTime = endTime;
-        shift.workerId = userId; // Correctly use the userId from Firebase Realtime Database
+        shift.workerId = userId;
         shift.workerName = userName;
 
         Log.d("ShiftDebug", "✅ Adding Shift: " + startTime + " - " + endTime + " for " + userName + " (UserID: " + userId + ") in Work ID: " + workId);
@@ -311,7 +315,7 @@ public class addShiftFrag extends Fragment {
                 .child(workId)
                 .child("shifts")
                 .child(selectedWeek)
-                .child(dayOfWeek)
+                .child(selectedDayName)
                 .push();
 
         shiftRef.setValue(shift).addOnCompleteListener(task -> {
@@ -324,6 +328,24 @@ public class addShiftFrag extends Fragment {
                 Log.e("ShiftDebug", "🚨 Shift failed to add.");
             }
         });
+    }
+    private boolean isPastDay(String selectedDayName) {
+        Calendar today = Calendar.getInstance();
+        Calendar selectedDay = Calendar.getInstance();
+
+        // Find the selected day's date
+        List<String> daysOfWeek = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
+        int selectedDayIndex = daysOfWeek.indexOf(selectedDayName);
+
+        if (selectedWeek.equals("nextWeek")) {
+            selectedDay.add(Calendar.DAY_OF_YEAR, 7);
+        }
+
+        if (selectedDayIndex != -1) {
+            selectedDay.set(Calendar.DAY_OF_WEEK, selectedDayIndex + 1);
+        }
+
+        return selectedDay.before(today);
     }
 
     public static class Shift {
