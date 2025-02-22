@@ -105,10 +105,20 @@ public class HomePageFragment extends Fragment {
         toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 boolean isMyShifts = (checkedId == R.id.myShifts);
+
+                if (isMyShifts) {
+                    myShiftBtn.setBackgroundColor(getResources().getColor(R.color.blue));
+                    scheduleBtn.setBackgroundColor(getResources().getColor(R.color.green));
+                } else {
+                    scheduleBtn.setBackgroundColor(getResources().getColor(R.color.blue));
+                    myShiftBtn.setBackgroundColor(getResources().getColor(R.color.green));
+                }
+
                 shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
                 Log.d("ShiftDebug", "👤 Displaying " + (isMyShifts ? "My Shifts" : "Schedule"));
             }
         });
+
     }
     private void loadShifts(String weekType) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");

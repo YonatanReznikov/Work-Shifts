@@ -55,6 +55,8 @@ public class addShiftFrag extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.add_shift, container, false);
 
+        thisWeekButton = view.findViewById(R.id.thisWeekButton);
+        nextWeekButton = view.findViewById(R.id.nextWeekButton);
         weekTextView = view.findViewById(R.id.weekTextView);
         selectedDayTextView = new TextView(getContext());
         selectedDayTextView.setId(View.generateViewId());
@@ -63,9 +65,24 @@ public class addShiftFrag extends Fragment {
         layoutParams.setMargins(0, 16, 0, 16);
         selectedDayTextView.setLayoutParams(layoutParams);
         ((LinearLayout) view.findViewById(R.id.daysContainer)).addView(selectedDayTextView);
+        selectedWeek = "thisWeek";
 
-        thisWeekButton = view.findViewById(R.id.thisWeekButton);
-        nextWeekButton = view.findViewById(R.id.nextWeekButton);
+        if (thisWeekButton != null && nextWeekButton != null) {
+            // Set "This Week" as selected by default
+            selectedWeek = "thisWeek";
+            thisWeekButton.setBackgroundColor(Color.BLUE);
+            thisWeekButton.setTextColor(Color.WHITE);
+            nextWeekButton.setBackgroundColor(Color.LTGRAY);
+            nextWeekButton.setTextColor(Color.BLACK);
+
+            // Click Listeners
+            thisWeekButton.setOnClickListener(v -> changeWeek(0));
+            nextWeekButton.setOnClickListener(v -> changeWeek(1));
+        } else {
+            Log.e("WeekButtonError", "❌ thisWeekButton or nextWeekButton is null! Check XML layout.");
+        }
+
+
         startTimeSpinner = view.findViewById(R.id.startTimeSpinner);
         endTimeSpinner = view.findViewById(R.id.endTimeSpinner);
         addShiftButton = view.findViewById(R.id.addShiftButton);
@@ -91,8 +108,6 @@ public class addShiftFrag extends Fragment {
         calendar = Calendar.getInstance();
         updateDaysContainer();
 
-        thisWeekButton.setOnClickListener(v -> changeWeek(0));
-        nextWeekButton.setOnClickListener(v -> changeWeek(1));
         addShiftButton.setOnClickListener(v -> addShiftToDatabase());
 
         setupSpinners();
@@ -194,40 +209,56 @@ public class addShiftFrag extends Fragment {
     }
     private void updateDaysContainer() {
         daysContainer.removeAllViews();
-        daysContainer.addView(selectedDayTextView);
 
         List<String> daysOfWeek = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
 
         for (String dayName : daysOfWeek) {
             Button dayButton = new Button(getContext());
             dayButton.setText(dayName);
-            dayButton.setOnClickListener(v -> onDaySelected(dayName, dayButton));
+            dayButton.setTextSize(16);
+            dayButton.setBackgroundColor(Color.LTGRAY);
+            dayButton.setTextColor(Color.BLACK);
+
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            layoutParams.setMargins(8, 0, 8, 0);
+
+            dayButton.setLayoutParams(layoutParams);
+            dayButton.setOnClickListener(v -> onDaySelected(dayButton));
+
             daysContainer.addView(dayButton);
         }
     }
-    private void onDaySelected(String dayName, Button selectedButton) {
-        selectedDayTextView.setText(dayName);
-        Toast.makeText(getContext(), "Selected day: " + dayName, Toast.LENGTH_SHORT).show();
-
+    private void onDaySelected(Button selectedButton) {
         if (lastSelectedButton != null) {
             lastSelectedButton.setBackgroundColor(Color.LTGRAY);
+            lastSelectedButton.setTextColor(Color.BLACK);
+            lastSelectedButton.setTextSize(16);
         }
 
         selectedButton.setBackgroundColor(Color.BLUE);
+        selectedButton.setTextColor(Color.WHITE);
+        selectedButton.setTextSize(18);
+
         lastSelectedButton = selectedButton;
     }
     private void changeWeek(int offset) {
         if (offset == 0) {
             selectedWeek = "thisWeek";
-        } else {
+            thisWeekButton.setBackgroundColor(Color.BLUE);
+            thisWeekButton.setTextColor(Color.WHITE);
+            nextWeekButton.setBackgroundColor(Color.LTGRAY);
+            nextWeekButton.setTextColor(Color.BLACK);
+        } else { // Selecting "Next Week"
             selectedWeek = "nextWeek";
+            nextWeekButton.setBackgroundColor(Color.BLUE);
+            nextWeekButton.setTextColor(Color.WHITE);
+            thisWeekButton.setBackgroundColor(Color.LTGRAY);
+            thisWeekButton.setTextColor(Color.BLACK);
         }
         updateDaysContainer();
-    }
-
-    private void onDaySelected(String dayName) {
-        selectedDayTextView.setText(dayName);
-        Toast.makeText(getContext(), "Selected day: " + dayName, Toast.LENGTH_SHORT).show();
     }
 
     private void setupSpinners() {
@@ -322,7 +353,7 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
-        String selectedDayName = selectedDayTextView.getText().toString();
+        String selectedDayName = selectedDayTextView.getText().toString().replace("Selected Day: ", "");
         if (isPastDay(selectedDayName)) {
             Toast.makeText(requireContext(), "Cannot add a shift for a past day!", Toast.LENGTH_SHORT).show();
             return;
@@ -332,6 +363,7 @@ public class addShiftFrag extends Fragment {
 
         String startTime = startTimeSpinner.getSelectedItem().toString();
         String endTime = endTimeSpinner.getSelectedItem().toString();
+        String shiftType = shiftSpinner.getSelectedItem().toString();
 
         if (startTime.compareTo(endTime) >= 0) {
             Toast.makeText(requireContext(), "End time must be after start time", Toast.LENGTH_SHORT).show();
@@ -360,9 +392,17 @@ public class addShiftFrag extends Fragment {
             if (task.isSuccessful()) {
                 Log.d("ShiftDebug", "✅ Shift successfully added for " + userName);
                 updateTotalHoursInFirebase(selectedDayName, shiftHours);
+
+                // Display confirmation toast
+                Toast.makeText(requireContext(),
+                        "✅ Shift Added Successfully! \n\n"
+                                + "📅 Day: " + selectedDayName + "\n"
+                                + "🕒 Time: " + startTime + " - " + endTime + "\n"
+                                + "🔹 Type: " + shiftType,
+                        Toast.LENGTH_LONG).show();
             } else {
                 Log.e("ShiftDebug", "🚨 Shift failed to add.");
-                Toast.makeText(requireContext(), "Failed to add shift", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "❌ Failed to add shift. Try again.", Toast.LENGTH_SHORT).show();
             }
             addShiftButton.setEnabled(true);
         });
