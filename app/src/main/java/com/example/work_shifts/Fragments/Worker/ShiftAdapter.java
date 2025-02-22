@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -45,10 +46,17 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
     public void onBindViewHolder(@NonNull ShiftViewHolder holder, int position) {
         Shift shift = shiftList.get(position);
 
-        // Show day header only if it's the first occurrence of the day
         if (position == 0 || !shift.getDay().equals(shiftList.get(position - 1).getDay())) {
             holder.dayTextView.setVisibility(View.VISIBLE);
             holder.dayTextView.setText(shift.getDay());
+
+            if (shift.getDay().contains(getTodayName())) {
+                holder.dayTextView.setBackgroundColor(Color.parseColor("#FFD700")); // Gold highlight
+                holder.dayTextView.setTextColor(Color.BLACK);
+            } else {
+                holder.dayTextView.setBackgroundColor(Color.TRANSPARENT);
+                holder.dayTextView.setTextColor(Color.DKGRAY);
+            }
         } else {
             holder.dayTextView.setVisibility(View.GONE);
         }
@@ -57,14 +65,10 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         holder.timeTextView.setText(String.format("%s - %s", shift.getStartTime(), shift.getEndTime()));
         holder.workerTextView.setText(shift.getWorkerName());
 
-        // Highlight today's shifts
-        if (shift.getDay().trim().equalsIgnoreCase(today.trim())) {
-            holder.itemView.setBackgroundColor(Color.parseColor("#FFD700"));
-        } else {
-            holder.itemView.setBackgroundColor(Color.WHITE);
-        }
+        // Remove highlighting from worker name or "No Shifts Yet"
+        holder.shiftContainer.setBackgroundColor(Color.WHITE);
 
-        // Show "Add to Calendar" button only if in "My Shifts" mode
+        // Show "Add to Calendar" button only in "My Shifts" mode
         if (isMyShifts) {
             holder.addToCalendarBtn.setVisibility(View.VISIBLE);
             holder.addToCalendarBtn.setOnClickListener(v -> {
@@ -90,20 +94,20 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
     static class ShiftViewHolder extends RecyclerView.ViewHolder {
         TextView dayTextView, timeTextView, workerTextView;
         ImageButton addToCalendarBtn;
-
+        LinearLayout shiftContainer;
         public ShiftViewHolder(@NonNull View itemView) {
             super(itemView);
             dayTextView = itemView.findViewById(R.id.shiftDay);
             timeTextView = itemView.findViewById(R.id.shiftTime);
             workerTextView = itemView.findViewById(R.id.shiftWorker);
-            addToCalendarBtn = itemView.findViewById(R.id.addToCalendarBtn);
+            addToCalendarBtn = (ImageButton) itemView.findViewById(R.id.addToCalendarBtn);
+            shiftContainer = itemView.findViewById(R.id.shiftContainer);
         }
     }
 
     private String getTodayName() {
-        Calendar calendar = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
-        return sdf.format(calendar.getTime());
+        return sdf.format(Calendar.getInstance().getTime()).trim(); // Ensure formatting is identical
     }
 
     private void addShiftToCalendar(Context context, Shift shift) {

@@ -1,27 +1,29 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
     android:padding="8dp">
 
-    <!-- Day Header (Only Shown Once Per Day) -->
+    <!-- Day Header -->
     <TextView
         android:id="@+id/shiftDay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Monday (12/03/2024)"
+        android:text="Monday"
         android:textSize="18sp"
         android:textStyle="bold"
         android:paddingBottom="4dp"
-        android:visibility="gone"/> <!-- Initially hidden, shown dynamically -->
+        android:visibility="gone"/>
 
-    <!-- Shift Item Layout -->
     <LinearLayout
         android:id="@+id/shiftContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="4dp">
+        android:padding="8dp"
+        android:background="@android:color/white">
+
 
         <TextView
             android:id="@+id/shiftTime"
@@ -46,18 +48,10 @@
             android:id="@+id/addToCalendarBtn"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@color/white"
+            android:background="@android:color/white"
             android:padding="8dp"
             android:scaleType="centerInside"
             android:src="@drawable/cal"
             android:contentDescription="Add to Google Calendar"/>
-
     </LinearLayout>
-
-    <!-- Separator Line for Better UI -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@android:color/darker_gray"
-        android:layout_marginTop="4dp"/>
 </LinearLayout>
