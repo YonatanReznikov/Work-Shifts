@@ -92,9 +92,15 @@ public class personalInfoFrag extends Fragment {
                                 String email = userSnapshot.child("email").getValue(String.class);
                                 String phone = userSnapshot.child("phone").getValue(String.class);
                                 String companyName = workIdsSnapshot.child(workId).child("companyName").getValue(String.class);
-                                String hours = userSnapshot.child("totalHours").getValue(String.class);
                                 String name = userSnapshot.child("name").getValue(String.class);
+                                String hours = "0";
+                                Object totalHoursObj = userSnapshot.child("totalHours").getValue();
 
+                                if (totalHoursObj instanceof Long) {
+                                    hours = String.valueOf((Long) totalHoursObj);
+                                } else if (totalHoursObj instanceof String) {
+                                    hours = (String) totalHoursObj;
+                                }
                                 if (emailField != null) emailField.setText(email);
                                 if (phoneField != null) phoneField.setText(phone != null ? phone : "");
                                 if (companyInput != null) companyInput.setText(companyName != null ? companyName : "");

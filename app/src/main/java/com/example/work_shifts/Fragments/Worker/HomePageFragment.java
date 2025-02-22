@@ -101,17 +101,11 @@ public class HomePageFragment extends Fragment {
         });
 
 
-        ImageButton addAllToCalendarBtn = view.findViewById(R.id.addAllToCalendar);
-        addAllToCalendarBtn.setVisibility(View.GONE); // Initially hidden
 
         toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
                 boolean isMyShifts = (checkedId == R.id.myShifts);
                 shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
-
-                // Show "Add All" button only in "My Shifts" mode
-                addAllToCalendarBtn.setVisibility(isMyShifts ? View.VISIBLE : View.GONE);
-
                 Log.d("ShiftDebug", "👤 Displaying " + (isMyShifts ? "My Shifts" : "Schedule"));
             }
         });

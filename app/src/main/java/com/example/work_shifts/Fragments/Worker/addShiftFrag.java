@@ -24,6 +24,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -263,7 +264,6 @@ public class addShiftFrag extends Fragment {
             Log.w("ShiftDebug", "❌ Missing user data, retrying...");
             Toast.makeText(requireContext(), "Fetching user data... Please wait.", Toast.LENGTH_SHORT).show();
 
-            // Fetch user data, then retry adding shift
             fetchUserData(() -> {
                 if (workId != null && !workId.isEmpty() && userId != null) {
                     addShiftToDatabase();
@@ -286,6 +286,12 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
+        String selectedDayName = selectedDayTextView.getText().toString();
+        if (isPastDay(selectedDayName)) {
+            Toast.makeText(requireContext(), "Cannot add a shift for a past day!", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         addShiftButton.setEnabled(false);
 
         String startTime = startTimeSpinner.getSelectedItem().toString();
@@ -297,33 +303,84 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
-        String dayOfWeek = selectedDayTextView.getText().toString();
+        int startHour = Integer.parseInt(startTime.split(":")[0]);
+        int endHour = Integer.parseInt(endTime.split(":")[0]);
+        int shiftHours = endHour - startHour;
 
         Shift shift = new Shift();
         shift.sTime = startTime;
         shift.fTime = endTime;
-        shift.workerId = userId; // Correctly use the userId from Firebase Realtime Database
+        shift.workerId = userId;
         shift.workerName = userName;
-
-        Log.d("ShiftDebug", "✅ Adding Shift: " + startTime + " - " + endTime + " for " + userName + " (UserID: " + userId + ") in Work ID: " + workId);
 
         DatabaseReference shiftRef = databaseReference
                 .child(workId)
                 .child("shifts")
                 .child(selectedWeek)
-                .child(dayOfWeek)
+                .child(selectedDayName)
                 .push();
 
         shiftRef.setValue(shift).addOnCompleteListener(task -> {
-            addShiftButton.setEnabled(true);
             if (task.isSuccessful()) {
-                Toast.makeText(requireContext(), "Shift added successfully!", Toast.LENGTH_SHORT).show();
                 Log.d("ShiftDebug", "✅ Shift successfully added for " + userName);
+                updateTotalHoursInFirebase(selectedDayName, shiftHours);
             } else {
-                Toast.makeText(requireContext(), "Failed to add shift", Toast.LENGTH_SHORT).show();
                 Log.e("ShiftDebug", "🚨 Shift failed to add.");
+                Toast.makeText(requireContext(), "Failed to add shift", Toast.LENGTH_SHORT).show();
+            }
+            addShiftButton.setEnabled(true);
+        });
+    }
+
+    private void updateTotalHoursInFirebase(String selectedDay, int shiftHours) {
+        DatabaseReference totalHoursRef = databaseReference
+                .child(workId)
+                .child("users")
+                .child(userId)
+                .child("totalHours");
+
+        totalHoursRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int currentHours = 0;
+                try {
+                    currentHours = snapshot.exists() ? snapshot.getValue(Integer.class) : 0;
+                } catch (DatabaseException e) {
+                    try {
+                        currentHours = Integer.parseInt(snapshot.getValue(String.class));
+                    } catch (NumberFormatException ex) {
+                        Log.e("ShiftDebug", "❌ Invalid totalHours format in Firebase", ex);
+                    }
+                }
+
+                int newTotalHours = currentHours + shiftHours;
+                totalHoursRef.setValue(newTotalHours);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ShiftDebug", "❌ Error retrieving total hours", error.toException());
             }
         });
+    }
+
+    private boolean isPastDay(String selectedDayName) {
+        Calendar today = Calendar.getInstance();
+        Calendar selectedDay = Calendar.getInstance();
+
+        // Find the selected day's date
+        List<String> daysOfWeek = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
+        int selectedDayIndex = daysOfWeek.indexOf(selectedDayName);
+
+        if (selectedWeek.equals("nextWeek")) {
+            selectedDay.add(Calendar.DAY_OF_YEAR, 7);
+        }
+
+        if (selectedDayIndex != -1) {
+            selectedDay.set(Calendar.DAY_OF_WEEK, selectedDayIndex + 1);
+        }
+
+        return selectedDay.before(today);
     }
 
     public static class Shift {

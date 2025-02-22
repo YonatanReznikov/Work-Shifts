@@ -89,12 +89,23 @@ public class showFrag extends Fragment {
                                 String phone = userSnapshot.child("phone").getValue(String.class);
                                 String companyName = workIdsSnapshot.child(workId).child("companyName").getValue(String.class);
                                 String name = userSnapshot.child("name").getValue(String.class);
-                                String totalHoursStr = userSnapshot.child("totalHours").getValue(String.class);
 
-                                int totalHours = Integer.parseInt(totalHoursStr);
+                                int totalHours = 0;
+                                Object totalHoursObj = userSnapshot.child("totalHours").getValue();
+
+                                if (totalHoursObj instanceof Long) {
+                                    totalHours = ((Long) totalHoursObj).intValue();
+                                } else if (totalHoursObj instanceof String) {
+                                    try {
+                                        totalHours = Integer.parseInt((String) totalHoursObj);
+                                    } catch (NumberFormatException e) {
+                                        totalHours = 0;
+                                    }
+                                }
+
+                                // ✅ Fix: Calculate paycheck **after** setting totalHours
                                 int paycheck = totalHours * 40;
                                 int paycheckAfterTaxes = (int) (paycheck * 0.82);
-
                                 if (emailField != null) emailField.setText(email);
                                 if (phoneField != null) phoneField.setText(phone != null ? phone : "");
                                 if (companyField != null) companyField.setText(companyName != null ? companyName : "");
@@ -106,7 +117,6 @@ public class showFrag extends Fragment {
                                 return;
                             }
                         }
-
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
                             Toast.makeText(getContext(), "Error fetching data", Toast.LENGTH_SHORT).show();

@@ -53,16 +53,6 @@
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
         <ImageButton
-            android:id="@+id/addAllToCalendar"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/cal"
-            android:background="@android:color/white"
-            android:padding="8dp"
-            android:visibility="gone"
-            android:contentDescription="Add All to Calendar"/>
-
-        <ImageButton
             android:id="@+id/addShift"
             android:layout_width="48dp"
             android:layout_height="48dp"
