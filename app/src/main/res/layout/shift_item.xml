@@ -9,7 +9,7 @@
         android:id="@+id/shiftDay"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Monday"
+        android:text="Monday (12/03/2024)"
         android:textSize="18sp"
         android:textStyle="bold"
         android:paddingBottom="4dp"
@@ -51,5 +51,13 @@
             android:scaleType="centerInside"
             android:src="@drawable/cal"
             android:contentDescription="Add to Google Calendar"/>
+
     </LinearLayout>
+
+    <!-- Separator Line for Better UI -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_marginTop="4dp"/>
 </LinearLayout>

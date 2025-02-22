@@ -58,10 +58,10 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         holder.workerTextView.setText(shift.getWorkerName());
 
         // Highlight today's shifts
-        if (shift.getDay().equals(today)) {
-            holder.itemView.setBackgroundColor(Color.parseColor("#FFD700")); // Gold for highlighting
+        if (shift.getDay().trim().equalsIgnoreCase(today.trim())) {
+            holder.itemView.setBackgroundColor(Color.parseColor("#FFD700"));
         } else {
-            holder.itemView.setBackgroundColor(Color.WHITE); // Reset default color
+            holder.itemView.setBackgroundColor(Color.WHITE);
         }
 
         // Show "Add to Calendar" button only if in "My Shifts" mode
@@ -102,13 +102,12 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
 
     private String getTodayName() {
         Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
         return sdf.format(calendar.getTime());
     }
 
     private void addShiftToCalendar(Context context, Shift shift) {
         try {
-            // Convert shift day to actual date
             Calendar startCal = Calendar.getInstance();
             startCal.setTime(getDateForDay(shift.getDay())); // Convert day name to a real date
             startCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getStartTime().split(":")[0]));
@@ -140,16 +139,13 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         }
     }
 
-    private Date getDateForDay(String dayName) {
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE", Locale.getDefault());
-
-        for (int i = 0; i < 7; i++) {
-            if (sdf.format(calendar.getTime()).equalsIgnoreCase(dayName)) {
-                return calendar.getTime();
-            }
-            calendar.add(Calendar.DAY_OF_YEAR, 1);
+    private Date getDateForDay(String fullDayText) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
+            return sdf.parse(fullDayText); // Extract actual date from formatted string
+        } catch (Exception e) {
+            Log.e("ShiftAdapter", "❌ Failed to parse date from: " + fullDayText, e);
+            return new Date();
         }
-        return calendar.getTime();
     }
 }
