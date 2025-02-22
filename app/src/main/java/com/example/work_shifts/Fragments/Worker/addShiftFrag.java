@@ -39,7 +39,7 @@ public class addShiftFrag extends Fragment {
 
     private TextView weekTextView, selectedDayTextView;
     private Calendar calendar;
-    private Spinner startTimeSpinner, endTimeSpinner;
+    private Spinner startTimeSpinner, endTimeSpinner, shiftSpinner;
     private Button addShiftButton, thisWeekButton, nextWeekButton;
     private DatabaseReference databaseReference;
     private LinearLayout daysContainer;
@@ -71,6 +71,22 @@ public class addShiftFrag extends Fragment {
         addShiftButton = view.findViewById(R.id.addShiftButton);
         daysContainer = view.findViewById(R.id.daysContainer);
         totalHoursText = view.findViewById(R.id.totalHoursText);
+        shiftSpinner  = view.findViewById(R.id.shiftSpinner);
+        List<String> shifts = Arrays.asList("Morning Shift 7:00-14:00", "Evening Shift 14:00-21:00", "Custom Shift");
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_dropdown_item, shifts);
+        shiftSpinner.setAdapter(adapter);
+        shiftSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedShift = parent.getItemAtPosition(position).toString();
+                updateTimeSpinnersBasedOnShift(selectedShift);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
 
         calendar = Calendar.getInstance();
         updateDaysContainer();
@@ -88,6 +104,26 @@ public class addShiftFrag extends Fragment {
 
         return view;
     }
+    private void updateTimeSpinnersBasedOnShift(String selectedShift) {
+        if (selectedShift.contains("Morning Shift")) {
+            startTimeSpinner.setSelection(getTimeOptions().indexOf("07:00"));
+            endTimeSpinner.setSelection(getTimeOptions().indexOf("14:00"));
+            startTimeSpinner.setEnabled(false);
+            endTimeSpinner.setEnabled(false);
+        } else if (selectedShift.contains("Evening Shift")) {
+            startTimeSpinner.setSelection(getTimeOptions().indexOf("14:00"));
+            endTimeSpinner.setSelection(getTimeOptions().indexOf("21:00"));
+            startTimeSpinner.setEnabled(false);
+            endTimeSpinner.setEnabled(false);
+        } else { // Custom Shift
+            startTimeSpinner.setSelection(getTimeOptions().indexOf("07:00"));
+            endTimeSpinner.setSelection(getTimeOptions().indexOf("14:00"));
+            startTimeSpinner.setEnabled(true);
+            endTimeSpinner.setEnabled(true);
+        }
+        updateTotalHours();
+    }
+
 
     private void fetchUserData(@Nullable Runnable onComplete) {
         FirebaseUser user = mAuth.getCurrentUser();
