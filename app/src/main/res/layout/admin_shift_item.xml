@@ -1,0 +1,66 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <!-- Day Header -->
+    <TextView
+        android:id="@+id/shiftDay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Monday"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingBottom="4dp"
+        android:visibility="gone"/>
+
+    <LinearLayout
+        android:id="@+id/shiftContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:background="@android:color/white">
+
+        <ImageButton
+            android:id="@+id/removeShift"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@android:drawable/ic_delete"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp"
+            android:contentDescription="Delete Shift"/>
+        <TextView
+            android:id="@+id/shiftTime"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text=""
+            android:textSize="16sp"
+            android:textColor="@android:color/black"/>
+
+        <TextView
+            android:id="@+id/shiftWorker"
+            android:layout_width="0dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:text=""
+            android:textSize="16sp"
+            android:textColor="@android:color/black"/>
+
+        <!-- Add to Calendar Button -->
+        <ImageButton
+            android:id="@+id/addToCalendarBtn"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@android:color/white"
+            android:padding="8dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/cal"
+            android:contentDescription="Add to Google Calendar"/>
+    </LinearLayout>
+</LinearLayout>

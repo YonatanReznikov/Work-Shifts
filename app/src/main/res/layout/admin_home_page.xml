@@ -4,7 +4,6 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
-    <!-- Top Bar with Navigation Buttons -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -19,14 +18,11 @@
             android:text="Requests"
             android:textColor="@android:color/white"
             android:backgroundTint="@color/red"
-            android:drawableLeft="@android:drawable/ic_menu_send"
-            android:drawablePadding="8dp"
             android:padding="8dp"
             android:contentDescription="Requests"
             android:elevation="4dp"
             android:textAllCaps="false" />
 
-        <!-- Toggle Group for My Shifts & Schedule -->
         <com.google.android.material.button.MaterialButtonToggleGroup
             android:id="@+id/toggleGroup"
             android:layout_width="0dp"
@@ -67,7 +63,6 @@
             android:contentDescription="Add a new shift"/>
     </LinearLayout>
 
-    <!-- RecyclerView for displaying shifts -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/shiftRecyclerView"
         android:layout_width="match_parent"
@@ -76,7 +71,6 @@
         android:layout_above="@id/bottomNavigation"
         android:paddingTop="16dp"/>
 
-    <!-- Bottom Navigation -->
     <LinearLayout
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"

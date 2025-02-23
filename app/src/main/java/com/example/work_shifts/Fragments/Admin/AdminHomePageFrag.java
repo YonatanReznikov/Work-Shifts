@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.work_shifts.Fragments.Worker.Shift;
-import com.example.work_shifts.Fragments.Worker.ShiftAdapter;
 import com.example.work_shifts.Fragments.Worker.ShiftTransferReceiver;
 import com.example.work_shifts.R;
 import com.google.android.material.button.MaterialButton;
@@ -49,7 +48,7 @@ public class AdminHomePageFrag extends Fragment {
     private MaterialButton myShiftBtn, scheduleBtn;
     private MaterialButtonToggleGroup toggleGroup;
     private RecyclerView shiftRecyclerView;
-    private ShiftAdapter shiftAdapter;
+    private AdminShiftAdapter shiftAdapter;
     private List<Shift> allShifts = new ArrayList<>();
     private List<Shift> userShifts = new ArrayList<>();
     private FirebaseUser currentUser;
@@ -77,14 +76,14 @@ public class AdminHomePageFrag extends Fragment {
         removeShiftBtn = view.findViewById(R.id.removeShift);
         toggleGroup = view.findViewById(R.id.toggleGroup);
         nextWeekBtn = view.findViewById(R.id.nextWeekBtn);
-        requestBtn = view.findViewById(R.id.btnRequests); // Added request button
+        requestBtn = view.findViewById(R.id.btnRequests);
 
         shiftRecyclerView = view.findViewById(R.id.shiftRecyclerView);
         shiftRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
-        shiftAdapter = new ShiftAdapter(new ArrayList<>(), false);
+        shiftAdapter = new AdminShiftAdapter(new ArrayList<>(), false);
         shiftRecyclerView.setAdapter(shiftAdapter);
         scheduleShiftTransfer();
 

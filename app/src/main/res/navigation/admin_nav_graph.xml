@@ -84,7 +84,7 @@
 
     <fragment
         android:id="@+id/requestsFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.requestsFrag"
+        android:name="com.example.work_shifts.Fragments.Admin.requestsFrag"
         tools:layout="@layout/requests"
         android:label="requestsFrag"/> <!-- Added requests fragment -->
 </navigation>
