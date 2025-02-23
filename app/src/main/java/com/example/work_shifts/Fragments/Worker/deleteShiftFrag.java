@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -24,59 +23,59 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
 import java.util.Locale;
 
 public class deleteShiftFrag extends Fragment {
 
     private TextView weekTextView;
-    private Button thisWeekButton, nextWeekButton, deleteButton;
-    private ScrollView dailyCalendar;
-    private Calendar calendar;
+    private Button nextWeekButton, deleteButton;
+    private LinearLayout myShiftsContainer;
     private DatabaseReference databaseReference;
-    private LinearLayout daysContainer, myShiftsContainer;
     private FirebaseAuth mAuth;
-    private String userId;
-    private String workId;
-    private String selectedDay;
+    private String userId, workId;
+    private boolean showingNextWeek = false;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.delete_shift, container, false);
 
-        weekTextView = view.findViewById(R.id.weekTextView);
-        thisWeekButton = view.findViewById(R.id.thisWeekButton);
-        nextWeekButton = view.findViewById(R.id.nextWeekButton);
-        deleteButton = view.findViewById(R.id.deleteButton);
-        dailyCalendar = view.findViewById(R.id.dailyCalendar);
-        daysContainer = view.findViewById(R.id.daysContainer);
-        myShiftsContainer = view.findViewById(R.id.myShiftsContainer);
+        initializeViews(view);
+        initializeFirebase();
 
-        calendar = Calendar.getInstance();
-        mAuth = FirebaseAuth.getInstance();
-        databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
+        fetchUserData(() -> loadUserShifts("thisWeek"));
 
-        fetchUserData();
-        updateDaysContainer();
+        nextWeekButton.setOnClickListener(v -> {
+            showingNextWeek = !showingNextWeek;
 
-        thisWeekButton.setOnClickListener(v -> changeWeek(0));
-        nextWeekButton.setOnClickListener(v -> changeWeek(1));
+            weekTextView.setText(showingNextWeek ? "Next Week" : "This Week");
+            nextWeekButton.setText(showingNextWeek ? "Current Week" : "Next Week");
+
+            loadUserShifts(showingNextWeek ? "nextWeek" : "thisWeek");
+        });
+
         deleteButton.setOnClickListener(v -> deleteSelectedShifts());
 
         return view;
     }
 
-    private void fetchUserData() {
+    private void initializeViews(View view) {
+        weekTextView = view.findViewById(R.id.weekTextView);
+        nextWeekButton = view.findViewById(R.id.nextWeekButton);
+        deleteButton = view.findViewById(R.id.deleteButton);
+        myShiftsContainer = view.findViewById(R.id.myShiftsContainer);
+    }
+
+    private void initializeFirebase() {
+        mAuth = FirebaseAuth.getInstance();
+        databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
+    }
+
+    private void fetchUserData(Runnable onComplete) {
         FirebaseUser user = mAuth.getCurrentUser();
-        if (user == null) return;
+        if (user == null || user.getEmail() == null) return;
 
-        final String userEmail = user.getEmail();
-        if (userEmail == null) return;
-
-        final String lowerCaseEmail = userEmail.toLowerCase();
+        String lowerCaseEmail = user.getEmail().toLowerCase();
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -95,13 +94,14 @@ public class deleteShiftFrag extends Fragment {
                             for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                                 userId = userSnapshot.getKey();
                                 workId = currentWorkId;
-                                return;
+                                onComplete.run();
+                                break;
                             }
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            Toast.makeText(getContext(), "Failed to retrieve user info", Toast.LENGTH_SHORT).show();
+                            showToast("Failed to retrieve user info");
                         }
                     });
                 }
@@ -109,78 +109,90 @@ public class deleteShiftFrag extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Failed to retrieve work IDs", Toast.LENGTH_SHORT).show();
+                showToast("Failed to retrieve work IDs");
             }
         });
     }
 
-    private void updateDaysContainer() {
-        daysContainer.removeAllViews();
-
-        List<String> daysOfWeek = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
-
-        for (String dayName : daysOfWeek) {
-            Button dayButton = new Button(getContext());
-            dayButton.setText(dayName);
-            dayButton.setOnClickListener(v -> onDaySelected(dayName));
-            daysContainer.addView(dayButton);
-        }
-    }
-
-    private void changeWeek(int offset) {
-        calendar.add(Calendar.WEEK_OF_YEAR, offset);
-        updateDaysContainer();
-    }
-
-    private void onDaySelected(String dayName) {
-        selectedDay = dayName;
-        Toast.makeText(getContext(), "Selected day: " + dayName, Toast.LENGTH_SHORT).show();
-        loadShifts(dayName);
-    }
-
-    private void loadShifts(String dayName) {
+    private void loadUserShifts(String weekType) {
         if (userId == null || workId == null) return;
 
-        databaseReference.child(workId).child("shifts").child(dayName).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                myShiftsContainer.removeAllViews();
-                for (DataSnapshot shiftSnapshot : snapshot.getChildren()) {
-                    String shiftId = shiftSnapshot.getKey();
-                    String startTime = shiftSnapshot.child("sTime").getValue(String.class);
-                    String endTime = shiftSnapshot.child("fTime").getValue(String.class);
+        myShiftsContainer.removeAllViews();
+        databaseReference.child(workId).child("shifts").child(weekType)
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        boolean hasShifts = false;
 
-                    CheckBox checkBox = new CheckBox(getContext());
-                    checkBox.setText(String.format(Locale.US, "Shift: %s - %s", startTime, endTime));
-                    checkBox.setTag(shiftId);
-                    myShiftsContainer.addView(checkBox);
-                }
-            }
+                        for (DataSnapshot daySnapshot : snapshot.getChildren()) { // Loops through each day
+                            for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) { // Loops through shifts
+                                String shiftId = shiftSnapshot.getKey();
+                                String workerId = shiftSnapshot.child("workerId").getValue(String.class);
 
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Toast.makeText(getContext(), "Failed to load shifts", Toast.LENGTH_SHORT).show();
-            }
-        });
+                                // ✅ Show only shifts assigned to the current user
+                                if (workerId != null && workerId.equals(userId)) {
+                                    String startTime = shiftSnapshot.child("sTime").getValue(String.class);
+                                    String endTime = shiftSnapshot.child("fTime").getValue(String.class);
+                                    String shiftDay = daySnapshot.getKey(); // Get the day name
+
+                                    CheckBox checkBox = new CheckBox(getContext());
+                                    checkBox.setText(String.format(Locale.US, "%s: %s - %s", shiftDay, startTime, endTime));
+                                    checkBox.setTag(shiftId);
+                                    myShiftsContainer.addView(checkBox);
+                                    hasShifts = true;
+                                }
+                            }
+                        }
+
+                        deleteButton.setEnabled(hasShifts); // Disable delete button if no shifts exist
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        showToast("Failed to load shifts");
+                    }
+                });
     }
 
     private void deleteSelectedShifts() {
-        if (userId == null || workId == null || selectedDay == null) return;
+        if (userId == null || workId == null) return;
 
         for (int i = 0; i < myShiftsContainer.getChildCount(); i++) {
             CheckBox checkBox = (CheckBox) myShiftsContainer.getChildAt(i);
             if (checkBox.isChecked()) {
                 String shiftId = (String) checkBox.getTag();
-                databaseReference.child(workId).child("shifts").child(selectedDay).child(shiftId).removeValue()
-                        .addOnCompleteListener(task -> {
-                            if (task.isSuccessful()) {
-                                Toast.makeText(getContext(), "Shift deleted successfully", Toast.LENGTH_SHORT).show();
-                                loadShifts(selectedDay);
-                            } else {
-                                Toast.makeText(getContext(), "Failed to delete shift", Toast.LENGTH_SHORT).show();
+
+                // ✅ Find and remove shift from Firebase
+                databaseReference.child(workId).child("shifts").child(showingNextWeek ? "nextWeek" : "thisWeek")
+                        .addListenerForSingleValueEvent(new ValueEventListener() {
+                            @Override
+                            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                                for (DataSnapshot daySnapshot : snapshot.getChildren()) {
+                                    if (daySnapshot.hasChild(shiftId)) {
+                                        daySnapshot.child(shiftId).getRef().removeValue()
+                                                .addOnCompleteListener(task -> {
+                                                    if (task.isSuccessful()) {
+                                                        showToast("Shift deleted successfully");
+                                                        loadUserShifts(showingNextWeek ? "nextWeek" : "thisWeek");
+                                                    } else {
+                                                        showToast("Failed to delete shift");
+                                                    }
+                                                });
+                                        return; // ✅ Exit once shift is found and deleted
+                                    }
+                                }
+                            }
+
+                            @Override
+                            public void onCancelled(@NonNull DatabaseError error) {
+                                showToast("Failed to delete shift");
                             }
                         });
             }
         }
+    }
+
+    private void showToast(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }
 }

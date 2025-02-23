@@ -389,7 +389,7 @@ public class addShiftFrag extends Fragment {
 
         DatabaseReference shiftRef = databaseReference
                 .child(workId)
-                .child("shifts")
+                .child("waitingShifts")
                 .child(selectedWeek)
                 .child(selectedDayName)
                 .push();
@@ -397,9 +397,9 @@ public class addShiftFrag extends Fragment {
         shiftRef.setValue(shift).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d("ShiftDebug", "✅ Shift successfully added for " + userName);
+
                 updateTotalHoursInFirebase(selectedDayName, shiftHours);
 
-                // Display confirmation toast
                 Toast.makeText(requireContext(),
                         "✅ Shift Added Successfully! \n\n"
                                 + "📅 Day: " + selectedDayName + "\n"

@@ -4,6 +4,7 @@
     android:layout_height="match_parent"
     android:padding="16dp">
 
+    <!-- Top Bar -->
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="match_parent"
@@ -18,92 +19,42 @@
             android:text="Delete Shift"
             android:textSize="24sp"
             android:textStyle="bold" />
-
     </LinearLayout>
 
-    <ScrollView
-        android:id="@+id/dailyCalendar"
-        android:layout_width="match_parent"
+    <!-- Week Selection - Centered -->
+    <TextView
+        android:id="@+id/weekTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/topBar"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="16dp"
+        android:text="This Week"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:gravity="center"/>
+
+    <Button
+        android:id="@+id/nextWeekButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/weekTextView"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="8dp"
+        android:text="Next Week"
+        android:textSize="18sp"
+        android:backgroundTint="@color/blue"/>
+
+    <!-- Shift List -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_below="@id/nextWeekButton"
+        android:layout_above="@id/deleteButton"
         android:layout_marginTop="16dp"
         android:background="@android:color/white"
         android:elevation="2dp"
         android:padding="8dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingVertical="8dp">
-
-                <Button
-                    android:id="@+id/thisWeekButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="This Week"
-                    android:textSize="18sp"
-                    android:backgroundTint="@color/blue"
-                    android:background="@null"/>
-
-                <TextView
-                    android:id="@+id/weekTextView"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text=""
-                    android:textSize="18sp"
-                    android:textStyle="bold"
-                    android:gravity="center"/>
-
-                <Button
-                    android:id="@+id/nextWeekButton"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Next Week"
-                    android:textSize="18sp"
-                    android:backgroundTint="@color/blue"
-                    android:background="@null"/>
-            </LinearLayout>
-
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:id="@+id/daysContainer"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"/>
-            </HorizontalScrollView>
-        </LinearLayout>
-    </ScrollView>
-
-    <Button
-        android:id="@+id/deleteButton"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/dailyCalendar"
-        android:layout_marginTop="16dp"
-        android:text="Delete Selected Shift"
-        android:backgroundTint="@android:color/holo_red_dark"
-        android:textColor="@android:color/white"
-        android:elevation="2dp"/>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/deleteButton"
-        android:layout_marginTop="16dp"
-        android:background="@android:color/white"
-        android:elevation="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -118,5 +69,17 @@
                 android:orientation="vertical"/>
         </LinearLayout>
     </ScrollView>
+
+    <!-- Delete Button - Always at Bottom -->
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginTop="16dp"
+        android:text="Delete Selected Shift"
+        android:backgroundTint="@android:color/holo_red_dark"
+        android:textColor="@android:color/white"
+        android:elevation="2dp"/>
 
 </RelativeLayout>
