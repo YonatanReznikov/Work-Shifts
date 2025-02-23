@@ -253,7 +253,7 @@ public class addShiftFrag extends Fragment {
             thisWeekButton.setTextColor(Color.WHITE);
             nextWeekButton.setBackgroundColor(Color.LTGRAY);
             nextWeekButton.setTextColor(Color.BLACK);
-        } else { // Selecting "Next Week"
+        } else {
             selectedWeek = "nextWeek";
             nextWeekButton.setBackgroundColor(Color.BLUE);
             nextWeekButton.setTextColor(Color.WHITE);

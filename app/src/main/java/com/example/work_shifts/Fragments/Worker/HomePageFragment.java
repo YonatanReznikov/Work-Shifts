@@ -1,6 +1,12 @@
 package com.example.work_shifts.Fragments.Worker;
 
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -47,6 +53,7 @@ public class HomePageFragment extends Fragment {
     private List<Shift> userShifts = new ArrayList<>();
     private FirebaseUser currentUser;
 
+
     private static final String[] WEEKDAYS = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 
     @Nullable
@@ -78,8 +85,8 @@ public class HomePageFragment extends Fragment {
 
         shiftAdapter = new ShiftAdapter(new ArrayList<>(), false);
         shiftRecyclerView.setAdapter(shiftAdapter);
+        scheduleShiftTransfer();
 
-        checkAndMoveNextWeekToThisWeek();
         showingNextWeek = false;
         nextWeekBtn.setText("Next Week");
         loadShifts("thisWeek");
@@ -119,6 +126,26 @@ public class HomePageFragment extends Fragment {
             }
         });
 
+    }
+    private void scheduleShiftTransfer() {
+        AlarmManager alarmManager = (AlarmManager) requireContext().getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(requireContext(), ShiftTransferReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                requireContext(), 0, intent, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 1);
+        calendar.set(Calendar.SECOND, 0);
+
+        // If Sunday 00:01 AM already passed today, schedule for next week
+        if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
+            calendar.add(Calendar.WEEK_OF_YEAR, 1);
+        }
+
+        // Set an exact alarm
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
     private void loadShifts(String weekType) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");
@@ -229,34 +256,5 @@ public class HomePageFragment extends Fragment {
             }
         });
     }
-    private void checkAndMoveNextWeekToThisWeek() {
-        Calendar calendar = Calendar.getInstance();
-        int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
 
-        if (dayOfWeek == Calendar.SUNDAY) {  // Any time on Sunday
-            DatabaseReference shiftsRef = FirebaseDatabase.getInstance().getReference("workIDs");
-            shiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(@NonNull DataSnapshot snapshot) {
-                    for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
-                        DatabaseReference workRef = shiftsRef.child(workIdSnapshot.getKey()).child("shifts");
-
-                        workRef.child("thisWeek").setValue(workIdSnapshot.child("shifts").child("nextWeek").getValue())
-                                .addOnCompleteListener(task -> {
-                                    if (task.isSuccessful()) {
-                                        workRef.child("nextWeek").setValue(null);
-                                        Log.d("ShiftDebug", "✅ Moved nextWeek shifts to thisWeek.");
-                                        loadShifts("thisWeek"); // 🔄 Force UI to reload new shifts
-                                    }
-                                });
-                    }
-                }
-
-                @Override
-                public void onCancelled(@NonNull DatabaseError error) {
-                    Log.e("Firebase", "Failed to move shifts", error.toException());
-                }
-            });
-        }
-    }
 }
