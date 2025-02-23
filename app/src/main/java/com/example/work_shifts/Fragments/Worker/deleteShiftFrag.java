@@ -157,28 +157,44 @@ public class deleteShiftFrag extends Fragment {
     private void deleteSelectedShifts() {
         if (userId == null || workId == null) return;
 
+        String weekType = showingNextWeek ? "nextWeek" : "thisWeek";
+
         for (int i = 0; i < myShiftsContainer.getChildCount(); i++) {
             CheckBox checkBox = (CheckBox) myShiftsContainer.getChildAt(i);
             if (checkBox.isChecked()) {
                 String shiftId = (String) checkBox.getTag();
 
-                // ✅ Find and remove shift from Firebase
-                databaseReference.child(workId).child("shifts").child(showingNextWeek ? "nextWeek" : "thisWeek")
+                databaseReference.child(workId).child("shifts").child(weekType)
                         .addListenerForSingleValueEvent(new ValueEventListener() {
                             @Override
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                 for (DataSnapshot daySnapshot : snapshot.getChildren()) {
                                     if (daySnapshot.hasChild(shiftId)) {
-                                        daySnapshot.child(shiftId).getRef().removeValue()
+                                        // Retrieve shift data
+                                        DataSnapshot shiftSnapshot = daySnapshot.child(shiftId);
+                                        Object shiftData = shiftSnapshot.getValue();
+
+                                        // Move to waitingShifts
+                                        databaseReference.child(workId).child("waitingShifts").child(weekType)
+                                                .child(daySnapshot.getKey()).child(shiftId)
+                                                .setValue(shiftData)
                                                 .addOnCompleteListener(task -> {
                                                     if (task.isSuccessful()) {
-                                                        showToast("Shift deleted successfully");
-                                                        loadUserShifts(showingNextWeek ? "nextWeek" : "thisWeek");
+                                                        // Remove from shifts
+                                                        shiftSnapshot.getRef().removeValue()
+                                                                .addOnCompleteListener(deleteTask -> {
+                                                                    if (deleteTask.isSuccessful()) {
+                                                                        showToast("Shift moved to waiting list");
+                                                                        loadUserShifts(weekType);
+                                                                    } else {
+                                                                        showToast("Failed to remove shift");
+                                                                    }
+                                                                });
                                                     } else {
-                                                        showToast("Failed to delete shift");
+                                                        showToast("Failed to move shift to waiting list");
                                                     }
                                                 });
-                                        return; // ✅ Exit once shift is found and deleted
+                                        return; // Exit after handling shift
                                     }
                                 }
                             }
@@ -191,6 +207,7 @@ public class deleteShiftFrag extends Fragment {
             }
         }
     }
+
 
     private void showToast(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();

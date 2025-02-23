@@ -52,7 +52,7 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
     public void onBindViewHolder(@NonNull ShiftViewHolder holder, int position) {
         Shift shift = shiftList.get(position);
 
-        // Show the day header if it's the first item or a new day
+        // ✅ Ensure the first shift of the day has a visible day header
         if (position == 0 || !shift.getDay().equals(shiftList.get(position - 1).getDay())) {
             holder.dayTextView.setVisibility(View.VISIBLE);
             holder.dayTextView.setText(shift.getDay());
@@ -65,7 +65,7 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
                 holder.dayTextView.setTextColor(Color.DKGRAY);
             }
         } else {
-            holder.dayTextView.setVisibility(View.GONE);
+            holder.dayTextView.setVisibility(View.GONE); // ✅ Change from INVISIBLE to GONE
         }
 
         holder.timeTextView.setText(String.format("%s - %s", shift.getsTime(), shift.getfTime()));
@@ -80,6 +80,8 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
 
         holder.deleteShiftBtn.setOnClickListener(v -> deleteShift(holder.itemView.getContext(), shift));
     }
+
+
     private void addShiftToCalendar(Context context, Shift shift) {
         try {
             Calendar startCal = Calendar.getInstance();
@@ -205,25 +207,30 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
                 shiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        boolean shiftFound = false;
+
                         for (DataSnapshot shiftSnapshot : snapshot.getChildren()) {
                             String sTime = shiftSnapshot.child("sTime").getValue(String.class);
                             String fTime = shiftSnapshot.child("fTime").getValue(String.class);
 
                             if (sTime != null && sTime.equals(shift.getsTime()) &&
                                     fTime != null && fTime.equals(shift.getfTime())) {
-
                                 shiftSnapshot.getRef().removeValue()
                                         .addOnSuccessListener(aVoid -> {
-                                            checkAndReplaceEmptyDay(shiftsRef);
+                                            checkAndReplaceEmptyDay(shiftsRef, shift.getDay());
                                             Toast.makeText(context, "✅ Shift Deleted", Toast.LENGTH_SHORT).show();
                                             shiftList.remove(shift);
                                             notifyDataSetChanged();
                                         })
                                         .addOnFailureListener(e -> Toast.makeText(context, "❌ Failed to delete shift", Toast.LENGTH_SHORT).show());
-                                return;
+                                shiftFound = true;
+                                break;
                             }
                         }
-                        Toast.makeText(context, "❌ Shift not found!", Toast.LENGTH_SHORT).show();
+
+                        if (!shiftFound) {
+                            Toast.makeText(context, "❌ Shift not found!", Toast.LENGTH_SHORT).show();
+                        }
                     }
 
                     @Override
@@ -239,13 +246,14 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
             }
         });
     }
-    private void checkAndReplaceEmptyDay(DatabaseReference dayRef) {
+    private void checkAndReplaceEmptyDay(DatabaseReference dayRef, String dayName) {
         dayRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (!snapshot.hasChildren()) {
+                    // Instead of removing the day, add a placeholder
                     dayRef.child("noShifts").setValue("No shifts yet");
-                    Log.d("ShiftAdapter", "✅ No shifts left. Added 'No shifts yet' placeholder.");
+                    Log.d("ShiftAdapter", "✅ No shifts left for " + dayName + ". Added 'No shifts yet' placeholder.");
                 }
             }
 
@@ -255,5 +263,4 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
             }
         });
     }
-
 }

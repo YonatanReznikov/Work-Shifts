@@ -237,6 +237,8 @@ public class AdminHomePageFrag extends Fragment {
 
                 for (String day : WEEKDAYS) {
                     DataSnapshot daySnapshot = snapshot.child(day);
+                    String dateWithDay = dateMap.get(day);
+
                     if (daySnapshot.exists()) {
                         for (DataSnapshot shiftData : daySnapshot.getChildren()) {
                             String sTime = shiftData.child("sTime").getValue(String.class);
@@ -246,7 +248,6 @@ public class AdminHomePageFrag extends Fragment {
 
                             if (sTime == null || fTime == null || workerId == null) continue;
 
-                            String dateWithDay = dateMap.get(day);
                             Shift shift = new Shift(day, sTime, fTime, workerName, workerId, weekType);
                             allWorkerShiftsMap.get(day).add(shift);
 
@@ -255,15 +256,16 @@ public class AdminHomePageFrag extends Fragment {
                             }
                         }
                     }
+
+                    // ✅ If no shifts exist for the day, add a placeholder to keep the date
+                    if (allWorkerShiftsMap.get(day).isEmpty()) {
+                        allWorkerShiftsMap.get(day).add(new Shift(dateWithDay, "", "", "No Shifts Yet", "", weekType));
+                    }
                 }
 
+                // ✅ Add all shifts to the list
                 for (String day : WEEKDAYS) {
-                    String dateWithDay = dateMap.get(day);
-                    if (allWorkerShiftsMap.get(day).isEmpty()) {
-                        allShifts.add(new Shift(dateWithDay, "", "", "No Shifts Yet", "", weekType));
-                    } else {
-                        allShifts.addAll(allWorkerShiftsMap.get(day));
-                    }
+                    allShifts.addAll(allWorkerShiftsMap.get(day));
                 }
 
                 userShifts = new ArrayList<>(userShiftsList);

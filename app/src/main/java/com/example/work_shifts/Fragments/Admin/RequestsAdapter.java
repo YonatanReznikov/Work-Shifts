@@ -43,7 +43,6 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
         Shift shift = waitingShifts.get(position);
         holder.workerName.setText(shift.getWorkerName());
         holder.shiftTime.setText(shift.getsTime() + " - " + shift.getfTime());
-        holder.shiftDay.setText(shift.getDay());
         String formattedDate = getFormattedDate(shift.getDay());
         holder.shiftDate.setText(formattedDate);
         holder.approveButton.setOnClickListener(v -> approveShift(shift, position));
@@ -79,12 +78,11 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView workerName, shiftDate, shiftTime, shiftDay;
+        TextView workerName, shiftDate, shiftTime;
         Button approveButton, rejectButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
-            shiftDay = itemView.findViewById(R.id.shiftDay);
             shiftDate = itemView.findViewById(R.id.shiftDate);
             workerName = itemView.findViewById(R.id.workerName);
             shiftTime = itemView.findViewById(R.id.shiftTime);
