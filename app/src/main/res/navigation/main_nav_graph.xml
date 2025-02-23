@@ -13,9 +13,6 @@
             android:id="@+id/action_homePageFragment_to_personalInfoFrag"
             app:destination="@id/personalInfoFrag" />
         <action
-            android:id="@+id/action_homePageFragment_to_myShiftFrag"
-            app:destination="@id/myShiftFrag" />
-        <action
             android:id="@+id/action_homePageFragment_to_addShiftFrag"
             app:destination="@id/addShiftFrag" />
         <action
@@ -56,16 +53,6 @@
         android:name="com.example.work_shifts.Fragments.Worker.ReportFragment"
         tools:layout="@layout/add_request"
         android:label="reportFrag" />
-
-    <fragment
-        android:id="@+id/myShiftFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.myShiftFrag"
-        tools:layout="@layout/my_shift"
-        android:label="myShiftFrag" >
-        <action
-            android:id="@+id/action_myShiftFrag_to_deleteShiftFrag"
-            app:destination="@id/deleteShiftFrag" />
-    </fragment>
 
     <fragment
         android:id="@+id/addShiftFrag"

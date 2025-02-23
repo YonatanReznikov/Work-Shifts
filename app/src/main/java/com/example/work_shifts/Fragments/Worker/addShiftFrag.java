@@ -367,23 +367,23 @@ public class addShiftFrag extends Fragment {
 
         addShiftButton.setEnabled(false);
 
-        String startTime = startTimeSpinner.getSelectedItem().toString();
-        String endTime = endTimeSpinner.getSelectedItem().toString();
+        String sTime = startTimeSpinner.getSelectedItem().toString();
+        String fTime = endTimeSpinner.getSelectedItem().toString();
         String shiftType = shiftSpinner.getSelectedItem().toString();
 
-        if (startTime.compareTo(endTime) >= 0) {
+        if (sTime.compareTo(fTime) >= 0) {
             Toast.makeText(requireContext(), "End time must be after start time", Toast.LENGTH_SHORT).show();
             addShiftButton.setEnabled(true);
             return;
         }
 
-        int startHour = Integer.parseInt(startTime.split(":")[0]);
-        int endHour = Integer.parseInt(endTime.split(":")[0]);
+        int startHour = Integer.parseInt(sTime.split(":")[0]);
+        int endHour = Integer.parseInt(fTime.split(":")[0]);
         int shiftHours = endHour - startHour;
 
         Shift shift = new Shift();
-        shift.sTime = startTime;
-        shift.fTime = endTime;
+        shift.sTime = sTime;
+        shift.fTime = fTime;
         shift.workerId = userId;
         shift.workerName = userName;
 
@@ -403,7 +403,7 @@ public class addShiftFrag extends Fragment {
                 Toast.makeText(requireContext(),
                         "✅ Shift Added Successfully! \n\n"
                                 + "📅 Day: " + selectedDayName + "\n"
-                                + "🕒 Time: " + startTime + " - " + endTime + "\n"
+                                + "🕒 Time: " + sTime + " - " + fTime + "\n"
                                 + "🔹 Type: " + shiftType,
                         Toast.LENGTH_LONG).show();
             } else {

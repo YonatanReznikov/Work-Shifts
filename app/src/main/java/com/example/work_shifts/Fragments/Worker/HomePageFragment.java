@@ -213,7 +213,7 @@ public class HomePageFragment extends Fragment {
                                     if (sTime == null || fTime == null || workerId == null) continue;
 
                                     String dateWithDay = dateMap.get(day);
-                                    Shift shift = new Shift(dateWithDay, sTime, fTime, workerName, workerId);
+                                    Shift shift = new Shift(day, sTime, fTime, workerName, workerId, weekType);
                                     allWorkerShiftsMap.get(day).add(shift);
 
                                     if (workerId.equals(currentUserId)) {
@@ -226,7 +226,7 @@ public class HomePageFragment extends Fragment {
                         for (String day : WEEKDAYS) {
                             String dateWithDay = dateMap.get(day);
                             if (allWorkerShiftsMap.get(day).isEmpty()) {
-                                allShifts.add(new Shift(dateWithDay, "", "", "No Shifts Yet", ""));
+                                allShifts.add(new Shift(dateWithDay, "", "", "No Shifts Yet", "", weekType));
                             } else {
                                 allShifts.addAll(allWorkerShiftsMap.get(day));
                             }

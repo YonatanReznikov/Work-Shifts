@@ -44,7 +44,7 @@ public class AdminHomePageFrag extends Fragment {
 
     private Button infoBtn, paySlipBtn, nextWeekBtn, requestBtn;
     private boolean showingNextWeek = false;
-    private ImageButton addShiftBtn, removeShiftBtn;
+    private ImageButton addShiftBtn;
     private MaterialButton myShiftBtn, scheduleBtn;
     private MaterialButtonToggleGroup toggleGroup;
     private RecyclerView shiftRecyclerView;
@@ -73,7 +73,6 @@ public class AdminHomePageFrag extends Fragment {
         myShiftBtn = view.findViewById(R.id.myShifts);
         scheduleBtn = view.findViewById(R.id.schedule);
         addShiftBtn = view.findViewById(R.id.addShift);
-        removeShiftBtn = view.findViewById(R.id.removeShift);
         toggleGroup = view.findViewById(R.id.toggleGroup);
         nextWeekBtn = view.findViewById(R.id.nextWeekBtn);
         requestBtn = view.findViewById(R.id.btnRequests);
@@ -110,14 +109,8 @@ public class AdminHomePageFrag extends Fragment {
             Log.e("AdminHomePageFrag", "addShiftBtn is null");
         }
 
-        if (removeShiftBtn != null) {
-            removeShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_deleteShiftFrag));
-        } else {
-            Log.e("AdminHomePageFrag", "removeShiftBtn is null");
-        }
-
         if (requestBtn != null) {
-            requestBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_requestsFrag)); // Added click listener for request button
+            requestBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_requestsFrag));
         } else {
             Log.e("AdminHomePageFrag", "requestBtn is null");
         }
@@ -129,7 +122,7 @@ public class AdminHomePageFrag extends Fragment {
             nextWeekBtn.setText(showingNextWeek ? "Current Week" : "Next Week");
 
             loadShifts(week);
-            shiftRecyclerView.post(() -> shiftAdapter.notifyDataSetChanged()); // ✅ Force full UI refresh
+            shiftRecyclerView.post(() -> shiftAdapter.notifyDataSetChanged());
         });
 
         toggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
@@ -163,30 +156,30 @@ public class AdminHomePageFrag extends Fragment {
         calendar.set(Calendar.MINUTE, 1);
         calendar.set(Calendar.SECOND, 0);
 
-        // If Sunday 00:01 AM already passed today, schedule for next week
         if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
             calendar.add(Calendar.WEEK_OF_YEAR, 1);
         }
 
-        // Set an exact alarm
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
 
     private void loadShifts(String weekType) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");
+        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser == null) {
-            Log.e("ShiftDebug", "❌ Current user is null!");
+            Log.e("FirebaseDebug", "❌ Current user is null!");
             return;
         }
 
         String currentUserId = currentUser.getUid();
 
-        // Step 1: Find the user's workID
         workIdsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String userWorkId = null;
+
+                // ✅ Find the user's workID dynamically
                 for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
                     if (workIdSnapshot.child("users").hasChild(currentUserId)) {
                         userWorkId = workIdSnapshot.getKey();
@@ -195,89 +188,99 @@ public class AdminHomePageFrag extends Fragment {
                 }
 
                 if (userWorkId == null) {
-                    Log.e("ShiftDebug", "❌ User has no assigned workID!");
+                    Log.e("FirebaseDebug", "❌ No workID found for user: " + currentUserId);
                     return;
                 }
 
-                Log.d("ShiftDebug", "🏢 Found workID for user: " + userWorkId);
+                Log.d("FirebaseDebug", "✅ Found workID: " + userWorkId);
 
-                // Step 2: Load shifts only from the user's workID
-                DatabaseReference shiftsRef = workIdsRef.child(userWorkId).child("shifts").child(weekType);
-                shiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot shiftSnapshot) {
-                        allShifts.clear();
-                        userShifts.clear();
-
-                        LinkedHashMap<String, List<Shift>> allWorkerShiftsMap = new LinkedHashMap<>();
-                        List<Shift> userShiftsList = new ArrayList<>();
-
-                        Calendar calendar = Calendar.getInstance();
-                        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
-                        if (weekType.equals("nextWeek")) {
-                            calendar.add(Calendar.DAY_OF_MONTH, 7);
-                        }
-
-                        SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
-                        LinkedHashMap<String, String> dateMap = new LinkedHashMap<>();
-                        for (String day : WEEKDAYS) {
-                            allWorkerShiftsMap.put(day, new ArrayList<>());
-                            dateMap.put(day, sdf.format(calendar.getTime()));
-                            calendar.add(Calendar.DAY_OF_MONTH, 1);
-                        }
-
-                        for (String day : WEEKDAYS) {
-                            DataSnapshot daySnapshot = shiftSnapshot.child(day);
-                            if (daySnapshot.exists()) {
-                                for (DataSnapshot shiftData : daySnapshot.getChildren()) {
-                                    String sTime = shiftData.child("sTime").getValue(String.class);
-                                    String fTime = shiftData.child("fTime").getValue(String.class);
-                                    String workerId = shiftData.child("workerId").getValue(String.class);
-                                    String workerName = shiftData.child("workerName").getValue(String.class);
-
-                                    if (sTime == null || fTime == null || workerId == null) continue;
-
-                                    String dateWithDay = dateMap.get(day);
-                                    Shift shift = new Shift(dateWithDay, sTime, fTime, workerName, workerId);
-                                    allWorkerShiftsMap.get(day).add(shift);
-
-                                    if (workerId.equals(currentUserId)) {
-                                        userShiftsList.add(shift);
-                                    }
-                                }
-                            }
-                        }
-
-                        for (String day : WEEKDAYS) {
-                            String dateWithDay = dateMap.get(day);
-                            if (allWorkerShiftsMap.get(day).isEmpty()) {
-                                allShifts.add(new Shift(dateWithDay, "", "", "No Shifts Yet", ""));
-                            } else {
-                                allShifts.addAll(allWorkerShiftsMap.get(day));
-                            }
-                        }
-
-                        userShifts = new ArrayList<>(userShiftsList);
-
-                        // ✅ Ensure toggleGroup is not null before accessing its methods
-                        if (toggleGroup != null) {
-                            boolean isMyShifts = toggleGroup.getCheckedButtonId() == R.id.myShifts;
-                            shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
-                        }
-
-                        shiftRecyclerView.post(() -> shiftAdapter.notifyDataSetChanged());
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("Firebase", "❌ Failed to read shifts", error.toException());
-                    }
-                });
+                fetchShiftsForWorkId(userWorkId, weekType);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
                 Log.e("Firebase", "❌ Failed to read workIDs", error.toException());
+            }
+        });
+    }
+    private void fetchShiftsForWorkId(String workId, String weekType) {
+        DatabaseReference shiftsRef = FirebaseDatabase.getInstance()
+                .getReference("workIDs").child(workId).child("shifts").child(weekType);
+
+        allShifts.clear();
+        userShifts.clear();
+
+        LinkedHashMap<String, List<Shift>> allWorkerShiftsMap = new LinkedHashMap<>();
+        List<Shift> userShiftsList = new ArrayList<>();
+
+        // 📅 Get today’s date and initialize week mapping
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); // Start from Sunday
+
+        if (weekType.equals("nextWeek")) {
+            calendar.add(Calendar.DAY_OF_MONTH, 7); // Move to next week if needed
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
+        LinkedHashMap<String, String> dateMap = new LinkedHashMap<>();
+
+        for (String day : WEEKDAYS) {
+            allWorkerShiftsMap.put(day, new ArrayList<>());
+            dateMap.put(day, sdf.format(calendar.getTime())); // Map each day to a formatted date
+            calendar.add(Calendar.DAY_OF_MONTH, 1);
+        }
+
+        shiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.d("FirebaseDebug", "🔥 Data snapshot: " + snapshot.getValue());
+
+                for (String day : WEEKDAYS) {
+                    DataSnapshot daySnapshot = snapshot.child(day);
+                    if (daySnapshot.exists()) {
+                        for (DataSnapshot shiftData : daySnapshot.getChildren()) {
+                            String sTime = shiftData.child("sTime").getValue(String.class);
+                            String fTime = shiftData.child("fTime").getValue(String.class);
+                            String workerId = shiftData.child("workerId").getValue(String.class);
+                            String workerName = shiftData.child("workerName").getValue(String.class);
+
+                            if (sTime == null || fTime == null || workerId == null) continue;
+
+                            String dateWithDay = dateMap.get(day);
+                            Shift shift = new Shift(day, sTime, fTime, workerName, workerId, weekType);
+                            allWorkerShiftsMap.get(day).add(shift);
+
+                            if (workerId.equals(currentUser.getUid())) {
+                                userShiftsList.add(shift);
+                            }
+                        }
+                    }
+                }
+
+                for (String day : WEEKDAYS) {
+                    String dateWithDay = dateMap.get(day);
+                    if (allWorkerShiftsMap.get(day).isEmpty()) {
+                        // ✅ Show "No Shifts Yet" placeholder
+                        allShifts.add(new Shift(dateWithDay, "", "", "No Shifts Yet", "", weekType));
+                    } else {
+                        allShifts.addAll(allWorkerShiftsMap.get(day));
+                    }
+                }
+
+                userShifts = new ArrayList<>(userShiftsList);
+
+                // ✅ Ensure toggleGroup is not null before accessing its methods
+                if (toggleGroup != null) {
+                    boolean isMyShifts = toggleGroup.getCheckedButtonId() == R.id.myShifts;
+                    shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
+                }
+
+                shiftRecyclerView.post(() -> shiftAdapter.notifyDataSetChanged());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "❌ Failed to read shifts", error.toException());
             }
         });
     }

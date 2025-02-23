@@ -47,7 +47,6 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
     public void onBindViewHolder(@NonNull ShiftViewHolder holder, int position) {
         Shift shift = shiftList.get(position);
 
-        // Show day header only when it's a new day
         if (position == 0 || !shift.getDay().equals(shiftList.get(position - 1).getDay())) {
             holder.dayTextView.setVisibility(View.VISIBLE);
             holder.dayTextView.setText(shift.getDay());
@@ -63,19 +62,17 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
             holder.dayTextView.setVisibility(View.GONE);
         }
 
-        // Set shift details
-        holder.timeTextView.setText(String.format("%s - %s", shift.getStartTime(), shift.getEndTime()));
+        holder.timeTextView.setText(String.format("%s - %s", shift.getsTime(), shift.getfTime()));
         holder.workerTextView.setText(shift.getWorkerName());
 
-        // Show "Add to Calendar" button only in "My Shifts" mode
         if (isMyShifts) {
             holder.addToCalendarBtn.setVisibility(View.VISIBLE);
             holder.addToCalendarBtn.setOnClickListener(v -> {
-                Log.d("ShiftAdapter", "🗓️ Adding Shift to Calendar: " + shift.getStartTime() + " - " + shift.getEndTime());
+                Log.d("ShiftAdapter", "🗓️ Adding Shift to Calendar: " + shift.getsTime() + " - " + shift.getEndTime());
                 addShiftToCalendar(v.getContext(), shift);
             });
         } else {
-            holder.addToCalendarBtn.setVisibility(View.INVISIBLE);  // Instead of GONE, keep it in layout
+            holder.addToCalendarBtn.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -85,11 +82,17 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
     }
 
     public void updateShifts(List<Shift> newShifts, boolean isMyShifts) {
-        this.shiftList = newShifts;
+        if (newShifts == null || newShifts.isEmpty()) {
+            Log.e("ShiftAdapter", "❌ No shifts available to update.");
+            this.shiftList.clear();
+        } else {
+            this.shiftList = newShifts;
+        }
         this.isMyShifts = isMyShifts;
         notifyDataSetChanged();
-        Log.d("ShiftAdapter", "Shifts updated. New count: " + shiftList.size() + ", isMyShifts: " + isMyShifts);
+        Log.d("ShiftAdapter", "🚀 Updating shifts. Total shifts: " + shiftList.size());
     }
+
 
     static class ShiftViewHolder extends RecyclerView.ViewHolder {
         TextView dayTextView, timeTextView, workerTextView;
@@ -115,24 +118,24 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
         try {
             Calendar startCal = Calendar.getInstance();
             startCal.setTime(getDateForDay(shift.getDay()));
-            startCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getStartTime().split(":")[0]));
+            startCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getsTime().split(":")[0]));
             startCal.set(Calendar.MINUTE, 0);
 
             Calendar endCal = (Calendar) startCal.clone();
-            endCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getEndTime().split(":")[0]));
+            endCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getfTime().split(":")[0]));
             endCal.set(Calendar.MINUTE, 0);
 
             // Format timestamps for Google Calendar URL
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.getDefault());
-            String startTime = sdf.format(startCal.getTime());
-            String endTime = sdf.format(endCal.getTime());
+            String sTime = sdf.format(startCal.getTime());
+            String fTime = sdf.format(endCal.getTime());
 
             // Construct Google Calendar event URL
             String calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE" +
                     "&text=Work%20Shift" +
-                    "&details=Shift%3A%20" + shift.getStartTime() + "%20-%20" + shift.getEndTime() +
+                    "&details=Shift%3A%20" + shift.getsTime() + "%20-%20" + shift.getfTime() +
                     "&location=Workplace" +
-                    "&dates=" + startTime + "/" + endTime;
+                    "&dates=" + sTime + "/" + fTime;
 
             // Open the Google Calendar event creation page in a browser
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(calendarUrl));
