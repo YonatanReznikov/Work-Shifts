@@ -12,14 +12,19 @@
         android:orientation="horizontal"
         android:gravity="center_vertical">
 
-        <ImageButton
-            android:id="@+id/removeShift"
-            android:layout_width="48dp"
+        <Button
+            android:id="@+id/btnRequests"
+            android:layout_width="wrap_content"
             android:layout_height="48dp"
-            android:src="@android:drawable/ic_delete"
-            android:background="?attr/selectableItemBackgroundBorderless"
+            android:text="Requests"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/red"
+            android:drawableLeft="@android:drawable/ic_menu_send"
+            android:drawablePadding="8dp"
             android:padding="8dp"
-            android:contentDescription="Delete Shift"/>
+            android:contentDescription="Requests"
+            android:elevation="4dp"
+            android:textAllCaps="false" />
 
         <!-- Toggle Group for My Shifts & Schedule -->
         <com.google.android.material.button.MaterialButtonToggleGroup
@@ -61,6 +66,7 @@
             android:padding="8dp"
             android:contentDescription="Add a new shift"/>
     </LinearLayout>
+
     <!-- RecyclerView for displaying shifts -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/shiftRecyclerView"
@@ -115,19 +121,6 @@
             android:layout_weight="1"
             android:text="Personal Info"
             android:backgroundTint="#D97706"
-            android:textColor="@android:color/white"
-            android:elevation="2dp"
-            android:gravity="center"
-            android:textAllCaps="false"
-            android:paddingTop="1dp" />
-
-        <Button
-            android:id="@+id/btnRequests"
-            android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:layout_weight="1"
-            android:text="Requests"
-            android:backgroundTint="#0F766E"
             android:textColor="@android:color/white"
             android:elevation="2dp"
             android:gravity="center"
