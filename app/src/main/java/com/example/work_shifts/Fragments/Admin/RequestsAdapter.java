@@ -14,7 +14,12 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHolder> {
 
@@ -37,11 +42,35 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Shift shift = waitingShifts.get(position);
         holder.workerName.setText(shift.getWorkerName());
-        holder.shiftTime.setText(shift.getStartTime() + " - " + shift.getEndTime());
+        holder.shiftTime.setText(shift.getsTime() + " - " + shift.getfTime());
         holder.shiftDay.setText(shift.getDay());
-
+        String formattedDate = getFormattedDate(shift.getDay());
+        holder.shiftDate.setText(formattedDate);
         holder.approveButton.setOnClickListener(v -> approveShift(shift, position));
         holder.rejectButton.setOnClickListener(v -> rejectShift(shift, position));
+    }
+    private String getFormattedDate(String day) {
+        // Define the mapping of days to dates
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd/MM/yyyy", Locale.getDefault());
+
+        Calendar calendar = Calendar.getInstance();
+        Map<String, Integer> dayMapping = new HashMap<>();
+        dayMapping.put("Sunday", Calendar.SUNDAY);
+        dayMapping.put("Monday", Calendar.MONDAY);
+        dayMapping.put("Tuesday", Calendar.TUESDAY);
+        dayMapping.put("Wednesday", Calendar.WEDNESDAY);
+        dayMapping.put("Thursday", Calendar.THURSDAY);
+        dayMapping.put("Friday", Calendar.FRIDAY);
+        dayMapping.put("Saturday", Calendar.SATURDAY);
+
+        if (dayMapping.containsKey(day)) {
+            int targetDay = dayMapping.get(day);
+            while (calendar.get(Calendar.DAY_OF_WEEK) != targetDay) {
+                calendar.add(Calendar.DAY_OF_MONTH, 1);
+            }
+        }
+
+        return sdf.format(calendar.getTime());
     }
 
     @Override
@@ -50,12 +79,13 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView workerName, shiftTime, shiftDay;
+        TextView workerName, shiftDate, shiftTime, shiftDay;
         Button approveButton, rejectButton;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             shiftDay = itemView.findViewById(R.id.shiftDay);
+            shiftDate = itemView.findViewById(R.id.shiftDate);
             workerName = itemView.findViewById(R.id.workerName);
             shiftTime = itemView.findViewById(R.id.shiftTime);
             approveButton = itemView.findViewById(R.id.approveButton);

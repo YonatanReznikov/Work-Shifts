@@ -215,10 +215,10 @@ public class AdminHomePageFrag extends Fragment {
 
         // 📅 Get today’s date and initialize week mapping
         Calendar calendar = Calendar.getInstance();
-        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY); // Start from Sunday
+        calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 
         if (weekType.equals("nextWeek")) {
-            calendar.add(Calendar.DAY_OF_MONTH, 7); // Move to next week if needed
+            calendar.add(Calendar.DAY_OF_MONTH, 7);
         }
 
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
@@ -260,7 +260,6 @@ public class AdminHomePageFrag extends Fragment {
                 for (String day : WEEKDAYS) {
                     String dateWithDay = dateMap.get(day);
                     if (allWorkerShiftsMap.get(day).isEmpty()) {
-                        // ✅ Show "No Shifts Yet" placeholder
                         allShifts.add(new Shift(dateWithDay, "", "", "No Shifts Yet", "", weekType));
                     } else {
                         allShifts.addAll(allWorkerShiftsMap.get(day));
@@ -269,7 +268,6 @@ public class AdminHomePageFrag extends Fragment {
 
                 userShifts = new ArrayList<>(userShiftsList);
 
-                // ✅ Ensure toggleGroup is not null before accessing its methods
                 if (toggleGroup != null) {
                     boolean isMyShifts = toggleGroup.getCheckedButtonId() == R.id.myShifts;
                     shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);

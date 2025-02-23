@@ -1,7 +1,8 @@
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp"
@@ -14,6 +15,7 @@
         android:layout_height="wrap_content"
         android:padding="8dp">
 
+        <!-- Worker Information (Name + Time) -->
         <LinearLayout
             android:id="@+id/workerInfo"
             android:layout_width="wrap_content"
@@ -25,7 +27,7 @@
                 android:id="@+id/workerName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="Worker Name"
                 android:textStyle="bold"
                 android:textSize="18sp"
                 android:textColor="@android:color/black" />
@@ -34,25 +36,31 @@
                 android:id="@+id/shiftTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:text="09:00 - 17:00"
                 android:textSize="14sp"
                 android:textColor="@android:color/darker_gray" />
         </LinearLayout>
 
-        <!-- Right Section: Day of Shift -->
-        <TextView
-            android:id="@+id/shiftDay"
+        <!-- Shift Date (Next to Day) -->
+        <LinearLayout
+            android:id="@+id/dateContainer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text=""
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@color/blue"
             android:layout_alignParentEnd="true"
-            android:layout_marginEnd="8dp"
-            android:layout_centerVertical="true"/>
+            android:orientation="horizontal"
+            android:layout_marginEnd="8dp">
 
-        <!-- Bottom Section: Approve & Reject Buttons -->
+            <TextView
+                android:id="@+id/shiftDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="14sp"
+                android:textColor="@android:color/black"
+                android:layout_marginStart="6dp"
+                android:text="25/02/2025" />
+        </LinearLayout>
+
+        <!-- Approve & Reject Buttons -->
         <LinearLayout
             android:id="@+id/actionButtons"
             android:layout_width="match_parent"

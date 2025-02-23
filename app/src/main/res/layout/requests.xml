@@ -6,40 +6,27 @@
     android:padding="16dp"
     android:background="@android:color/white">
 
+    <!-- Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp">
+        android:padding="12dp"
+        android:background="@color/red"
+        android:gravity="center_vertical"
+        android:elevation="4dp">
 
         <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Worker Name"
+            android:text="Requests"
             android:textStyle="bold"
-            android:textSize="16sp"
-            android:textAlignment="viewEnd"
-            android:layout_marginEnd="8dp"/>
+            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:textAlignment="center"
+            android:paddingVertical="4dp"/>
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Range"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textAlignment="viewEnd"
-            android:layout_marginEnd="8dp"/>
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Status"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textAlignment="viewEnd"/>
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
@@ -49,43 +36,5 @@
         android:layout_weight="1"
         android:scrollbars="vertical" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="16dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
-            <ImageButton
-                android:id="@+id/prevDateButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@android:drawable/ic_media_previous"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Previous Date"/>
-
-            <TextView
-                android:id="@+id/selectedDateText"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="February 22, 2025"
-                android:textSize="16sp"
-                android:textAlignment="center"/>
-
-            <ImageButton
-                android:id="@+id/nextDateButton"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@android:drawable/ic_media_next"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Next Date"/>
-        </LinearLayout>
-    </LinearLayout>
 </LinearLayout>

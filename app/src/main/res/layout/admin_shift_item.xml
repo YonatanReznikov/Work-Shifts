@@ -1,10 +1,11 @@
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:padding="8dp">
 
+    <!-- Day Header -->
     <TextView
         android:id="@+id/shiftDay"
         android:layout_width="match_parent"
@@ -12,41 +13,53 @@
         android:text="Monday"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:paddingBottom="4dp"
+        android:textColor="@android:color/black"
+        android:paddingBottom="6dp"
         android:visibility="gone"/>
 
+    <!-- Shift Container -->
     <LinearLayout
         android:id="@+id/shiftContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:padding="8dp"
-        android:background="@android:color/white">
+        android:padding="10dp"
+        android:background="@android:color/white"
+        android:elevation="2dp"
+        android:layout_marginBottom="6dp"
+        android:layout_marginTop="3dp">
 
+        <!-- Delete Button -->
         <ImageButton
             android:id="@+id/removeShift"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@android:drawable/ic_delete"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="8dp"
+            android:src="@android:drawable/ic_menu_delete"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:padding="8dp"
+            android:padding="5dp"
+            app:tint="@android:color/holo_red_dark"
             android:contentDescription="Delete Shift"/>
+
+        <!-- Shift Time -->
         <TextView
             android:id="@+id/shiftTime"
             android:layout_width="0dp"
-            android:layout_height="48dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
             android:text=""
             android:textSize="16sp"
-            android:textColor="@android:color/black"/>
+            android:textColor="@android:color/black"
+            android:textStyle="bold"/>
 
+        <!-- Worker Name -->
         <TextView
             android:id="@+id/shiftWorker"
             android:layout_width="0dp"
-            android:layout_height="48dp"
-            android:gravity="center"
+            android:layout_height="match_parent"
             android:layout_weight="1"
+            android:gravity="center"
             android:text=""
             android:textSize="16sp"
             android:textColor="@android:color/black"/>
@@ -56,10 +69,12 @@
             android:id="@+id/addToCalendarBtn"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="@android:color/white"
-            android:padding="8dp"
-            android:scaleType="centerInside"
+            android:layout_marginStart="8dp"
             android:src="@drawable/cal"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="5dp"
+            android:scaleType="centerInside"
+            app:tint="@color/blue"
             android:contentDescription="Add to Google Calendar"/>
     </LinearLayout>
 </LinearLayout>

@@ -63,14 +63,14 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         }
 
         // Set shift details
-        holder.timeTextView.setText(String.format("%s - %s", shift.getStartTime(), shift.getEndTime()));
+        holder.timeTextView.setText(String.format("%s - %s", shift.getsTime(), shift.getfTime()));
         holder.workerTextView.setText(shift.getWorkerName());
 
         // Show "Add to Calendar" button only in "My Shifts" mode
         if (isMyShifts) {
             holder.addToCalendarBtn.setVisibility(View.VISIBLE);
             holder.addToCalendarBtn.setOnClickListener(v -> {
-                Log.d("ShiftAdapter", "🗓️ Adding Shift to Calendar: " + shift.getStartTime() + " - " + shift.getEndTime());
+                Log.d("ShiftAdapter", "🗓️ Adding Shift to Calendar: " + shift.getsTime() + " - " + shift.getfTime());
                 addShiftToCalendar(v.getContext(), shift);
             });
         } else {
@@ -114,11 +114,11 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         try {
             Calendar startCal = Calendar.getInstance();
             startCal.setTime(getDateForDay(shift.getDay()));
-            startCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getStartTime().split(":")[0]));
+            startCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getsTime().split(":")[0]));
             startCal.set(Calendar.MINUTE, 0);
 
             Calendar endCal = (Calendar) startCal.clone();
-            endCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getEndTime().split(":")[0]));
+            endCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getfTime().split(":")[0]));
             endCal.set(Calendar.MINUTE, 0);
 
             // Format timestamps for Google Calendar URL
@@ -129,7 +129,7 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
             // Construct Google Calendar event URL
             String calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE" +
                     "&text=Work%20Shift" +
-                    "&details=Shift%3A%20" + shift.getStartTime() + "%20-%20" + shift.getEndTime() +
+                    "&details=Shift%3A%20" + shift.getsTime() + "%20-%20" + shift.getfTime() +
                     "&location=Workplace" +
                     "&dates=" + startTime + "/" + endTime;
 
