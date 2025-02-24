@@ -49,11 +49,13 @@ public class requestsFrag extends Fragment {
         requestsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
         waitingShiftsList = new ArrayList<>();
-        requestsAdapter = new RequestsAdapter(waitingShiftsList);
+
+        requestsAdapter = new RequestsAdapter(waitingShiftsList, "additions");
         requestsRecyclerView.setAdapter(requestsAdapter);
 
         findUserWorkID();
     }
+
 
     private void findUserWorkID() {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");
@@ -86,9 +88,9 @@ public class requestsFrag extends Fragment {
 
                 Log.d("Firebase", "✅ Found workID: " + userWorkId);
 
-                // ✅ Now load waiting shifts using the correct workID
-                databaseReference = FirebaseDatabase.getInstance().getReference("workIDs").child(userWorkId).child("waitingShifts");
-                loadWaitingShifts();
+                // ✅ Load both waiting additions and removals
+                loadWaitingShifts(userWorkId, "additions");
+                loadWaitingShifts(userWorkId, "removals");
             }
 
             @Override
@@ -98,16 +100,17 @@ public class requestsFrag extends Fragment {
         });
     }
 
-    private void loadWaitingShifts() {
-        if (databaseReference == null) {
-            Log.e("Firebase", "❌ Database reference is null. Skipping loadWaitingShifts().");
-            return;
-        }
+    private void loadWaitingShifts(String workID, String requestType) {
+        DatabaseReference waitingRef = FirebaseDatabase.getInstance()
+                .getReference("workIDs").child(workID).child("waitingShifts").child(requestType);
 
-        databaseReference.addValueEventListener(new ValueEventListener() {
+        waitingRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                waitingShiftsList.clear();
+                if (!snapshot.exists()) {
+                    Log.d("Firebase", "⚠️ No waiting shifts found for: " + requestType);
+                    return;
+                }
 
                 for (DataSnapshot weekSnapshot : snapshot.getChildren()) { // "thisWeek" or "nextWeek"
                     String weekType = weekSnapshot.getKey();
@@ -132,7 +135,7 @@ public class requestsFrag extends Fragment {
                     }
                 }
 
-                Log.d("Firebase", "✅ Loaded " + waitingShiftsList.size() + " waiting shifts.");
+                Log.d("Firebase", "✅ Loaded " + waitingShiftsList.size() + " waiting shifts for " + requestType);
                 requestsAdapter.notifyDataSetChanged();
             }
 

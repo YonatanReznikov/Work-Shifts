@@ -170,45 +170,36 @@ public class deleteShiftFrag extends Fragment {
                             public void onDataChange(@NonNull DataSnapshot snapshot) {
                                 for (DataSnapshot daySnapshot : snapshot.getChildren()) {
                                     if (daySnapshot.hasChild(shiftId)) {
-                                        // Retrieve shift data
                                         DataSnapshot shiftSnapshot = daySnapshot.child(shiftId);
                                         Object shiftData = shiftSnapshot.getValue();
 
-                                        // Move to waitingShifts
-                                        databaseReference.child(workId).child("waitingShifts").child(weekType)
-                                                .child(daySnapshot.getKey()).child(shiftId)
+
+                                        databaseReference.child(workId).child("waitingShifts")
+                                                .child("removals")
+                                                .child(weekType)
+                                                .child(daySnapshot.getKey())
+                                                .child(shiftId)
                                                 .setValue(shiftData)
                                                 .addOnCompleteListener(task -> {
                                                     if (task.isSuccessful()) {
-                                                        // Remove from shifts
-                                                        shiftSnapshot.getRef().removeValue()
-                                                                .addOnCompleteListener(deleteTask -> {
-                                                                    if (deleteTask.isSuccessful()) {
-                                                                        showToast("Shift moved to waiting list");
-                                                                        loadUserShifts(weekType);
-                                                                    } else {
-                                                                        showToast("Failed to remove shift");
-                                                                    }
-                                                                });
+                                                        showToast("⏳ Shift marked for removal, awaiting admin approval.");
                                                     } else {
-                                                        showToast("Failed to move shift to waiting list");
+                                                        showToast("❌ Failed to mark shift for removal.");
                                                     }
                                                 });
-                                        return; // Exit after handling shift
+                                        return;
                                     }
                                 }
                             }
 
                             @Override
                             public void onCancelled(@NonNull DatabaseError error) {
-                                showToast("Failed to delete shift");
+                                showToast("❌ Failed to process shift removal.");
                             }
                         });
             }
         }
     }
-
-
     private void showToast(String message) {
         Toast.makeText(getContext(), message, Toast.LENGTH_SHORT).show();
     }

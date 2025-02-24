@@ -24,10 +24,12 @@ import java.util.Map;
 public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHolder> {
 
     private List<Shift> waitingShifts;
+    private String requestType;
     private DatabaseReference databaseReference;
 
-    public RequestsAdapter(List<Shift> waitingShifts) {
+    public RequestsAdapter(List<Shift> waitingShifts, String requestType) {
         this.waitingShifts = waitingShifts;
+        this.requestType = requestType;
         this.databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
     }
 
@@ -45,6 +47,13 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
         holder.shiftTime.setText(shift.getsTime() + " - " + shift.getfTime());
         String formattedDate = getFormattedDate(shift.getDay());
         holder.shiftDate.setText(formattedDate);
+
+        if (requestType.equals("additions")) {
+            holder.approveButton.setText("Approve Shift");
+        } else {
+            holder.approveButton.setText("Approve Removal");
+        }
+
         holder.approveButton.setOnClickListener(v -> approveShift(shift, position));
         holder.rejectButton.setOnClickListener(v -> rejectShift(shift, position));
     }
@@ -93,26 +102,36 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
 
     private void approveShift(Shift shift, int position) {
         getWorkID(shift, workID -> {
-            if (workID == null) {
-                Log.e("Firebase", "❌ Work ID not found for worker: " + shift.getWorkerId());
-                return;
-            }
+            if (workID == null) return;
 
-            DatabaseReference approvedShiftsRef = databaseReference.child(workID)
-                    .child("shifts").child(shift.getWeekType()).child(shift.getDay());
+            if (requestType.equals("additions")) { /// NEW: Handle "additions" differently
+            /// ✅ Approving shift addition
+                DatabaseReference approvedShiftsRef = databaseReference.child(workID)
+                        .child("shifts").child(shift.getWeekType()).child(shift.getDay());
 
-            String shiftKey = approvedShiftsRef.push().getKey();
+                String shiftKey = approvedShiftsRef.push().getKey();
+                if (shiftKey != null) {
+                    approvedShiftsRef.child(shiftKey).setValue(shift)
+                            .addOnSuccessListener(aVoid -> {
+                                removeShiftFromWaitingList(shift, position, workID, "additions");
+                                updateTotalHoursInFirebase(workID, shift.getWorkerId(), shift.getsTime(), shift.getfTime());
+                                Log.d("Firebase", "✅ Shift approved and moved to 'shifts/" + shift.getWeekType() + "'");
+                            })
+                            .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to approve shift", e));
+                }
+            } else { /// NEW: Handle "removals"
+            /// ✅ Approving shift removal (delete from shifts)
+                DatabaseReference shiftsRef = databaseReference.child(workID)
+                        .child("shifts").child(shift.getWeekType()).child(shift.getDay());
 
-            if (shiftKey != null) {
-                approvedShiftsRef.child(shiftKey).setValue(shift)
-                        .addOnSuccessListener(aVoid -> {
-                            removeShiftFromWaitingList(shift, position, workID);
-
-                            updateTotalHoursInFirebase(workID, shift.getWorkerId(), shift.getsTime(), shift.getfTime());
-
-                            Log.d("Firebase", "✅ Shift approved and moved to 'shifts/" + shift.getWeekType() + "'");
-                        })
-                        .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to approve shift", e));
+                shiftsRef.orderByChild("workerId").equalTo(shift.getWorkerId()).get()
+                        .addOnSuccessListener(dataSnapshot -> {
+                            for (DataSnapshot shiftSnapshot : dataSnapshot.getChildren()) {
+                                shiftSnapshot.getRef().removeValue();
+                            }
+                            removeShiftFromWaitingList(shift, position, workID, "removals");
+                            Log.d("Firebase", "✅ Shift removed from 'shifts' after admin approval");
+                        });
             }
         });
     }
@@ -156,15 +175,14 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
     private void rejectShift(Shift shift, int position) {
         getWorkID(shift, workID -> {
             if (workID != null) {
-                removeShiftFromWaitingList(shift, position, workID);
+                removeShiftFromWaitingList(shift, position, workID, requestType); /// UPDATED: Now dynamically handles rejections
             }
             Log.d("Firebase", "❌ Shift rejected and deleted");
         });
     }
-
-    private void removeShiftFromWaitingList(Shift shift, int position, String workID) {
+    private void removeShiftFromWaitingList(Shift shift, int position, String workID, String category) {
         DatabaseReference waitingShiftsRef = databaseReference.child(workID)
-                .child("waitingShifts").child(shift.getWeekType()).child(shift.getDay());
+                .child("waitingShifts").child(category).child(shift.getWeekType()).child(shift.getDay());
 
         waitingShiftsRef.orderByChild("workerId").equalTo(shift.getWorkerId()).get()
                 .addOnSuccessListener(dataSnapshot -> {
@@ -181,6 +199,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
                 })
                 .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to remove shift from waiting list", e));
     }
+
 
     private void getWorkID(Shift shift, WorkIDCallback callback) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");

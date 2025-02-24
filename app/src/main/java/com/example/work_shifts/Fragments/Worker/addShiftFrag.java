@@ -385,7 +385,8 @@ public class addShiftFrag extends Fragment {
 
         DatabaseReference shiftRef = databaseReference
                 .child(workId)
-                .child("waitingShifts") // 🚨 Shift goes to waitingShifts, NOT shifts
+                .child("waitingShifts")
+                .child("additions")
                 .child(selectedWeek)
                 .child(selectedDayName)
                 .push();
