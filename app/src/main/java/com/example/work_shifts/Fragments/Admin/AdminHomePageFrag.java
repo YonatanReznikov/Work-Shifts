@@ -221,12 +221,14 @@ public class AdminHomePageFrag extends Fragment {
             calendar.add(Calendar.DAY_OF_MONTH, 7);
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault()); // e.g., "Monday (26/02/2025)"
         LinkedHashMap<String, String> dateMap = new LinkedHashMap<>();
 
+        // 📅 Map each weekday to its corresponding formatted date
         for (String day : WEEKDAYS) {
+            String formattedDay = sdf.format(calendar.getTime()); // e.g., "Monday (26/02/2025)"
+            dateMap.put(day, formattedDay);
             allWorkerShiftsMap.put(day, new ArrayList<>());
-            dateMap.put(day, sdf.format(calendar.getTime())); // Map each day to a formatted date
             calendar.add(Calendar.DAY_OF_MONTH, 1);
         }
 
@@ -237,9 +239,11 @@ public class AdminHomePageFrag extends Fragment {
 
                 for (String day : WEEKDAYS) {
                     DataSnapshot daySnapshot = snapshot.child(day);
-                    String dateWithDay = dateMap.get(day);
 
                     if (daySnapshot.exists()) {
+                        String formattedDay = dateMap.get(day); // Get the correct formatted day name
+                        Log.d("AdminHomePageFrag", "🗓 Mapping: " + day + " -> " + formattedDay);
+
                         for (DataSnapshot shiftData : daySnapshot.getChildren()) {
                             String sTime = shiftData.child("sTime").getValue(String.class);
                             String fTime = shiftData.child("fTime").getValue(String.class);
@@ -248,7 +252,8 @@ public class AdminHomePageFrag extends Fragment {
 
                             if (sTime == null || fTime == null || workerId == null) continue;
 
-                            Shift shift = new Shift(day, sTime, fTime, workerName, workerId, weekType);
+                            // ✅ Use formattedDay instead of just day
+                            Shift shift = new Shift(formattedDay, sTime, fTime, workerName, workerId, weekType);
                             allWorkerShiftsMap.get(day).add(shift);
 
                             if (workerId.equals(currentUser.getUid())) {
@@ -259,7 +264,7 @@ public class AdminHomePageFrag extends Fragment {
 
                     // ✅ If no shifts exist for the day, add a placeholder to keep the date
                     if (allWorkerShiftsMap.get(day).isEmpty()) {
-                        allWorkerShiftsMap.get(day).add(new Shift(dateWithDay, "", "", "No Shifts Yet", "", weekType));
+                        allWorkerShiftsMap.get(day).add(new Shift(dateMap.get(day), "", "", "No Shifts Yet", "", weekType));
                     }
                 }
 
