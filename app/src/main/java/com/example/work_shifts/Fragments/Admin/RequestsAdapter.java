@@ -1,5 +1,6 @@
 package com.example.work_shifts.Fragments.Admin;
 
+import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHolder> {
 
@@ -31,6 +33,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
         this.waitingShifts = waitingShifts;
         this.requestType = requestType;
         this.databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
+        setHasStableIds(true);
     }
 
     @NonNull
@@ -43,10 +46,10 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Shift shift = waitingShifts.get(position);
+
         holder.workerName.setText(shift.getWorkerName());
         holder.shiftTime.setText(shift.getsTime() + " - " + shift.getfTime());
-        String formattedDate = getFormattedDate(shift.getDay());
-        holder.shiftDate.setText(formattedDate);
+        holder.shiftDate.setText(getFormattedDate(shift.getDay()));
 
         if (requestType.equals("additions")) {
             holder.approveButton.setText("Approve Shift");
@@ -54,9 +57,22 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
             holder.approveButton.setText("Approve Removal");
         }
 
-        holder.approveButton.setOnClickListener(v -> approveShift(shift, position));
-        holder.rejectButton.setOnClickListener(v -> rejectShift(shift, position));
+        // ✅ Use getAdapterPosition() to prevent RecyclerView inconsistencies
+        holder.approveButton.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition != RecyclerView.NO_POSITION) {
+                approveShift(shift, adapterPosition);
+            }
+        });
+
+        holder.rejectButton.setOnClickListener(v -> {
+            int adapterPosition = holder.getAdapterPosition();
+            if (adapterPosition != RecyclerView.NO_POSITION) {
+                rejectShift(shift, adapterPosition);
+            }
+        });
     }
+
     private String getFormattedDate(String day) {
         // Define the mapping of days to dates
         SimpleDateFormat sdf = new SimpleDateFormat("EEEE, dd/MM/yyyy", Locale.getDefault());
@@ -80,6 +96,13 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
 
         return sdf.format(calendar.getTime());
     }
+    @Override
+    public long getItemId(int position) {
+        Shift shift = waitingShifts.get(position);
+        return (shift.getWorkerId() + shift.getsTime() + shift.getfTime() + shift.getDay() + shift.getWeekType() + System.currentTimeMillis()).hashCode();
+    }
+
+
 
     @Override
     public int getItemCount() {
@@ -99,13 +122,11 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
             rejectButton = itemView.findViewById(R.id.rejectButton);
         }
     }
-
     private void approveShift(Shift shift, int position) {
         getWorkID(shift, workID -> {
             if (workID == null) return;
 
-            if (requestType.equals("additions")) { /// NEW: Handle "additions" differently
-            /// ✅ Approving shift addition
+            if (requestType.equals("additions")) {
                 DatabaseReference approvedShiftsRef = databaseReference.child(workID)
                         .child("shifts").child(shift.getWeekType()).child(shift.getDay());
 
@@ -113,56 +134,86 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
                 if (shiftKey != null) {
                     approvedShiftsRef.child(shiftKey).setValue(shift)
                             .addOnSuccessListener(aVoid -> {
-                                removeShiftFromWaitingList(shift, position, workID, "additions");
-                                updateTotalHoursInFirebase(workID, shift.getWorkerId(), shift.getsTime(), shift.getfTime());
                                 Log.d("Firebase", "✅ Shift approved and moved to 'shifts/" + shift.getWeekType() + "'");
+                                updateTotalHoursInFirebase(workID, shift.getWorkerId(), shift.getsTime(), shift.getfTime(), true); // ✅ Add Hours
+                                removeShiftFromWaitingList(shift, position, workID);
                             })
                             .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to approve shift", e));
                 }
-            } else { /// NEW: Handle "removals"
-            /// ✅ Approving shift removal (delete from shifts)
+            } else if (requestType.equals("removals")) {  // ✅ Ensure correct handling for removals
                 DatabaseReference shiftsRef = databaseReference.child(workID)
                         .child("shifts").child(shift.getWeekType()).child(shift.getDay());
 
-                shiftsRef.orderByChild("workerId").equalTo(shift.getWorkerId()).get()
-                        .addOnSuccessListener(dataSnapshot -> {
-                            for (DataSnapshot shiftSnapshot : dataSnapshot.getChildren()) {
-                                shiftSnapshot.getRef().removeValue();
+                shiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        String shiftKeyToRemove = null;
+
+                        for (DataSnapshot shiftSnapshot : snapshot.getChildren()) {
+                            Shift existingShift = shiftSnapshot.getValue(Shift.class);
+                            if (existingShift != null &&
+                                    existingShift.getWorkerId().equals(shift.getWorkerId()) &&
+                                    existingShift.getsTime().equals(shift.getsTime()) &&
+                                    existingShift.getfTime().equals(shift.getfTime())) {
+
+                                shiftKeyToRemove = shiftSnapshot.getKey();
+                                break;
                             }
-                            removeShiftFromWaitingList(shift, position, workID, "removals");
-                            Log.d("Firebase", "✅ Shift removed from 'shifts' after admin approval");
-                        });
+                        }
+
+                        if (shiftKeyToRemove != null) {
+                            shiftsRef.child(shiftKeyToRemove).removeValue()
+                                    .addOnSuccessListener(aVoid -> {
+                                        removeShiftFromWaitingList(shift, position, workID);
+                                        updateTotalHoursInFirebase(workID, shift.getWorkerId(), shift.getsTime(), shift.getfTime(), false); // ✅ Deduct Hours
+                                        Log.d("Firebase", "✅ Shift successfully removed from 'shifts'");
+                                    })
+                                    .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to remove shift", e));
+                        } else {
+                            Log.e("Firebase", "❌ Shift not found in 'shifts' for removal");
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        Log.e("Firebase", "❌ Failed to remove shift", error.toException());
+                    }
+                });
             }
         });
     }
-    private void updateTotalHoursInFirebase(String workID, String workerId, String sTime, String fTime) {
+    private void updateTotalHoursInFirebase(String workID, String workerId, String sTime, String fTime, boolean isAddition) {
         DatabaseReference totalHoursRef = databaseReference
                 .child(workID)
                 .child("users")
                 .child(workerId)
                 .child("totalHours");
 
-        int startHour = Integer.parseInt(sTime.split(":")[0]);
-        int endHour = Integer.parseInt(fTime.split(":")[0]);
-        int shiftHours = endHour - startHour;
+        int shiftHours = calculateShiftDuration(sTime, fTime); // ✅ Calculate duration properly
+
+        AtomicInteger currentHours = new AtomicInteger(0); // ✅ Use AtomicInteger
 
         totalHoursRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                int currentHours = 0;
                 try {
-                    currentHours = snapshot.exists() ? snapshot.getValue(Integer.class) : 0;
+                    if (snapshot.exists() && snapshot.getValue() != null) {
+                        currentHours.set(snapshot.getValue(Integer.class)); // ✅ Set value safely
+                    }
                 } catch (DatabaseException e) {
                     try {
-                        currentHours = Integer.parseInt(snapshot.getValue(String.class));
+                        currentHours.set(Integer.parseInt(snapshot.getValue(String.class)));
                     } catch (NumberFormatException ex) {
                         Log.e("ShiftDebug", "❌ Invalid totalHours format in Firebase", ex);
                     }
                 }
 
-                int newTotalHours = currentHours + shiftHours;
-                totalHoursRef.setValue(newTotalHours);
-                Log.d("Firebase", "✅ Updated total hours for worker " + workerId + ": " + newTotalHours + " hours");
+                int newTotalHours = isAddition ? currentHours.get() + shiftHours : Math.max(0, currentHours.get() - shiftHours);
+
+                totalHoursRef.setValue(newTotalHours)
+                        .addOnSuccessListener(aVoid -> Log.d("Firebase", "✅ Updated total hours for " + workerId +
+                                ": " + currentHours.get() + " → " + newTotalHours)) // ✅ Use AtomicInteger
+                        .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to update total hours", e));
             }
 
             @Override
@@ -172,34 +223,85 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
         });
     }
 
+    private int calculateShiftDuration(String startTime, String finishTime) {
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.getDefault());
+
+        try {
+            long diffMillis = sdf.parse(finishTime).getTime() - sdf.parse(startTime).getTime();
+            return (int) (diffMillis / (1000 * 60 * 60)); // Convert milliseconds to hours
+        } catch (Exception e) {
+            Log.e("TimeParse", "❌ Failed to parse shift duration", e);
+        }
+
+        return 0;
+    }
+
     private void rejectShift(Shift shift, int position) {
         getWorkID(shift, workID -> {
             if (workID != null) {
-                removeShiftFromWaitingList(shift, position, workID, requestType); /// UPDATED: Now dynamically handles rejections
+                removeShiftFromWaitingList(shift, position, workID);
             }
             Log.d("Firebase", "❌ Shift rejected and deleted");
         });
     }
-    private void removeShiftFromWaitingList(Shift shift, int position, String workID, String category) {
+    private void removeShiftFromWaitingList(Shift shift, int position, String workID) {
+        String category = requestType.equals("additions") ? "additions" : "removals";
         DatabaseReference waitingShiftsRef = databaseReference.child(workID)
                 .child("waitingShifts").child(category).child(shift.getWeekType()).child(shift.getDay());
 
-        waitingShiftsRef.orderByChild("workerId").equalTo(shift.getWorkerId()).get()
-                .addOnSuccessListener(dataSnapshot -> {
-                    for (DataSnapshot shiftSnapshot : dataSnapshot.getChildren()) {
-                        shiftSnapshot.getRef().removeValue();
-                    }
+        waitingShiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                String shiftKeyToRemove = null;
 
-                    if (position >= 0 && position < waitingShifts.size()) {
-                        waitingShifts.remove(position);
-                        notifyItemRemoved(position);
-                    } else {
-                        Log.e("RequestsAdapter", "❌ Invalid index: " + position + ", list size: " + waitingShifts.size());
+                for (DataSnapshot shiftSnapshot : snapshot.getChildren()) {
+                    Shift existingShift = shiftSnapshot.getValue(Shift.class);
+                    if (existingShift != null &&
+                            existingShift.getWorkerId().equals(shift.getWorkerId()) &&
+                            existingShift.getsTime().equals(shift.getsTime()) &&
+                            existingShift.getfTime().equals(shift.getfTime())) {
+                        shiftKeyToRemove = shiftSnapshot.getKey();
+                        break;
                     }
-                })
-                .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to remove shift from waiting list", e));
+                }
+
+                if (shiftKeyToRemove != null) {
+                    waitingShiftsRef.child(shiftKeyToRemove).removeValue()
+                            .addOnSuccessListener(aVoid -> {
+                                Log.d("Firebase", "✅ Shift successfully removed from Firebase");
+
+                                if (position >= 0 && position < waitingShifts.size()) {
+                                    waitingShifts.remove(position);
+                                    Log.d("Firebase", "✅ Removed shift from list at position: " + position);
+
+                                    updateTotalHoursInFirebase(workID, shift.getWorkerId(), shift.getsTime(), shift.getfTime(), true);
+
+                                    new Handler().postDelayed(() -> {
+                                        notifyItemRemoved(position);
+                                        notifyItemRangeChanged(position, waitingShifts.size());
+                                        Log.d("Firebase", "🔄 RecyclerView successfully updated.");
+                                    }, 50);
+
+                                    if (waitingShifts.isEmpty()) {
+                                        new Handler().postDelayed(() -> {
+                                            notifyDataSetChanged();
+                                            Log.d("Firebase", "🔄 Full RecyclerView refresh applied.");
+                                        }, 100);
+                                    }
+                                }
+                            })
+                            .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to remove shift from waiting list", e));
+                } else {
+                    Log.e("Firebase", "❌ Shift not found in 'waitingShifts/" + category + "'");
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("Firebase", "❌ Failed to remove shift", error.toException());
+            }
+        });
     }
-
 
     private void getWorkID(Shift shift, WorkIDCallback callback) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");

@@ -18,16 +18,16 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.*;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 public class requestsFrag extends Fragment {
 
-    private RecyclerView requestsRecyclerView;
-    private RequestsAdapter requestsAdapter;
-    private DatabaseReference databaseReference;
-    private List<Shift> waitingShiftsList;
+    private RecyclerView additionsRecyclerView;
+    private RecyclerView removalsRecyclerView;
+    private RequestsAdapter additionsAdapter;
+    private RequestsAdapter removalsAdapter;
+    private List<Shift> additionsList;
+    private List<Shift> removalsList;
 
     public requestsFrag() {
     }
@@ -45,17 +45,23 @@ public class requestsFrag extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        requestsRecyclerView = view.findViewById(R.id.requestsRecyclerView);
-        requestsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        additionsRecyclerView = view.findViewById(R.id.additionsRecyclerView);
+        removalsRecyclerView = view.findViewById(R.id.removalsRecyclerView);
 
-        waitingShiftsList = new ArrayList<>();
+        additionsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        removalsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
-        requestsAdapter = new RequestsAdapter(waitingShiftsList, "additions");
-        requestsRecyclerView.setAdapter(requestsAdapter);
+        additionsList = new ArrayList<>();
+        removalsList = new ArrayList<>();
+
+        additionsAdapter = new RequestsAdapter(additionsList, "additions");
+        removalsAdapter = new RequestsAdapter(removalsList, "removals");
+
+        additionsRecyclerView.setAdapter(additionsAdapter);
+        removalsRecyclerView.setAdapter(removalsAdapter);
 
         findUserWorkID();
     }
-
 
     private void findUserWorkID() {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");
@@ -73,7 +79,6 @@ public class requestsFrag extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String userWorkId = null;
 
-                // ✅ Find the correct workID
                 for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
                     if (workIdSnapshot.child("users").hasChild(currentUserId)) {
                         userWorkId = workIdSnapshot.getKey();
@@ -87,10 +92,8 @@ public class requestsFrag extends Fragment {
                 }
 
                 Log.d("Firebase", "✅ Found workID: " + userWorkId);
-
-                // ✅ Load both waiting additions and removals
-                loadWaitingShifts(userWorkId, "additions");
-                loadWaitingShifts(userWorkId, "removals");
+                loadWaitingShifts(userWorkId, "additions", additionsList, additionsAdapter);
+                loadWaitingShifts(userWorkId, "removals", removalsList, removalsAdapter);
             }
 
             @Override
@@ -100,22 +103,27 @@ public class requestsFrag extends Fragment {
         });
     }
 
-    private void loadWaitingShifts(String workID, String requestType) {
+    private void loadWaitingShifts(String workID, String requestType, List<Shift> shiftList, RequestsAdapter adapter) {
         DatabaseReference waitingRef = FirebaseDatabase.getInstance()
                 .getReference("workIDs").child(workID).child("waitingShifts").child(requestType);
 
         waitingRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
+                Log.d("Firebase", "🟢 Reloading " + requestType + " shifts from Firebase");
+
+                shiftList.clear();
+
                 if (!snapshot.exists()) {
                     Log.d("Firebase", "⚠️ No waiting shifts found for: " + requestType);
+                    adapter.notifyDataSetChanged();
                     return;
                 }
 
-                for (DataSnapshot weekSnapshot : snapshot.getChildren()) { // "thisWeek" or "nextWeek"
+                for (DataSnapshot weekSnapshot : snapshot.getChildren()) {
                     String weekType = weekSnapshot.getKey();
 
-                    for (DataSnapshot daySnapshot : weekSnapshot.getChildren()) { // Days (Sunday, Monday, ...)
+                    for (DataSnapshot daySnapshot : weekSnapshot.getChildren()) {
                         String day = daySnapshot.getKey();
 
                         for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
@@ -130,13 +138,13 @@ public class requestsFrag extends Fragment {
                             }
 
                             Shift shift = new Shift(day, sTime, fTime, workerName, workerId, weekType);
-                            waitingShiftsList.add(shift);
+                            shiftList.add(shift);
                         }
                     }
                 }
 
-                Log.d("Firebase", "✅ Loaded " + waitingShiftsList.size() + " waiting shifts for " + requestType);
-                requestsAdapter.notifyDataSetChanged();
+                Log.d("Firebase", "✅ Loaded " + shiftList.size() + " waiting shifts for " + requestType);
+                adapter.notifyDataSetChanged();
             }
 
             @Override

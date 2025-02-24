@@ -20,21 +20,42 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Requests"
+            android:text="Shift Requests"
             android:textStyle="bold"
             android:textSize="18sp"
             android:textColor="@android:color/white"
             android:textAlignment="center"
             android:paddingVertical="4dp"/>
-
     </LinearLayout>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/requestsRecyclerView"
+    <!-- Section for Additions -->
+    <TextView
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:text="Pending Additions"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:padding="8dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/additionsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="290dp"
         android:scrollbars="vertical" />
 
+    <!-- Section for Removals -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pending Removals"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:padding="8dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/removalsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="290dp"
+        android:scrollbars="vertical" />
 
 </LinearLayout>

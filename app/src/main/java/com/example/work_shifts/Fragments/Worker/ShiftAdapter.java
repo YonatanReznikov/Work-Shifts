@@ -45,13 +45,13 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
     @Override
     public void onBindViewHolder(@NonNull ShiftViewHolder holder, int position) {
         Shift shift = shiftList.get(position);
+        String normalizedShiftDay = shift.getDay().split(" ")[0].trim();
 
-        // Show day header only when it's a new day
         if (position == 0 || !shift.getDay().equals(shiftList.get(position - 1).getDay())) {
             holder.dayTextView.setVisibility(View.VISIBLE);
             holder.dayTextView.setText(shift.getDay());
 
-            if (shift.getDay().contains(today)) {
+            if (normalizedShiftDay.equalsIgnoreCase(today)) {
                 holder.dayTextView.setBackgroundColor(Color.parseColor("#FFD700")); // Gold highlight
                 holder.dayTextView.setTextColor(Color.BLACK);
             } else {
@@ -106,9 +106,11 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
     }
 
     private String getTodayName() {
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE", Locale.getDefault());
         return sdf.format(Calendar.getInstance().getTime()).trim();
     }
+
+
 
     private void addShiftToCalendar(Context context, Shift shift) {
         try {
