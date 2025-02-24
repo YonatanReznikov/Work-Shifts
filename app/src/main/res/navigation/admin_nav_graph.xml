@@ -13,14 +13,14 @@
             android:id="@+id/action_homePageFragment_to_personalInfoFrag"
             app:destination="@id/personalInfoFrag"/>
         <action
-            android:id="@+id/action_homePageFragment_to_addShiftFrag"
-            app:destination="@id/addShiftFrag"/>
-        <action
             android:id="@+id/action_homePageFragment_to_showFrag"
             app:destination="@id/showFrag"/>
         <action
             android:id="@+id/action_homePageFragment_to_requestsFrag"
-            app:destination="@id/requestsFrag"/> <!-- Added navigation action for requests -->
+            app:destination="@id/requestsFrag"/>
+        <action
+            android:id="@+id/action_adminHomePageFragment_to_adminAddShift"
+            app:destination="@id/adminAddShift" /> <!-- Added navigation action for requests -->
     </fragment>
 
     <fragment
@@ -55,14 +55,12 @@
         android:label="reportFrag"/>
 
     <fragment
-        android:id="@+id/addShiftFrag"
-        android:name="com.example.work_shifts.Fragments.Worker.addShiftFrag"
-        tools:layout="@layout/add_shift"
-        android:label="AddShiftFragment"/>
-
-    <fragment
         android:id="@+id/requestsFrag"
         android:name="com.example.work_shifts.Fragments.Admin.requestsFrag"
         tools:layout="@layout/requests"
-        android:label="requestsFrag"/> <!-- Added requests fragment -->
+        android:label="requestsFrag"/>
+    <fragment
+        android:id="@+id/adminAddShift"
+        android:name="com.example.work_shifts.Fragments.Admin.adminAddShift"
+        android:label="adminAddShift" /> <!-- Added requests fragment -->
 </navigation>

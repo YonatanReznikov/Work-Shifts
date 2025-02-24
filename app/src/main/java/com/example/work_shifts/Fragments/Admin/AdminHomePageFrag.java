@@ -104,7 +104,7 @@ public class AdminHomePageFrag extends Fragment {
         }
 
         if (addShiftBtn != null) {
-            addShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_homePageFragment_to_addShiftFrag));
+            addShiftBtn.setOnClickListener(v -> navController.navigate(R.id.action_adminHomePageFragment_to_adminAddShift));
         } else {
             Log.e("AdminHomePageFrag", "addShiftBtn is null");
         }

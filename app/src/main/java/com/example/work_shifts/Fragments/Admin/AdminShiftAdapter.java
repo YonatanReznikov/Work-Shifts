@@ -21,6 +21,7 @@ import com.example.work_shifts.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseException;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
@@ -29,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.ShiftViewHolder> {
     private List<Shift> shiftList;
@@ -162,44 +164,29 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
 
     private void deleteShift(Context context, Shift shift) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");
-        String currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        AtomicReference<String> workIDRef = new AtomicReference<>();
 
         workIdsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                String currentWorkId = null;
-
-                // 🔎 Find the correct workID for the current user
+                // 🔎 Find the correct workID for the shift's worker
                 for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
-                    if (workIdSnapshot.child("shifts").exists()) {
-                        for (DataSnapshot weekTypeSnapshot : workIdSnapshot.child("shifts").getChildren()) {
-                            for (DataSnapshot daySnapshot : weekTypeSnapshot.getChildren()) {
-                                for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
-                                    String sTime = shiftSnapshot.child("sTime").getValue(String.class);
-                                    String fTime = shiftSnapshot.child("fTime").getValue(String.class);
-                                    String workerId = shiftSnapshot.child("workerId").getValue(String.class);
-
-                                    if (workerId != null && workerId.equals(currentUserId) &&
-                                            sTime != null && sTime.equals(shift.getsTime()) &&
-                                            fTime != null && fTime.equals(shift.getfTime())) {
-                                        currentWorkId = workIdSnapshot.getKey();
-                                        break;
-                                    }
-                                }
-                            }
-                        }
+                    if (workIdSnapshot.child("users").hasChild(shift.getWorkerId())) {
+                        workIDRef.set(workIdSnapshot.getKey());
+                        break;
                     }
-                    if (currentWorkId != null) break;
                 }
 
-                if (currentWorkId == null) {
-                    Toast.makeText(context, "Work ID not found!", Toast.LENGTH_SHORT).show();
+                String workID = workIDRef.get();
+                if (workID == null) {
+                    Toast.makeText(context, "❌ Work ID not found!", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                // ✅ Delete shift using workID and unique shift key
+                // ✅ Reference to shift location
                 DatabaseReference shiftsRef = FirebaseDatabase.getInstance().getReference("workIDs")
-                        .child(currentWorkId)
+                        .child(workID)
                         .child("shifts")
                         .child(shift.getWeekType())
                         .child(shift.getDay());
@@ -212,9 +199,18 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
                         for (DataSnapshot shiftSnapshot : snapshot.getChildren()) {
                             String sTime = shiftSnapshot.child("sTime").getValue(String.class);
                             String fTime = shiftSnapshot.child("fTime").getValue(String.class);
+                            String workerId = shiftSnapshot.child("workerId").getValue(String.class);
 
-                            if (sTime != null && sTime.equals(shift.getsTime()) &&
+                            if (workerId != null && workerId.equals(shift.getWorkerId()) &&
+                                    sTime != null && sTime.equals(shift.getsTime()) &&
                                     fTime != null && fTime.equals(shift.getfTime())) {
+
+                                int startHour = Integer.parseInt(sTime.split(":")[0]);
+                                int endHour = Integer.parseInt(fTime.split(":")[0]);
+                                int shiftHours = endHour - startHour;
+
+                                updateTotalHoursAfterDeletion(workID, shift.getWorkerId(), shiftHours);
+
                                 shiftSnapshot.getRef().removeValue()
                                         .addOnSuccessListener(aVoid -> {
                                             checkAndReplaceEmptyDay(shiftsRef, shift.getDay());
@@ -222,7 +218,11 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
                                             shiftList.remove(shift);
                                             notifyDataSetChanged();
                                         })
-                                        .addOnFailureListener(e -> Toast.makeText(context, "❌ Failed to delete shift", Toast.LENGTH_SHORT).show());
+                                        .addOnFailureListener(e -> {
+                                            Toast.makeText(context, "❌ Failed to delete shift", Toast.LENGTH_SHORT).show();
+                                            Log.e("Firebase", "❌ Error deleting shift", e);
+                                        });
+
                                 shiftFound = true;
                                 break;
                             }
@@ -246,6 +246,38 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
             }
         });
     }
+    private void updateTotalHoursAfterDeletion(String workID, String workerId, int shiftHours) {
+        DatabaseReference totalHoursRef = FirebaseDatabase.getInstance()
+                .getReference("workIDs").child(workID)
+                .child("users").child(workerId)
+                .child("totalHours");
+
+        totalHoursRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int currentHours = 0;
+                try {
+                    currentHours = snapshot.exists() ? snapshot.getValue(Integer.class) : 0;
+                } catch (DatabaseException e) {
+                    try {
+                        currentHours = Integer.parseInt(snapshot.getValue(String.class));
+                    } catch (NumberFormatException ex) {
+                        Log.e("ShiftDebug", "❌ Invalid totalHours format in Firebase", ex);
+                    }
+                }
+
+                int newTotalHours = Math.max(0, currentHours - shiftHours); // Prevent negative hours
+                totalHoursRef.setValue(newTotalHours);
+                Log.d("Firebase", "✅ Deducted " + shiftHours + " hours. New total: " + newTotalHours);
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ShiftDebug", "❌ Error updating total hours after shift deletion", error.toException());
+            }
+        });
+    }
+
     private void checkAndReplaceEmptyDay(DatabaseReference dayRef, String dayName) {
         dayRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override

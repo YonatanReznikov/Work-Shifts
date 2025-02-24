@@ -1,4 +1,4 @@
-package com.example.work_shifts.Fragments.Worker;
+package com.example.work_shifts.Fragments.Admin;
 
 import android.graphics.Color;
 import android.os.Bundle;
@@ -34,7 +34,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class addShiftFrag extends Fragment {
+public class adminAddShift extends Fragment {
 
     private TextView weekTextView, selectedDayTextView;
     private Calendar calendar;
@@ -47,6 +47,9 @@ public class addShiftFrag extends Fragment {
     private String userId, userName, workId;
     private String selectedWeek = "thisWeek";
     private TextView totalHoursText;
+
+    public adminAddShift() {
+    }
 
     @Nullable
     @Override
@@ -66,7 +69,6 @@ public class addShiftFrag extends Fragment {
         selectedWeek = "thisWeek";
 
         if (thisWeekButton != null && nextWeekButton != null) {
-            // Set "This Week" as selected by default
             selectedWeek = "thisWeek";
             thisWeekButton.setBackgroundColor(Color.BLUE);
             thisWeekButton.setTextColor(Color.WHITE);
@@ -377,32 +379,38 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
+        int startHour = Integer.parseInt(sTime.split(":")[0]);
+        int endHour = Integer.parseInt(fTime.split(":")[0]);
+        int shiftHours = endHour - startHour;
+
+        DatabaseReference shiftRef = databaseReference
+                .child(workId)
+                .child("shifts")
+                .child(selectedWeek)
+                .child(selectedDayName)
+                .push();
+
         Shift shift = new Shift();
         shift.sTime = sTime;
         shift.fTime = fTime;
         shift.workerId = userId;
         shift.workerName = userName;
 
-        DatabaseReference shiftRef = databaseReference
-                .child(workId)
-                .child("waitingShifts") // 🚨 Shift goes to waitingShifts, NOT shifts
-                .child(selectedWeek)
-                .child(selectedDayName)
-                .push();
-
         shiftRef.setValue(shift).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                Log.d("ShiftDebug", "✅ Shift added to waitingShifts for approval");
+                Log.d("ShiftDebug", "✅ Shift successfully added for " + userName + " to shifts");
+
+                updateTotalHoursInFirebase(selectedDayName, shiftHours);
 
                 Toast.makeText(requireContext(),
-                        "✅ Shift Submitted for Approval! \n\n"
+                        "✅ Shift Added Successfully! \n\n"
                                 + "📅 Day: " + selectedDayName + "\n"
                                 + "🕒 Time: " + sTime + " - " + fTime + "\n"
                                 + "🔹 Type: " + shiftType,
                         Toast.LENGTH_LONG).show();
             } else {
-                Log.e("ShiftDebug", "🚨 Shift submission failed.");
-                Toast.makeText(requireContext(), "❌ Failed to submit shift. Try again.", Toast.LENGTH_SHORT).show();
+                Log.e("ShiftDebug", "🚨 Shift failed to add.");
+                Toast.makeText(requireContext(), "❌ Failed to add shift. Try again.", Toast.LENGTH_SHORT).show();
             }
             addShiftButton.setEnabled(true);
         });

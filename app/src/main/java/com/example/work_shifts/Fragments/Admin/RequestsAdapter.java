@@ -98,7 +98,6 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
                 return;
             }
 
-            // ✅ Determine if shift is from thisWeek or nextWeek
             DatabaseReference approvedShiftsRef = databaseReference.child(workID)
                     .child("shifts").child(shift.getWeekType()).child(shift.getDay());
 
@@ -108,13 +107,51 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
                 approvedShiftsRef.child(shiftKey).setValue(shift)
                         .addOnSuccessListener(aVoid -> {
                             removeShiftFromWaitingList(shift, position, workID);
+
+                            updateTotalHoursInFirebase(workID, shift.getWorkerId(), shift.getsTime(), shift.getfTime());
+
                             Log.d("Firebase", "✅ Shift approved and moved to 'shifts/" + shift.getWeekType() + "'");
                         })
                         .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to approve shift", e));
             }
         });
     }
+    private void updateTotalHoursInFirebase(String workID, String workerId, String sTime, String fTime) {
+        DatabaseReference totalHoursRef = databaseReference
+                .child(workID)
+                .child("users")
+                .child(workerId)
+                .child("totalHours");
 
+        int startHour = Integer.parseInt(sTime.split(":")[0]);
+        int endHour = Integer.parseInt(fTime.split(":")[0]);
+        int shiftHours = endHour - startHour;
+
+        totalHoursRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                int currentHours = 0;
+                try {
+                    currentHours = snapshot.exists() ? snapshot.getValue(Integer.class) : 0;
+                } catch (DatabaseException e) {
+                    try {
+                        currentHours = Integer.parseInt(snapshot.getValue(String.class));
+                    } catch (NumberFormatException ex) {
+                        Log.e("ShiftDebug", "❌ Invalid totalHours format in Firebase", ex);
+                    }
+                }
+
+                int newTotalHours = currentHours + shiftHours;
+                totalHoursRef.setValue(newTotalHours);
+                Log.d("Firebase", "✅ Updated total hours for worker " + workerId + ": " + newTotalHours + " hours");
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("ShiftDebug", "❌ Error updating total hours", error.toException());
+            }
+        });
+    }
 
     private void rejectShift(Shift shift, int position) {
         getWorkID(shift, workID -> {
