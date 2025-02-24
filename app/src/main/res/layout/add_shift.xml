@@ -11,11 +11,11 @@
     <ImageView
         android:id="@+id/backgroundImage"
         android:layout_width="match_parent"
-        android:layout_height="232dp"
+        android:layout_height="200dp"
         android:scaleType="centerCrop"
         android:src="@drawable/shift"
         android:layout_marginTop="20dp"
-        android:layout_marginBottom="30dp"/>
+        android:layout_marginBottom="20dp"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="This Week"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:backgroundTint="@color/blue" />
 
         <TextView
@@ -37,7 +37,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text=""
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"
             android:paddingHorizontal="12dp"/>
 
@@ -46,9 +46,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Next Week"
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:backgroundTint="@color/blue" />
     </LinearLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -68,6 +69,7 @@
         </HorizontalScrollView>
 
     </FrameLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -79,7 +81,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Shift: "
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:layout_marginEnd="8dp"/>
 
         <Spinner
@@ -100,7 +102,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Starting: "
-            android:textSize="18sp"/>
+            android:textSize="16sp"/>
 
         <Spinner
             android:id="@+id/startTimeSpinner"
@@ -114,7 +116,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text=" Until: "
-            android:textSize="18sp"
+            android:textSize="16sp"
             android:layout_marginStart="16dp"/>
 
         <Spinner
@@ -131,10 +133,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Total Hours: 0"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:layout_marginTop="8dp"/>
-
-
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -153,4 +153,18 @@
             android:textColor="@android:color/white"/>
     </LinearLayout>
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Waiting to be approved"
+        android:textSize="16sp"
+        android:textColor="@android:color/holo_red_dark"
+        android:layout_marginTop="16dp"
+        android:gravity="center"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/shiftRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="129dp"
+        android:paddingTop="16dp" />
 </LinearLayout>
