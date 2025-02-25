@@ -1,6 +1,7 @@
 package com.example.work_shifts.Fragments.Worker;
 
-public class Shift {
+    public class Shift {
+
     private String day;
     private String sTime;
     private String fTime;

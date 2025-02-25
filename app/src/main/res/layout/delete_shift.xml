@@ -1,7 +1,8 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:orientation="vertical"
     android:padding="16dp">
 
     <!-- Top Bar -->
@@ -26,8 +27,7 @@
         android:id="@+id/weekTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/topBar"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="16dp"
         android:text="This Week"
         android:textSize="18sp"
@@ -38,19 +38,16 @@
         android:id="@+id/nextWeekButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/weekTextView"
-        android:layout_centerHorizontal="true"
+        android:layout_gravity="center_horizontal"
         android:layout_marginTop="8dp"
         android:text="Next Week"
         android:textSize="18sp"
         android:backgroundTint="@color/blue"/>
 
-    <!-- Shift List -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_below="@id/nextWeekButton"
-        android:layout_above="@id/deleteButton"
+        android:layout_weight="1"
         android:layout_marginTop="16dp"
         android:background="@android:color/white"
         android:elevation="2dp"
@@ -70,16 +67,29 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- Delete Button - Always at Bottom -->
     <Button
         android:id="@+id/deleteButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
         android:layout_marginTop="16dp"
         android:text="Delete Selected Shift"
         android:backgroundTint="@android:color/holo_red_dark"
         android:textColor="@android:color/white"
         android:elevation="2dp"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Waiting to be removed"
+        android:textSize="18sp"
+        android:textColor="@android:color/holo_red_dark"
+        android:textStyle="bold"
+        android:layout_marginStart="105dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center" />
 
-</RelativeLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/removePendingShiftsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingTop="16dp" />
+</LinearLayout>
