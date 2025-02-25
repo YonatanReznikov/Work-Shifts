@@ -5,7 +5,6 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <!-- Day Header -->
     <TextView
         android:id="@+id/shiftDay"
         android:layout_width="match_parent"
@@ -43,7 +42,6 @@
             android:textSize="16sp"
             android:textColor="@android:color/black"/>
 
-        <!-- Add to Calendar Button -->
         <ImageButton
             android:id="@+id/addToCalendarBtn"
             android:layout_width="40dp"

@@ -203,7 +203,6 @@ public class RegisterFrag extends Fragment {
                 userDetails.put("totalHours", "0");
                 userDetails.put("isAdmin", "false");
 
-                // Store user under their Firebase Auth UID
                 DatabaseReference usersRef = databaseReference.child("workIDs").child(workId).child("users").child(userId);
                 usersRef.setValue(userDetails).addOnCompleteListener(dbTask -> {
                     if (dbTask.isSuccessful()) {

@@ -81,7 +81,6 @@ public class updateInfoFrag extends Fragment {
                         if (email != null && email.equals(user.getEmail())) {
                             workId = currentWorkId;
                             userKey = userEntry.getKey();
-                            Log.d("Firebase", "Found user in Work ID: " + workId);
                             userFound = true;
                             break;
                         }
@@ -105,7 +104,6 @@ public class updateInfoFrag extends Fragment {
             public void onCancelled(@NonNull DatabaseError error) {
                 confirmButton.setEnabled(true);
                 progressBar.setVisibility(View.GONE);
-                Log.e("FirebaseError", "Error fetching work ID", error.toException());
             }
         });
     }
@@ -143,7 +141,6 @@ public class updateInfoFrag extends Fragment {
                     Toast.makeText(getActivity(), "Email updated successfully", Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(getActivity(), "Failed to update email: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
-                    Log.e("FirebaseError", "Email Update Error", task.getException());
                 }
             });
         }

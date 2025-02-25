@@ -20,7 +20,7 @@
             app:destination="@id/requestsFrag"/>
         <action
             android:id="@+id/action_adminHomePageFragment_to_adminAddShift"
-            app:destination="@id/adminAddShift" /> <!-- Added navigation action for requests -->
+            app:destination="@id/adminAddShift" />
     </fragment>
 
     <fragment
@@ -62,5 +62,5 @@
     <fragment
         android:id="@+id/adminAddShift"
         android:name="com.example.work_shifts.Fragments.Admin.adminAddShift"
-        android:label="adminAddShift" /> <!-- Added requests fragment -->
+        android:label="adminAddShift" />
 </navigation>

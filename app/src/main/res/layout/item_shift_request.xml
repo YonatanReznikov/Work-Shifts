@@ -15,7 +15,6 @@
         android:layout_height="wrap_content"
         android:padding="8dp">
 
-        <!-- Worker Information (Name + Time) -->
         <LinearLayout
             android:id="@+id/workerInfo"
             android:layout_width="wrap_content"
@@ -41,7 +40,6 @@
                 android:textColor="@android:color/darker_gray" />
         </LinearLayout>
 
-        <!-- Shift Date (Next to Day) -->
         <LinearLayout
             android:id="@+id/dateContainer"
             android:layout_width="wrap_content"
@@ -60,7 +58,6 @@
                 android:text="25/02/2025" />
         </LinearLayout>
 
-        <!-- Approve & Reject Buttons -->
         <LinearLayout
             android:id="@+id/actionButtons"
             android:layout_width="match_parent"

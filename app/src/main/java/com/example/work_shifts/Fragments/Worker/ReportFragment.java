@@ -84,7 +84,6 @@ public class ReportFragment extends Fragment {
 
         startDateSpinner.setAdapter(adapter);
         endDateSpinner.setAdapter(adapter);
-        // Set default selection to today's date
         String todayDate = new SimpleDateFormat("d/M/yy", Locale.US).format(Calendar.getInstance().getTime());
 
         int todayIndex = dateOptions.indexOf(todayDate);

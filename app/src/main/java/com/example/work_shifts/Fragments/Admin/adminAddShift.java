@@ -75,11 +75,9 @@ public class adminAddShift extends Fragment {
             nextWeekButton.setBackgroundColor(Color.LTGRAY);
             nextWeekButton.setTextColor(Color.BLACK);
 
-            // Click Listeners
             thisWeekButton.setOnClickListener(v -> changeWeek(0));
             nextWeekButton.setOnClickListener(v -> changeWeek(1));
         } else {
-            Log.e("WeekButtonError", "❌ thisWeekButton or nextWeekButton is null! Check XML layout.");
         }
 
         startTimeSpinner = view.findViewById(R.id.startTimeSpinner);
@@ -130,7 +128,7 @@ public class adminAddShift extends Fragment {
             endTimeSpinner.setSelection(getTimeOptions().indexOf("21:00"));
             startTimeSpinner.setEnabled(false);
             endTimeSpinner.setEnabled(false);
-        } else { // Custom Shift
+        } else {
             startTimeSpinner.setSelection(getTimeOptions().indexOf("07:00"));
             endTimeSpinner.setSelection(getTimeOptions().indexOf("14:00"));
             startTimeSpinner.setEnabled(true);
@@ -142,18 +140,15 @@ public class adminAddShift extends Fragment {
     private void fetchUserData(@Nullable Runnable onComplete) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
-            Log.e("UserData", "❌ User is not signed in.");
             return;
         }
 
-        final String authUserId = user.getUid(); // Firebase Auth UID
-        Log.d("UserData", "🔍 Fetching data for Auth User ID: " + authUserId);
+        final String authUserId = user.getUid();
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot workIdsSnapshot) {
                 if (!workIdsSnapshot.exists()) {
-                    Log.e("UserData", "❌ No workIDs found in Firebase.");
                     return;
                 }
 
@@ -171,31 +166,23 @@ public class adminAddShift extends Fragment {
                                 String storedEmail = userSnapshot.child("email").getValue(String.class);
 
                                 if (storedUserId.equals(authUserId)) {
-                                    userId = storedUserId; // Match Firebase Auth UID with the database user ID
+                                    userId = storedUserId;
                                     userName = userSnapshot.child("name").getValue(String.class);
                                     workId = currentWorkId;
 
                                     if (userName == null || userName.isEmpty()) {
                                         userName = "Unknown Worker";
                                     }
-
-                                    Log.d("UserData", "✅ Database User ID: " + userId);
-                                    Log.d("UserData", "✅ User Name: " + userName);
-                                    Log.d("UserData", "✅ Work ID Found: " + workId);
-
                                     if (onComplete != null) {
                                         onComplete.run();
                                     }
                                     return;
                                 }
                             }
-
-                            Log.e("UserData", "❌ User ID not found in workID: " + currentWorkId);
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            Log.e("UserData", "❌ Failed to retrieve user info", error.toException());
                         }
                     });
                 }
@@ -203,7 +190,6 @@ public class adminAddShift extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("UserData", "❌ Failed to retrieve work IDs", error.toException());
             }
         });
     }
@@ -336,14 +322,12 @@ public class adminAddShift extends Fragment {
 
     private void addShiftToDatabase() {
         if (workId == null || workId.isEmpty() || userName == null || userName.isEmpty() || userId == null) {
-            Log.w("ShiftDebug", "❌ Missing user data, retrying...");
             Toast.makeText(requireContext(), "Fetching user data... Please wait.", Toast.LENGTH_SHORT).show();
 
             fetchUserData(() -> {
                 if (workId != null && !workId.isEmpty() && userId != null) {
                     addShiftToDatabase();
                 } else {
-                    Log.e("ShiftDebug", "❌ Work ID or User ID still missing after fetching.");
                 }
             });
 
@@ -398,7 +382,6 @@ public class adminAddShift extends Fragment {
 
         shiftRef.setValue(shift).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                Log.d("ShiftDebug", "✅ Shift successfully added for " + userName + " to shifts");
 
                 updateTotalHoursInFirebase(selectedDayName, shiftHours);
 
@@ -409,7 +392,6 @@ public class adminAddShift extends Fragment {
                                 + "🔹 Type: " + shiftType,
                         Toast.LENGTH_LONG).show();
             } else {
-                Log.e("ShiftDebug", "🚨 Shift failed to add.");
                 Toast.makeText(requireContext(), "❌ Failed to add shift. Try again.", Toast.LENGTH_SHORT).show();
             }
             addShiftButton.setEnabled(true);
@@ -433,7 +415,6 @@ public class adminAddShift extends Fragment {
                     try {
                         currentHours = Integer.parseInt(snapshot.getValue(String.class));
                     } catch (NumberFormatException ex) {
-                        Log.e("ShiftDebug", "❌ Invalid totalHours format in Firebase", ex);
                     }
                 }
 
@@ -443,7 +424,6 @@ public class adminAddShift extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("ShiftDebug", "❌ Error retrieving total hours", error.toException());
             }
         });
     }
@@ -452,7 +432,6 @@ public class adminAddShift extends Fragment {
         Calendar today = Calendar.getInstance();
         Calendar selectedDay = Calendar.getInstance();
 
-        // Find the selected day's date
         List<String> daysOfWeek = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
         int selectedDayIndex = daysOfWeek.indexOf(selectedDayName);
 

@@ -67,7 +67,6 @@ public class AdminHomePageFrag extends Fragment {
 
         NavController navController = Navigation.findNavController(view);
 
-        // Initialize buttons
         infoBtn = view.findViewById(R.id.btnPersonalInfo);
         paySlipBtn = view.findViewById(R.id.btnPaySlip);
         myShiftBtn = view.findViewById(R.id.myShifts);
@@ -138,7 +137,6 @@ public class AdminHomePageFrag extends Fragment {
                 }
 
                 shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
-                Log.d("ShiftDebug", "👤 Displaying " + (isMyShifts ? "My Shifts" : "Schedule"));
             }
         });
 
@@ -168,7 +166,6 @@ public class AdminHomePageFrag extends Fragment {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser == null) {
-            Log.e("FirebaseDebug", "❌ Current user is null!");
             return;
         }
 
@@ -179,7 +176,6 @@ public class AdminHomePageFrag extends Fragment {
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String userWorkId = null;
 
-                // ✅ Find the user's workID dynamically
                 for (DataSnapshot workIdSnapshot : snapshot.getChildren()) {
                     if (workIdSnapshot.child("users").hasChild(currentUserId)) {
                         userWorkId = workIdSnapshot.getKey();
@@ -188,18 +184,15 @@ public class AdminHomePageFrag extends Fragment {
                 }
 
                 if (userWorkId == null) {
-                    Log.e("FirebaseDebug", "❌ No workID found for user: " + currentUserId);
                     return;
                 }
 
-                Log.d("FirebaseDebug", "✅ Found workID: " + userWorkId);
 
                 fetchShiftsForWorkId(userWorkId, weekType);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "❌ Failed to read workIDs", error.toException());
             }
         });
     }
@@ -213,7 +206,6 @@ public class AdminHomePageFrag extends Fragment {
         LinkedHashMap<String, List<Shift>> allWorkerShiftsMap = new LinkedHashMap<>();
         List<Shift> userShiftsList = new ArrayList<>();
 
-        // 📅 Get today’s date and initialize week mapping
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
 
@@ -221,12 +213,11 @@ public class AdminHomePageFrag extends Fragment {
             calendar.add(Calendar.DAY_OF_MONTH, 7);
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault()); // e.g., "Monday (26/02/2025)"
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
         LinkedHashMap<String, String> dateMap = new LinkedHashMap<>();
 
-        // 📅 Map each weekday to its corresponding formatted date
         for (String day : WEEKDAYS) {
-            String formattedDay = sdf.format(calendar.getTime()); // e.g., "Monday (26/02/2025)"
+            String formattedDay = sdf.format(calendar.getTime());
             dateMap.put(day, formattedDay);
             allWorkerShiftsMap.put(day, new ArrayList<>());
             calendar.add(Calendar.DAY_OF_MONTH, 1);
@@ -235,14 +226,12 @@ public class AdminHomePageFrag extends Fragment {
         shiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Log.d("FirebaseDebug", "🔥 Data snapshot: " + snapshot.getValue());
 
                 for (String day : WEEKDAYS) {
                     DataSnapshot daySnapshot = snapshot.child(day);
 
                     if (daySnapshot.exists()) {
-                        String formattedDay = dateMap.get(day); // Get the correct formatted day name
-                        Log.d("AdminHomePageFrag", "🗓 Mapping: " + day + " -> " + formattedDay);
+                        String formattedDay = dateMap.get(day);
 
                         for (DataSnapshot shiftData : daySnapshot.getChildren()) {
                             String sTime = shiftData.child("sTime").getValue(String.class);
@@ -252,7 +241,6 @@ public class AdminHomePageFrag extends Fragment {
 
                             if (sTime == null || fTime == null || workerId == null) continue;
 
-                            // ✅ Use formattedDay instead of just day
                             Shift shift = new Shift(formattedDay, sTime, fTime, workerName, workerId, weekType);
                             allWorkerShiftsMap.get(day).add(shift);
 
@@ -261,14 +249,10 @@ public class AdminHomePageFrag extends Fragment {
                             }
                         }
                     }
-
-                    // ✅ If no shifts exist for the day, add a placeholder to keep the date
                     if (allWorkerShiftsMap.get(day).isEmpty()) {
                         allWorkerShiftsMap.get(day).add(new Shift(dateMap.get(day), "", "", "No Shifts Yet", "", weekType));
                     }
                 }
-
-                // ✅ Add all shifts to the list
                 for (String day : WEEKDAYS) {
                     allShifts.addAll(allWorkerShiftsMap.get(day));
                 }
@@ -285,7 +269,6 @@ public class AdminHomePageFrag extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "❌ Failed to read shifts", error.toException());
             }
         });
     }

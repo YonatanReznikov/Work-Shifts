@@ -68,7 +68,6 @@ public class HomePageFragment extends Fragment {
 
         NavController navController = Navigation.findNavController(view);
 
-        // Initialize buttons
         infoBtn = view.findViewById(R.id.btnPersonalInfo);
         paySlipBtn = view.findViewById(R.id.btnPaySlip);
         myShiftBtn = view.findViewById(R.id.myShifts);
@@ -104,7 +103,7 @@ public class HomePageFragment extends Fragment {
             nextWeekBtn.setText(showingNextWeek ? "Current Week" : "Next Week");
 
             loadShifts(week);
-            shiftRecyclerView.post(() -> shiftAdapter.notifyDataSetChanged()); // ✅ Force full UI refresh
+            shiftRecyclerView.post(() -> shiftAdapter.notifyDataSetChanged());
         });
 
 
@@ -122,7 +121,6 @@ public class HomePageFragment extends Fragment {
                 }
 
                 shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
-                Log.d("ShiftDebug", "👤 Displaying " + (isMyShifts ? "My Shifts" : "Schedule"));
             }
         });
 
@@ -139,25 +137,21 @@ public class HomePageFragment extends Fragment {
         calendar.set(Calendar.MINUTE, 1);
         calendar.set(Calendar.SECOND, 0);
 
-        // If Sunday 00:01 AM already passed today, schedule for next week
         if (calendar.getTimeInMillis() < System.currentTimeMillis()) {
             calendar.add(Calendar.WEEK_OF_YEAR, 1);
         }
 
-        // Set an exact alarm
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
     }
     private void loadShifts(String weekType) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");
 
         if (currentUser == null) {
-            Log.e("ShiftDebug", "❌ Current user is null!");
             return;
         }
 
         String currentUserId = currentUser.getUid();
 
-        // Step 1: Find the user's workID
         workIdsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -170,13 +164,10 @@ public class HomePageFragment extends Fragment {
                 }
 
                 if (userWorkId == null) {
-                    Log.e("ShiftDebug", "❌ User has no assigned workID!");
                     return;
                 }
 
-                Log.d("ShiftDebug", "🏢 Found workID for user: " + userWorkId);
 
-                // Step 2: Load shifts only from the user's workID
                 DatabaseReference shiftsRef = workIdsRef.child(userWorkId).child("shifts").child(weekType);
                 shiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
@@ -214,7 +205,6 @@ public class HomePageFragment extends Fragment {
 
                                     if (sTime == null || fTime == null || workerId == null) continue;
 
-                                    // ✅ Store the full date in Shift object
                                     Shift shift = new Shift(dateWithDay, sTime, fTime, workerName, workerId, weekType);
                                     allWorkerShiftsMap.get(day).add(shift);
 
@@ -237,7 +227,6 @@ public class HomePageFragment extends Fragment {
 
                         userShifts = new ArrayList<>(userShiftsList);
 
-                        // ✅ Ensure toggleGroup is not null before accessing its methods
                         if (toggleGroup != null) {
                             boolean isMyShifts = toggleGroup.getCheckedButtonId() == R.id.myShifts;
                             shiftAdapter.updateShifts(isMyShifts ? userShifts : allShifts, isMyShifts);
@@ -248,14 +237,12 @@ public class HomePageFragment extends Fragment {
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("Firebase", "❌ Failed to read shifts", error.toException());
                     }
                 });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "❌ Failed to read workIDs", error.toException());
             }
         });
     }

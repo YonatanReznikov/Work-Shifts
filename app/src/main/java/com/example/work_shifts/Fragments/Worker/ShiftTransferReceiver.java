@@ -12,7 +12,6 @@ import com.google.firebase.database.*;
 public class ShiftTransferReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("ShiftDebug", "⏰ Alarm triggered! Moving nextWeek shifts to thisWeek...");
         moveNextWeekToThisWeek();
     }
 
@@ -26,25 +25,21 @@ public class ShiftTransferReceiver extends BroadcastReceiver {
                     String workId = workIdSnapshot.getKey();
                     DatabaseReference workRef = shiftsRef.child(workId).child("shifts");
 
-                    // Read "nextWeek" shifts
                     DataSnapshot nextWeekSnapshot = workIdSnapshot.child("shifts").child("nextWeek");
                     if (nextWeekSnapshot.exists()) {
-                        workRef.child("thisWeek").setValue(nextWeekSnapshot.getValue()) /// ✅ Move shifts
+                        workRef.child("thisWeek").setValue(nextWeekSnapshot.getValue())
                                 .addOnCompleteListener(task -> {
                                     if (task.isSuccessful()) {
-                                        workRef.child("nextWeek").setValue(null); /// ✅ Clear nextWeek
-                                        Log.d("ShiftDebug", "✅ Moved nextWeek shifts to thisWeek for workID: " + workId);
+                                        workRef.child("nextWeek").setValue(null);
                                     }
                                 });
                     } else {
-                        Log.d("ShiftDebug", "⚠️ No shifts found in nextWeek for workID: " + workId);
                     }
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "❌ Failed to move shifts", error.toException());
             }
         });
     }

@@ -6,7 +6,6 @@
     android:background="@android:color/white"
     android:layout_marginBottom="5dp">
 
-    <!-- Shift Details (Takes up most of the space) -->
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -36,7 +35,6 @@
             android:textSize="14sp" />
     </LinearLayout>
 
-    <!-- Delete Button (On the Right) -->
     <ImageButton
         android:id="@+id/deleteShiftButton"
         android:layout_width="40dp"

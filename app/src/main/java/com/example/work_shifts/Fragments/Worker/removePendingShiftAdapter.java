@@ -76,19 +76,15 @@ public class removePendingShiftAdapter extends RecyclerView.Adapter<removePendin
     private void removeShift(int position, Shift shift) {
         String shiftId = shiftIdMap.get(shift);
 
-        // **🔹 Debug logs**
         Log.e("removeShift", "workId: " + workId + ", shiftId: " + shiftId +
                 ", weekType: " + shift.getWeekType() + ", day: " + shift.getDay());
 
-        // **Check for null workId and log an error**
         if (workId == null) {
-            Log.e("removeShift", "❌ Error: workId is null, cannot remove shift!");
             Toast.makeText(context, "Error: Work ID is missing. Cannot remove shift.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (shiftId == null || shift.getWeekType() == null || shift.getDay() == null) {
-            Log.e("removeShift", "❌ Error: Missing shift data.");
             Toast.makeText(context, "Error: Missing shift data. Cannot remove.", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -97,7 +93,6 @@ public class removePendingShiftAdapter extends RecyclerView.Adapter<removePendin
                 .child("waitingShifts").child("removals")
                 .child(shift.getWeekType()).child(shift.getDay()).child(shiftId);
 
-        Log.e("removeShift", "Removing from path: " + shiftRef);
 
         shiftRef.removeValue().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
@@ -105,7 +100,6 @@ public class removePendingShiftAdapter extends RecyclerView.Adapter<removePendin
                 notifyItemRemoved(position);
                 Toast.makeText(context, "✅ Shift removed successfully!", Toast.LENGTH_SHORT).show();
             } else {
-                Log.e("removeShift", "❌ Firebase failed to remove shift: " + task.getException());
                 Toast.makeText(context, "Failed to remove shift", Toast.LENGTH_SHORT).show();
             }
         });

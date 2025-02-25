@@ -97,7 +97,6 @@ public class addShiftFrag extends Fragment {
 
 
 
-        Log.d("AdapterInit", "🛠️ workId: " + workId + ", selectedWeek: " + selectedWeek);
 
         fetchPendingShifts();
         if (thisWeekButton != null && nextWeekButton != null) {
@@ -107,11 +106,9 @@ public class addShiftFrag extends Fragment {
             nextWeekButton.setBackgroundColor(Color.LTGRAY);
             nextWeekButton.setTextColor(Color.BLACK);
 
-            // Click Listeners
             thisWeekButton.setOnClickListener(v -> changeWeek(0));
             nextWeekButton.setOnClickListener(v -> changeWeek(1));
         } else {
-            Log.e("WeekButtonError", "❌ thisWeekButton or nextWeekButton is null! Check XML layout.");
         }
 
         startTimeSpinner = view.findViewById(R.id.startTimeSpinner);
@@ -154,7 +151,6 @@ public class addShiftFrag extends Fragment {
     }
     private void fetchPendingShifts() {
         if (workId == null) {
-            Log.e("FirebaseError", "❌ workId is null, retrying fetchUserData()...");
             fetchUserData(this::fetchPendingShifts);
             return;
         }
@@ -176,7 +172,7 @@ public class addShiftFrag extends Fragment {
                     String day = daySnapshot.getKey();
 
                     for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
-                        String shiftId = shiftSnapshot.getKey(); // ✅ Get shiftId
+                        String shiftId = shiftSnapshot.getKey();
                         String sTime = shiftSnapshot.child("sTime").getValue(String.class);
                         String fTime = shiftSnapshot.child("fTime").getValue(String.class);
                         String workerName = shiftSnapshot.child("workerName").getValue(String.class);
@@ -192,7 +188,6 @@ public class addShiftFrag extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("FirebaseError", "❌ Failed to fetch pending shifts", error.toException());
             }
         });
     }
@@ -208,7 +203,7 @@ public class addShiftFrag extends Fragment {
             endTimeSpinner.setSelection(getTimeOptions().indexOf("21:00"));
             startTimeSpinner.setEnabled(false);
             endTimeSpinner.setEnabled(false);
-        } else { // Custom Shift
+        } else {
             startTimeSpinner.setSelection(getTimeOptions().indexOf("07:00"));
             endTimeSpinner.setSelection(getTimeOptions().indexOf("14:00"));
             startTimeSpinner.setEnabled(true);
@@ -218,34 +213,31 @@ public class addShiftFrag extends Fragment {
     }
 
     private void fetchUserData(@Nullable Runnable onComplete) {
-        if (mAuth == null) {  // ✅ Ensure FirebaseAuth is initialized
+        if (mAuth == null) {
             mAuth = FirebaseAuth.getInstance();
         }
 
-        if (databaseReference == null) {  // ✅ Ensure Firebase Database is initialized
+        if (databaseReference == null) {
             databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
         }
 
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
-            Log.e("UserData", "❌ User is not signed in.");
             return;
         }
 
         final String authUserId = user.getUid();
-        Log.d("UserData", "🔍 Fetching data for Auth User ID: " + authUserId);
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot workIdsSnapshot) {
                 if (!workIdsSnapshot.exists()) {
-                    Log.e("UserData", "❌ No workIDs found in Firebase.");
                     return;
                 }
 
                 for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
                     String currentWorkId = workIdEntry.getKey();
-                    if (workId != null) break; // ✅ Stop loop if workId is already set
+                    if (workId != null) break;
 
                     DatabaseReference usersRef = databaseReference.child(currentWorkId).child("users");
 
@@ -255,7 +247,7 @@ public class addShiftFrag extends Fragment {
                             for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                                 String storedUserId = userSnapshot.getKey();
                                 if (storedUserId.equals(authUserId)) {
-                                    workId = currentWorkId; // ✅ Store workId
+                                    workId = currentWorkId;
                                     userId = storedUserId;
                                     userName = userSnapshot.child("name").getValue(String.class);
 
@@ -263,7 +255,6 @@ public class addShiftFrag extends Fragment {
                                         userName = "Unknown Worker";
                                     }
 
-                                    Log.d("UserData", "✅ workId Found: " + workId);
 
                                     pendingShiftAdapter = new PendingShiftAdapter(pendingShiftList, workId, selectedWeek, addShiftFrag.this::fetchUserData);
                                     pendingShiftsRecyclerView.setAdapter(pendingShiftAdapter);
@@ -276,12 +267,10 @@ public class addShiftFrag extends Fragment {
                                     return;
                                 }
                             }
-                            Log.e("UserData", "❌ User ID not found in workID: " + currentWorkId);
                         }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError error) {
-                            Log.e("UserData", "❌ Failed to retrieve user info", error.toException());
                         }
                     });
                 }
@@ -289,7 +278,6 @@ public class addShiftFrag extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("UserData", "❌ Failed to retrieve work IDs", error.toException());
             }
         });
     }
@@ -422,52 +410,48 @@ public class addShiftFrag extends Fragment {
 
     private void addShiftToDatabase() {
         if (workId == null || workId.isEmpty() || userName == null || userName.isEmpty() || userId == null) {
-            Log.w("ShiftDebug", "❌ Missing user data, retrying...");
             Toast.makeText(requireContext(), "Fetching user data... Please wait.", Toast.LENGTH_SHORT).show();
 
             fetchUserData(() -> {
                 if (workId != null) {
-                    Log.d("UserData", "✅ workId retrieved: " + workId);
                     pendingShiftAdapter = new PendingShiftAdapter(pendingShiftList, workId, selectedWeek, this::fetchUserData);
                     pendingShiftsRecyclerView.setAdapter(pendingShiftAdapter);
-                    fetchPendingShifts(); // ✅ Refresh list only after setting workId
+                    fetchPendingShifts();
                 } else {
-                    Log.e("UserData", "❌ workId is still null after fetching.");
                 }
-                addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
+                addShiftButton.setEnabled(true);
             });
-
             return;
         }
 
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             Toast.makeText(requireContext(), "Error: User not signed in", Toast.LENGTH_SHORT).show();
-            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
+            addShiftButton.setEnabled(true);
             return;
         }
 
         if (selectedDayTextView.getText().toString().isEmpty()) {
             Toast.makeText(requireContext(), "Please select a day first", Toast.LENGTH_SHORT).show();
-            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
+            addShiftButton.setEnabled(true);
             return;
         }
 
         String selectedDayName = selectedDayTextView.getText().toString().replace("Selected Day: ", "");
         if (isPastDay(selectedDayName)) {
             Toast.makeText(requireContext(), "Cannot add a shift for a past day!", Toast.LENGTH_SHORT).show();
-            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
+            addShiftButton.setEnabled(true);
             return;
         }
 
-        addShiftButton.setEnabled(false); // ❌ Button is disabled here (FIX: Ensure it gets re-enabled after)
+        addShiftButton.setEnabled(false);
 
         String sTime = startTimeSpinner.getSelectedItem().toString();
         String fTime = endTimeSpinner.getSelectedItem().toString();
 
         if (sTime.compareTo(fTime) >= 0) {
             Toast.makeText(requireContext(), "End time must be after start time", Toast.LENGTH_SHORT).show();
-            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
+            addShiftButton.setEnabled(true);
             return;
         }
 
@@ -487,17 +471,15 @@ public class addShiftFrag extends Fragment {
 
         shiftRef.setValue(shift).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
-                Log.d("ShiftDebug", "✅ Shift added to waitingShifts for approval");
                 Toast.makeText(requireContext(), "✅ Shift Submitted!", Toast.LENGTH_LONG).show();
-                fetchPendingShifts(); // ✅ Refresh list immediately
+                fetchPendingShifts();
             } else {
                 Toast.makeText(requireContext(), "❌ Failed to submit shift", Toast.LENGTH_SHORT).show();
             }
-            addShiftButton.setEnabled(true); // ✅ Button is re-enabled after operation
+            addShiftButton.setEnabled(true);
         }).addOnFailureListener(e -> {
-            Log.e("ShiftDebug", "❌ Firebase submission failed", e);
             Toast.makeText(requireContext(), "❌ Failed to submit shift", Toast.LENGTH_SHORT).show();
-            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
+            addShiftButton.setEnabled(true);
         });
     }
 
@@ -518,7 +500,6 @@ public class addShiftFrag extends Fragment {
                     try {
                         currentHours = Integer.parseInt(snapshot.getValue(String.class));
                     } catch (NumberFormatException ex) {
-                        Log.e("ShiftDebug", "❌ Invalid totalHours format in Firebase", ex);
                     }
                 }
 
@@ -528,7 +509,6 @@ public class addShiftFrag extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("ShiftDebug", "❌ Error retrieving total hours", error.toException());
             }
         });
     }
@@ -537,7 +517,6 @@ public class addShiftFrag extends Fragment {
         Calendar today = Calendar.getInstance();
         Calendar selectedDay = Calendar.getInstance();
 
-        // Find the selected day's date
         List<String> daysOfWeek = Arrays.asList("Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday");
         int selectedDayIndex = daysOfWeek.indexOf(selectedDayName);
 

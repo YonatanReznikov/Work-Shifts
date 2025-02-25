@@ -103,7 +103,6 @@ public class showFrag extends Fragment {
                                     }
                                 }
 
-                                // ✅ Fix: Calculate paycheck **after** setting totalHours
                                 int paycheck = totalHours * 40;
                                 int paycheckAfterTaxes = (int) (paycheck * 0.82);
                                 if (emailField != null) emailField.setText(email);

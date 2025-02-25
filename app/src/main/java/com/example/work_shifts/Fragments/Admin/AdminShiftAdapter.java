@@ -56,13 +56,12 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
     public void onBindViewHolder(@NonNull ShiftViewHolder holder, int position) {
         Shift shift = shiftList.get(position);
 
-        // ✅ Ensure the first shift of the day has a visible day header
         if (position == 0 || !shift.getDay().equals(shiftList.get(position - 1).getDay())) {
             holder.dayTextView.setVisibility(View.VISIBLE);
             holder.dayTextView.setText(shift.getDay());
 
             if (normalizeDate(shift.getDay()).equalsIgnoreCase(normalizeDate(today))) {
-                holder.dayTextView.setBackgroundColor(Color.parseColor("#FFD700")); // Gold highlight
+                holder.dayTextView.setBackgroundColor(Color.parseColor("#FFD700"));
                 holder.dayTextView.setTextColor(Color.BLACK);
             } else {
                 holder.dayTextView.setBackgroundColor(Color.TRANSPARENT);
@@ -106,25 +105,20 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
             endCal.set(Calendar.HOUR_OF_DAY, endHour);
             endCal.set(Calendar.MINUTE, endMinute);
 
-            // Format timestamps for Google Calendar URL
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.getDefault());
             String sTime = sdf.format(startCal.getTime());
             String fTime = sdf.format(endCal.getTime());
 
-            // Construct Google Calendar event URL
             String calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE" +
                     "&text=Work%20Shift" +
                     "&details=Shift%3A%20" + shift.getsTime() + "%20-%20" + shift.getfTime() +
                     "&location=Workplace" +
                     "&dates=" + sTime + "/" + fTime;
 
-            // Open Google Calendar event creation in browser
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(calendarUrl));
             context.startActivity(intent);
 
-            Log.d("ShiftAdapter", "✅ Opened Google Calendar in browser.");
         } catch (Exception e) {
-            Log.e("ShiftAdapter", "❌ Error opening Google Calendar", e);
         }
     }
 
@@ -166,7 +160,7 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
     private void deleteShift(Context context, Shift shift) {
         DatabaseReference workIdsRef = FirebaseDatabase.getInstance().getReference("workIDs");
 
-        AtomicReference<String> workID = new AtomicReference<>(null); // Use AtomicReference
+        AtomicReference<String> workID = new AtomicReference<>(null);
 
         workIdsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -213,12 +207,10 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
                         if (shiftIdToDelete != null) {
                             shiftsRef.child(shiftIdToDelete).removeValue()
                                     .addOnSuccessListener(aVoid -> {
-                                        Log.d("ShiftDebug", "✅ Shift deleted successfully.");
                                         Toast.makeText(context, "✅ Shift Deleted", Toast.LENGTH_SHORT).show();
 
                                         int shiftDuration = calculateShiftDuration(shift.getsTime(), shift.getfTime());
 
-                                        // ✅ Use workID.get() inside the lambda
                                         updateTotalHoursAfterDeletion(workID.get(), shift.getWorkerId(), shiftDuration);
 
                                         int shiftIndex = shiftList.indexOf(shift);
@@ -239,7 +231,6 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
                                         notifyDataSetChanged();
                                     })
                                     .addOnFailureListener(e -> {
-                                        Log.e("ShiftDebug", "❌ Failed to delete shift", e);
                                         Toast.makeText(context, "❌ Failed to delete shift", Toast.LENGTH_SHORT).show();
                                     });
                         } else {
@@ -249,14 +240,12 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
 
                     @Override
                     public void onCancelled(@NonNull DatabaseError error) {
-                        Log.e("Firebase", "❌ Failed to read shifts", error.toException());
                     }
                 });
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "❌ Failed to read workIDs", error.toException());
             }
         });
     }
@@ -266,9 +255,8 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
 
         try {
             long diffMillis = sdf.parse(finishTime).getTime() - sdf.parse(startTime).getTime();
-            return (int) (diffMillis / (1000 * 60 * 60)); // Convert milliseconds to hours
+            return (int) (diffMillis / (1000 * 60 * 60));
         } catch (Exception e) {
-            Log.e("TimeParse", "❌ Failed to parse shift duration", e);
         }
 
         return 0;
@@ -290,18 +278,15 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
                     try {
                         currentHours = Integer.parseInt(snapshot.getValue(String.class));
                     } catch (NumberFormatException ex) {
-                        Log.e("ShiftDebug", "❌ Invalid totalHours format in Firebase", ex);
                     }
                 }
 
-                int newTotalHours = Math.max(0, currentHours - shiftHours); // Prevent negative hours
+                int newTotalHours = Math.max(0, currentHours - shiftHours);
                 totalHoursRef.setValue(newTotalHours);
-                Log.d("Firebase", "✅ Deducted " + shiftHours + " hours. New total: " + newTotalHours);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("ShiftDebug", "❌ Error updating total hours after shift deletion", error.toException());
             }
         });
     }
@@ -312,15 +297,12 @@ public class AdminShiftAdapter extends RecyclerView.Adapter<AdminShiftAdapter.Sh
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 if (!snapshot.hasChildren()) {
-                    // Instead of removing the day, add a placeholder
                     dayRef.child("noShifts").setValue("No shifts yet");
-                    Log.d("ShiftAdapter", "✅ No shifts left for " + dayName + ". Added 'No shifts yet' placeholder.");
                 }
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "❌ Failed to check empty day", error.toException());
             }
         });
     }

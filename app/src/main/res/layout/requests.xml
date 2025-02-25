@@ -6,7 +6,6 @@
     android:padding="16dp"
     android:background="@android:color/white">
 
-    <!-- Header Section -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -28,7 +27,6 @@
             android:paddingVertical="4dp"/>
     </LinearLayout>
 
-    <!-- Section for Additions -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -43,7 +41,6 @@
         android:layout_height="290dp"
         android:scrollbars="vertical" />
 
-    <!-- Section for Removals -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

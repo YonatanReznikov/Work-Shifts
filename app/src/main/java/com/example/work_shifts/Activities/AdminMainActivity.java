@@ -16,7 +16,6 @@ public class AdminMainActivity extends AppCompatActivity {
 
         Toast.makeText(this, "Admin Activity Loaded!", Toast.LENGTH_LONG).show();
 
-        // Ensure NavController is properly set
         NavHostFragment navHostFragment = (NavHostFragment) getSupportFragmentManager().findFragmentById(R.id.admin_nav_host_fragment);
         if (navHostFragment == null) {
             Log.e("AdminMainActivity", "❌ NavHostFragment is NULL!");

@@ -52,7 +52,7 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
             holder.dayTextView.setText(shift.getDay());
 
             if (normalizedShiftDay.equalsIgnoreCase(today)) {
-                holder.dayTextView.setBackgroundColor(Color.parseColor("#FFD700")); // Gold highlight
+                holder.dayTextView.setBackgroundColor(Color.parseColor("#FFD700"));
                 holder.dayTextView.setTextColor(Color.BLACK);
             } else {
                 holder.dayTextView.setBackgroundColor(Color.TRANSPARENT);
@@ -62,19 +62,16 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
             holder.dayTextView.setVisibility(View.GONE);
         }
 
-        // Set shift details
         holder.timeTextView.setText(String.format("%s - %s", shift.getsTime(), shift.getfTime()));
         holder.workerTextView.setText(shift.getWorkerName());
 
-        // Show "Add to Calendar" button only in "My Shifts" mode
         if (isMyShifts) {
             holder.addToCalendarBtn.setVisibility(View.VISIBLE);
             holder.addToCalendarBtn.setOnClickListener(v -> {
-                Log.d("ShiftAdapter", "🗓️ Adding Shift to Calendar: " + shift.getsTime() + " - " + shift.getfTime());
                 addShiftToCalendar(v.getContext(), shift);
             });
         } else {
-            holder.addToCalendarBtn.setVisibility(View.INVISIBLE);  // Instead of GONE, keep it in layout
+            holder.addToCalendarBtn.setVisibility(View.INVISIBLE);
         }
     }
 
@@ -87,7 +84,6 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
         this.shiftList = newShifts;
         this.isMyShifts = isMyShifts;
         notifyDataSetChanged();
-        Log.d("ShiftAdapter", "Shifts updated. New count: " + shiftList.size() + ", isMyShifts: " + isMyShifts);
     }
 
     static class ShiftViewHolder extends RecyclerView.ViewHolder {
@@ -123,25 +119,20 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
             endCal.set(Calendar.HOUR_OF_DAY, Integer.parseInt(shift.getfTime().split(":")[0]));
             endCal.set(Calendar.MINUTE, 0);
 
-            // Format timestamps for Google Calendar URL
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.getDefault());
             String startTime = sdf.format(startCal.getTime());
             String endTime = sdf.format(endCal.getTime());
 
-            // Construct Google Calendar event URL
             String calendarUrl = "https://www.google.com/calendar/render?action=TEMPLATE" +
                     "&text=Work%20Shift" +
                     "&details=Shift%3A%20" + shift.getsTime() + "%20-%20" + shift.getfTime() +
                     "&location=Workplace" +
                     "&dates=" + startTime + "/" + endTime;
 
-            // Open the Google Calendar event creation page in a browser
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(calendarUrl));
             context.startActivity(intent);
 
-            Log.d("ShiftAdapter", "✅ Opened Google Calendar in browser.");
         } catch (Exception e) {
-            Log.e("ShiftAdapter", "❌ Error opening Google Calendar", e);
         }
     }
 
@@ -150,7 +141,6 @@ public class ShiftAdapter extends RecyclerView.Adapter<ShiftAdapter.ShiftViewHol
             SimpleDateFormat sdf = new SimpleDateFormat("EEEE (dd/MM/yyyy)", Locale.getDefault());
             return sdf.parse(fullDayText);
         } catch (Exception e) {
-            Log.e("ShiftAdapter", "❌ Failed to parse date from: " + fullDayText, e);
             return new Date();
         }
     }

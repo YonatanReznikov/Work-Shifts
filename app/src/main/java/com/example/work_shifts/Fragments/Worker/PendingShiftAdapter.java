@@ -20,15 +20,14 @@ public class PendingShiftAdapter extends RecyclerView.Adapter<PendingShiftAdapte
     private List<addShiftFrag.PendingShift> shiftList;
     private String workId;
     private String selectedWeek;
-    private WorkIdFetcher workIdFetcher;  // ✅ WorkIdFetcher Interface
+    private WorkIdFetcher workIdFetcher;
 
     public PendingShiftAdapter(List<addShiftFrag.PendingShift> shiftList, String workId, String selectedWeek, WorkIdFetcher workIdFetcher) {
         this.shiftList = shiftList;
         this.workId = (workId != null && !workId.equals("UNKNOWN_WORK_ID")) ? workId : "INVALID_WORK_ID";
         this.selectedWeek = (selectedWeek != null) ? selectedWeek : "thisWeek";
-        this.workIdFetcher = workIdFetcher;  // ✅ Store the fetcher callback
+        this.workIdFetcher = workIdFetcher;
 
-        Log.d("AdapterInit", "🛠️ PendingShiftAdapter initialized with workId=" + this.workId + ", selectedWeek=" + this.selectedWeek);
     }
 
     @NonNull
@@ -45,9 +44,7 @@ public class PendingShiftAdapter extends RecyclerView.Adapter<PendingShiftAdapte
         holder.shiftTime.setText(shift.sTime + " - " + shift.fTime);
         holder.shiftDay.setText(shift.day);
 
-        // Handle Delete Button Click
         holder.deleteShiftButton.setOnClickListener(v -> {
-            Log.d("DeleteShift", "🛠️ Delete button clicked for " + shift.workerName);
             deleteShiftFromFirebase(shift, position);
         });
     }
@@ -72,13 +69,10 @@ public class PendingShiftAdapter extends RecyclerView.Adapter<PendingShiftAdapte
 
     private void deleteShiftFromFirebase(addShiftFrag.PendingShift shift, int position) {
         if (workId == null || shift.shiftId == null) {
-            Log.e("DeleteShift", "❌ workId or shiftId is null, cannot delete shift.");
             return;
         }
 
-        // ✅ Firebase Path Including shiftId
         String path = "workIDs/" + workId + "/waitingShifts/additions/" + selectedWeek + "/" + shift.day + "/" + shift.shiftId;
-        Log.d("DeleteShift", "📍 Firebase Path: " + path);
 
         DatabaseReference shiftRef = FirebaseDatabase.getInstance().getReference(path);
 
@@ -87,16 +81,13 @@ public class PendingShiftAdapter extends RecyclerView.Adapter<PendingShiftAdapte
                 if (position >= 0 && position < shiftList.size()) {
                     shiftList.remove(position);
                     notifyItemRemoved(position);
-                    Log.d("DeleteShift", "✅ Shift deleted successfully from Firebase.");
                 } else {
-                    Log.w("DeleteShift", "⚠️ Attempted to remove invalid position: " + position);
                 }
 
                 if (shiftList.isEmpty()) {
                     notifyDataSetChanged();
                 }
             } else {
-                Log.e("DeleteShift", "❌ Failed to delete shift from Firebase.", task.getException());
             }
         });
     }

@@ -59,7 +59,7 @@ public class deleteShiftFrag extends Fragment {
             showingNextWeek = !showingNextWeek;
 
             String selectedWeek = showingNextWeek ? "nextWeek" : "thisWeek";
-            String removalWeek = showingNextWeek ? "thisWeek" : "nextWeek"; // ✅ Show pending removals for current week
+            String removalWeek = showingNextWeek ? "thisWeek" : "nextWeek";
 
             weekTextView.setText(showingNextWeek ? "Next Week" : "This Week");
             nextWeekButton.setText(showingNextWeek ? "Current Week" : "Next Week");
@@ -97,24 +97,20 @@ public class deleteShiftFrag extends Fragment {
     private void fetchUserData(Runnable onComplete) {
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null || user.getEmail() == null) {
-            Log.e("fetchUserData", "User is not logged in or email is missing.");
             return;
         }
 
         String lowerCaseEmail = user.getEmail().toLowerCase();
-        Log.e("fetchUserData", "Searching for user with email: " + lowerCaseEmail);
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot workIdsSnapshot) {
                 if (!workIdsSnapshot.exists()) {
-                    Log.e("fetchUserData", "No work IDs found in database.");
                     return;
                 }
 
                 for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
                     String currentWorkId = workIdEntry.getKey();
-                    Log.e("fetchUserData", "Checking Work ID: " + currentWorkId);
 
                     DatabaseReference usersRef = databaseReference.child(currentWorkId).child("users");
                     usersRef.orderByChild("email").equalTo(lowerCaseEmail)
@@ -122,7 +118,6 @@ public class deleteShiftFrag extends Fragment {
                                 @Override
                                 public void onDataChange(@NonNull DataSnapshot snapshot) {
                                     if (!snapshot.exists()) {
-                                        Log.e("fetchUserData", "User not found in Work ID: " + currentWorkId);
                                         return;
                                     }
 
@@ -130,20 +125,17 @@ public class deleteShiftFrag extends Fragment {
                                         userId = userSnapshot.getKey();
                                         workId = currentWorkId;
 
-                                        Log.e("fetchUserData", "✅ Found User ID: " + userId + ", Work ID: " + workId);
 
-                                        // **🔹 Fix: Initialize adapter here, after workId is set**
                                         adapter = new removePendingShiftAdapter(getContext(), pendingShiftList, shiftIdMap, workId);
                                         removePendingShiftsRecyclerView.setAdapter(adapter);
 
-                                        onComplete.run(); // Continue after fetching workId
+                                        onComplete.run();
                                         return;
                                     }
                                 }
 
                                 @Override
                                 public void onCancelled(@NonNull DatabaseError error) {
-                                    Log.e("fetchUserData", "❌ Failed to retrieve user info: " + error.getMessage());
                                 }
                             });
                 }
@@ -151,7 +143,6 @@ public class deleteShiftFrag extends Fragment {
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("fetchUserData", "❌ Failed to retrieve work IDs: " + error.getMessage());
             }
         });
     }
@@ -160,7 +151,7 @@ public class deleteShiftFrag extends Fragment {
         if (userId == null || workId == null) return;
 
         DatabaseReference removalsRef = databaseReference.child(workId)
-                .child("waitingShifts").child("removals").child(weekType); // ✅ Load correct week
+                .child("waitingShifts").child("removals").child(weekType);
 
         removalsRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -213,16 +204,15 @@ public class deleteShiftFrag extends Fragment {
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         boolean hasShifts = false;
 
-                        for (DataSnapshot daySnapshot : snapshot.getChildren()) { // Loops through each day
-                            for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) { // Loops through shifts
+                        for (DataSnapshot daySnapshot : snapshot.getChildren()) {
+                            for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
                                 String shiftId = shiftSnapshot.getKey();
                                 String workerId = shiftSnapshot.child("workerId").getValue(String.class);
 
-                                // ✅ Show only shifts assigned to the current user
                                 if (workerId != null && workerId.equals(userId)) {
                                     String startTime = shiftSnapshot.child("sTime").getValue(String.class);
                                     String endTime = shiftSnapshot.child("fTime").getValue(String.class);
-                                    String shiftDay = daySnapshot.getKey(); // Get the day name
+                                    String shiftDay = daySnapshot.getKey();
 
                                     CheckBox checkBox = new CheckBox(getContext());
                                     checkBox.setText(String.format(Locale.US, "%s: %s - %s", shiftDay, startTime, endTime));
@@ -233,7 +223,7 @@ public class deleteShiftFrag extends Fragment {
                             }
                         }
 
-                        deleteButton.setEnabled(hasShifts); // Disable delete button if no shifts exist
+                        deleteButton.setEnabled(hasShifts);
                     }
 
                     @Override

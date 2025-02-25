@@ -68,7 +68,7 @@ public class requestsFrag extends Fragment {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
 
         if (currentUser == null) {
-            Log.e("Firebase", "❌ Current user is null!");
+            Log.e("Firebase", " Current user is null!");
             return;
         }
 
@@ -91,14 +91,12 @@ public class requestsFrag extends Fragment {
                     return;
                 }
 
-                Log.d("Firebase", "✅ Found workID: " + userWorkId);
                 loadWaitingShifts(userWorkId, "additions", additionsList, additionsAdapter);
                 loadWaitingShifts(userWorkId, "removals", removalsList, removalsAdapter);
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "❌ Failed to read workIDs", error.toException());
             }
         });
     }
@@ -110,12 +108,10 @@ public class requestsFrag extends Fragment {
         waitingRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Log.d("Firebase", "🟢 Reloading " + requestType + " shifts from Firebase");
 
                 shiftList.clear();
 
                 if (!snapshot.exists()) {
-                    Log.d("Firebase", "⚠️ No waiting shifts found for: " + requestType);
                     adapter.notifyDataSetChanged();
                     return;
                 }
@@ -133,7 +129,6 @@ public class requestsFrag extends Fragment {
                             String workerName = shiftSnapshot.child("workerName").getValue(String.class);
 
                             if (sTime == null || fTime == null || workerId == null || workerName == null) {
-                                Log.e("Firebase", "❌ Missing shift data in: " + shiftSnapshot.getKey());
                                 continue;
                             }
 
@@ -142,14 +137,11 @@ public class requestsFrag extends Fragment {
                         }
                     }
                 }
-
-                Log.d("Firebase", "✅ Loaded " + shiftList.size() + " waiting shifts for " + requestType);
                 adapter.notifyDataSetChanged();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError error) {
-                Log.e("Firebase", "❌ Failed to load waiting shifts", error.toException());
             }
         });
     }
