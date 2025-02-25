@@ -65,7 +65,7 @@ public class addShiftFrag extends Fragment {
             this.sTime = sTime;
             this.fTime = fTime;
             this.day = day;
-            this.shiftId = shiftId;  // ✅ Fix: Add shiftId
+            this.shiftId = shiftId;
         }
     }
 
@@ -218,6 +218,14 @@ public class addShiftFrag extends Fragment {
     }
 
     private void fetchUserData(@Nullable Runnable onComplete) {
+        if (mAuth == null) {  // ✅ Ensure FirebaseAuth is initialized
+            mAuth = FirebaseAuth.getInstance();
+        }
+
+        if (databaseReference == null) {  // ✅ Ensure Firebase Database is initialized
+            databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
+        }
+
         FirebaseUser user = mAuth.getCurrentUser();
         if (user == null) {
             Log.e("UserData", "❌ User is not signed in.");
@@ -237,7 +245,7 @@ public class addShiftFrag extends Fragment {
 
                 for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
                     String currentWorkId = workIdEntry.getKey();
-                    if (workId != null) break; // If workId is already set, no need to continue.
+                    if (workId != null) break; // ✅ Stop loop if workId is already set
 
                     DatabaseReference usersRef = databaseReference.child(currentWorkId).child("users");
 
@@ -247,7 +255,7 @@ public class addShiftFrag extends Fragment {
                             for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                                 String storedUserId = userSnapshot.getKey();
                                 if (storedUserId.equals(authUserId)) {
-                                    workId = currentWorkId; // ✅ Store the correct workId
+                                    workId = currentWorkId; // ✅ Store workId
                                     userId = storedUserId;
                                     userName = userSnapshot.child("name").getValue(String.class);
 
@@ -259,9 +267,6 @@ public class addShiftFrag extends Fragment {
 
                                     pendingShiftAdapter = new PendingShiftAdapter(pendingShiftList, workId, selectedWeek, addShiftFrag.this::fetchUserData);
                                     pendingShiftsRecyclerView.setAdapter(pendingShiftAdapter);
-
-
-
 
                                     fetchPendingShifts();
 
