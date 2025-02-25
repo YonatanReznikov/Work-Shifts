@@ -270,25 +270,7 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
                             .addOnSuccessListener(aVoid -> {
                                 Log.d("Firebase", "✅ Shift successfully removed from Firebase");
 
-                                if (position >= 0 && position < waitingShifts.size()) {
-                                    waitingShifts.remove(position);
-                                    Log.d("Firebase", "✅ Removed shift from list at position: " + position);
-
-                                    updateTotalHoursInFirebase(workID, shift.getWorkerId(), shift.getsTime(), shift.getfTime(), true);
-
-                                    new Handler().postDelayed(() -> {
-                                        notifyItemRemoved(position);
-                                        notifyItemRangeChanged(position, waitingShifts.size());
-                                        Log.d("Firebase", "🔄 RecyclerView successfully updated.");
-                                    }, 50);
-
-                                    if (waitingShifts.isEmpty()) {
-                                        new Handler().postDelayed(() -> {
-                                            notifyDataSetChanged();
-                                            Log.d("Firebase", "🔄 Full RecyclerView refresh applied.");
-                                        }, 100);
-                                    }
-                                }
+                                refreshRecyclerView();
                             })
                             .addOnFailureListener(e -> Log.e("Firebase", "❌ Failed to remove shift from waiting list", e));
                 } else {
@@ -301,6 +283,12 @@ public class RequestsAdapter extends RecyclerView.Adapter<RequestsAdapter.ViewHo
                 Log.e("Firebase", "❌ Failed to remove shift", error.toException());
             }
         });
+    }
+    public void refreshRecyclerView() {
+        new Handler().postDelayed(() -> {
+            notifyDataSetChanged();
+            Log.d("RecyclerView", "🔄 RecyclerView fully refreshed.");
+        }, 100);
     }
 
     private void getWorkID(Shift shift, WorkIDCallback callback) {

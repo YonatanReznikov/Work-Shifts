@@ -434,6 +434,7 @@ public class addShiftFrag extends Fragment {
                 } else {
                     Log.e("UserData", "❌ workId is still null after fetching.");
                 }
+                addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
             });
 
             return;
@@ -442,29 +443,31 @@ public class addShiftFrag extends Fragment {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) {
             Toast.makeText(requireContext(), "Error: User not signed in", Toast.LENGTH_SHORT).show();
+            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
             return;
         }
 
         if (selectedDayTextView.getText().toString().isEmpty()) {
             Toast.makeText(requireContext(), "Please select a day first", Toast.LENGTH_SHORT).show();
+            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
             return;
         }
 
         String selectedDayName = selectedDayTextView.getText().toString().replace("Selected Day: ", "");
         if (isPastDay(selectedDayName)) {
             Toast.makeText(requireContext(), "Cannot add a shift for a past day!", Toast.LENGTH_SHORT).show();
+            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
             return;
         }
 
-        addShiftButton.setEnabled(false);
+        addShiftButton.setEnabled(false); // ❌ Button is disabled here (FIX: Ensure it gets re-enabled after)
 
         String sTime = startTimeSpinner.getSelectedItem().toString();
         String fTime = endTimeSpinner.getSelectedItem().toString();
-        String shiftType = shiftSpinner.getSelectedItem().toString();
 
         if (sTime.compareTo(fTime) >= 0) {
             Toast.makeText(requireContext(), "End time must be after start time", Toast.LENGTH_SHORT).show();
-            addShiftButton.setEnabled(true);
+            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
             return;
         }
 
@@ -487,7 +490,14 @@ public class addShiftFrag extends Fragment {
                 Log.d("ShiftDebug", "✅ Shift added to waitingShifts for approval");
                 Toast.makeText(requireContext(), "✅ Shift Submitted!", Toast.LENGTH_LONG).show();
                 fetchPendingShifts(); // ✅ Refresh list immediately
+            } else {
+                Toast.makeText(requireContext(), "❌ Failed to submit shift", Toast.LENGTH_SHORT).show();
             }
+            addShiftButton.setEnabled(true); // ✅ Button is re-enabled after operation
+        }).addOnFailureListener(e -> {
+            Log.e("ShiftDebug", "❌ Firebase submission failed", e);
+            Toast.makeText(requireContext(), "❌ Failed to submit shift", Toast.LENGTH_SHORT).show();
+            addShiftButton.setEnabled(true); // ✅ Ensure the button is re-enabled
         });
     }
 
