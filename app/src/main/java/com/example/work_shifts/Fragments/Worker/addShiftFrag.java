@@ -17,6 +17,8 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.work_shifts.R;
 import com.google.firebase.auth.FirebaseAuth;
@@ -47,6 +49,28 @@ public class addShiftFrag extends Fragment {
     private String userId, userName, workId;
     private String selectedWeek = "thisWeek";
     private TextView totalHoursText;
+    private RecyclerView pendingShiftsRecyclerView;
+    private PendingShiftAdapter pendingShiftAdapter;
+    private List<PendingShift> thisWeekShifts = new ArrayList<>();
+    private List<PendingShift> nextWeekShifts = new ArrayList<>();
+    private PendingShiftAdapter thisWeekAdapter, nextWeekAdapter;
+    private List<PendingShift> pendingShiftList = new ArrayList<>();
+    public class PendingShift {
+        public String workerName, sTime, fTime, day, shiftId;
+
+        public PendingShift() {}
+
+        public PendingShift(String workerName, String sTime, String fTime, String day, String shiftId) {
+            this.workerName = workerName;
+            this.sTime = sTime;
+            this.fTime = fTime;
+            this.day = day;
+            this.shiftId = shiftId;  // ✅ Fix: Add shiftId
+        }
+    }
+
+
+
 
     @Nullable
     @Override
@@ -64,9 +88,19 @@ public class addShiftFrag extends Fragment {
         selectedDayTextView.setLayoutParams(layoutParams);
         ((LinearLayout) view.findViewById(R.id.daysContainer)).addView(selectedDayTextView);
         selectedWeek = "thisWeek";
+        pendingShiftsRecyclerView = view.findViewById(R.id.pendingShiftsRecyclerView);
+        pendingShiftsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
 
+        pendingShiftList = new ArrayList<>();
+        pendingShiftAdapter = new PendingShiftAdapter(pendingShiftList, workId, selectedWeek, this::fetchUserData);
+        pendingShiftsRecyclerView.setAdapter(pendingShiftAdapter);
+
+
+
+        Log.d("AdapterInit", "🛠️ workId: " + workId + ", selectedWeek: " + selectedWeek);
+
+        fetchPendingShifts();
         if (thisWeekButton != null && nextWeekButton != null) {
-            // Set "This Week" as selected by default
             selectedWeek = "thisWeek";
             thisWeekButton.setBackgroundColor(Color.BLUE);
             thisWeekButton.setTextColor(Color.WHITE);
@@ -109,15 +143,61 @@ public class addShiftFrag extends Fragment {
 
         setupSpinners();
 
-        mAuth = FirebaseAuth.getInstance();
+        if (mAuth == null) {
+            mAuth = FirebaseAuth.getInstance();
+        }
         databaseReference = FirebaseDatabase.getInstance().getReference("workIDs");
 
         fetchUserData(null);
 
         return view;
     }
+    private void fetchPendingShifts() {
+        if (workId == null) {
+            Log.e("FirebaseError", "❌ workId is null, retrying fetchUserData()...");
+            fetchUserData(this::fetchPendingShifts);
+            return;
+        }
 
-    private void updateTimeSpinnersBasedOnShift(String selectedShift) {
+
+        DatabaseReference waitingShiftsRef = FirebaseDatabase.getInstance()
+                .getReference("workIDs")
+                .child(workId)
+                .child("waitingShifts")
+                .child("additions")
+                .child(selectedWeek);
+
+        waitingShiftsRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
+                pendingShiftList.clear();
+
+                for (DataSnapshot daySnapshot : snapshot.getChildren()) {
+                    String day = daySnapshot.getKey();
+
+                    for (DataSnapshot shiftSnapshot : daySnapshot.getChildren()) {
+                        String shiftId = shiftSnapshot.getKey(); // ✅ Get shiftId
+                        String sTime = shiftSnapshot.child("sTime").getValue(String.class);
+                        String fTime = shiftSnapshot.child("fTime").getValue(String.class);
+                        String workerName = shiftSnapshot.child("workerName").getValue(String.class);
+
+                        if (sTime != null && fTime != null && workerName != null) {
+                            pendingShiftList.add(new PendingShift(workerName, sTime, fTime, day, shiftId));
+                        }
+                    }
+                }
+
+                pendingShiftAdapter.notifyDataSetChanged();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.e("FirebaseError", "❌ Failed to fetch pending shifts", error.toException());
+            }
+        });
+    }
+
+        private void updateTimeSpinnersBasedOnShift(String selectedShift) {
         if (selectedShift.contains("Morning Shift")) {
             startTimeSpinner.setSelection(getTimeOptions().indexOf("07:00"));
             endTimeSpinner.setSelection(getTimeOptions().indexOf("14:00"));
@@ -144,7 +224,7 @@ public class addShiftFrag extends Fragment {
             return;
         }
 
-        final String authUserId = user.getUid(); // Firebase Auth UID
+        final String authUserId = user.getUid();
         Log.d("UserData", "🔍 Fetching data for Auth User ID: " + authUserId);
 
         databaseReference.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -157,7 +237,7 @@ public class addShiftFrag extends Fragment {
 
                 for (DataSnapshot workIdEntry : workIdsSnapshot.getChildren()) {
                     String currentWorkId = workIdEntry.getKey();
-                    if (workId != null) break;
+                    if (workId != null) break; // If workId is already set, no need to continue.
 
                     DatabaseReference usersRef = databaseReference.child(currentWorkId).child("users");
 
@@ -166,20 +246,24 @@ public class addShiftFrag extends Fragment {
                         public void onDataChange(@NonNull DataSnapshot snapshot) {
                             for (DataSnapshot userSnapshot : snapshot.getChildren()) {
                                 String storedUserId = userSnapshot.getKey();
-                                String storedEmail = userSnapshot.child("email").getValue(String.class);
-
                                 if (storedUserId.equals(authUserId)) {
-                                    userId = storedUserId; // Match Firebase Auth UID with the database user ID
+                                    workId = currentWorkId; // ✅ Store the correct workId
+                                    userId = storedUserId;
                                     userName = userSnapshot.child("name").getValue(String.class);
-                                    workId = currentWorkId;
 
                                     if (userName == null || userName.isEmpty()) {
                                         userName = "Unknown Worker";
                                     }
 
-                                    Log.d("UserData", "✅ Database User ID: " + userId);
-                                    Log.d("UserData", "✅ User Name: " + userName);
-                                    Log.d("UserData", "✅ Work ID Found: " + workId);
+                                    Log.d("UserData", "✅ workId Found: " + workId);
+
+                                    pendingShiftAdapter = new PendingShiftAdapter(pendingShiftList, workId, selectedWeek, addShiftFrag.this::fetchUserData);
+                                    pendingShiftsRecyclerView.setAdapter(pendingShiftAdapter);
+
+
+
+
+                                    fetchPendingShifts();
 
                                     if (onComplete != null) {
                                         onComplete.run();
@@ -187,7 +271,6 @@ public class addShiftFrag extends Fragment {
                                     return;
                                 }
                             }
-
                             Log.e("UserData", "❌ User ID not found in workID: " + currentWorkId);
                         }
 
@@ -205,7 +288,6 @@ public class addShiftFrag extends Fragment {
             }
         });
     }
-
     private void updateDaysContainer() {
         daysContainer.removeAllViews();
 
@@ -261,6 +343,7 @@ public class addShiftFrag extends Fragment {
             thisWeekButton.setTextColor(Color.BLACK);
         }
         updateDaysContainer();
+        fetchPendingShifts();
     }
 
     private void setupSpinners() {
@@ -338,10 +421,13 @@ public class addShiftFrag extends Fragment {
             Toast.makeText(requireContext(), "Fetching user data... Please wait.", Toast.LENGTH_SHORT).show();
 
             fetchUserData(() -> {
-                if (workId != null && !workId.isEmpty() && userId != null) {
-                    addShiftToDatabase();
+                if (workId != null) {
+                    Log.d("UserData", "✅ workId retrieved: " + workId);
+                    pendingShiftAdapter = new PendingShiftAdapter(pendingShiftList, workId, selectedWeek, this::fetchUserData);
+                    pendingShiftsRecyclerView.setAdapter(pendingShiftAdapter);
+                    fetchPendingShifts(); // ✅ Refresh list only after setting workId
                 } else {
-                    Log.e("ShiftDebug", "❌ Work ID or User ID still missing after fetching.");
+                    Log.e("UserData", "❌ workId is still null after fetching.");
                 }
             });
 
@@ -394,18 +480,9 @@ public class addShiftFrag extends Fragment {
         shiftRef.setValue(shift).addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 Log.d("ShiftDebug", "✅ Shift added to waitingShifts for approval");
-
-                Toast.makeText(requireContext(),
-                        "✅ Shift Submitted for Approval! \n\n"
-                                + "📅 Day: " + selectedDayName + "\n"
-                                + "🕒 Time: " + sTime + " - " + fTime + "\n"
-                                + "🔹 Type: " + shiftType,
-                        Toast.LENGTH_LONG).show();
-            } else {
-                Log.e("ShiftDebug", "🚨 Shift submission failed.");
-                Toast.makeText(requireContext(), "❌ Failed to submit shift. Try again.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), "✅ Shift Submitted!", Toast.LENGTH_LONG).show();
+                fetchPendingShifts(); // ✅ Refresh list immediately
             }
-            addShiftButton.setEnabled(true);
         });
     }
 
